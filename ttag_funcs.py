@@ -83,6 +83,7 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
     print "Extracting light curve over", end, 'seconds'
 
     counts = []
+    errors = []
     times = []
 
     all_heights = [ hdu[1].header[ 'SP_HGT_%s'% (segment) ] 
@@ -108,11 +109,14 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
 
             sub_count += len(index) / float(step) / (xlim[1] - xlim[0]) / height
+            print 100 * np.sqrt(len(index) ) / len(index)
 
         counts.append( sub_count )
+        errors.append( 100 * np.sqrt( len(index) ) / len(index) )
         times.append( start + (i+1) * SECOND )
 
     counts = np.array( counts )
+    errors = np.array( errors )
 
     if fluxcal:
         if '$' in fluxtab:
@@ -130,8 +134,9 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
         total_fluxcorr = np.mean( [ flux_hdu[1].data[i]['SENSITIVITY'] 
                                     for i in index ] )
         counts /= total_fluxcorr            
+        errors /= total_fluxcorr
 
     if normalize:
         counts /= np.median( counts )
 
-    return times, counts
+    return times, counts, errors
