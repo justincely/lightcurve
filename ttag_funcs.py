@@ -73,6 +73,7 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
     OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
     CENWAVE = hdu[0].header[ 'CENWAVE' ]
     APERTURE = hdu[0].header[ 'APERTURE' ]
+    SDQFLAGS = hdu[1].header[ 'SDQFLAGS' ]
     
     if not fluxtab:
         fluxtab = hdu[0].header[ 'FLUXTAB' ]
@@ -97,45 +98,60 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
     print 'Extracting at: ', all_locations
     for i in range(0, end, step)[:-1]:
         print i
-        sub_count = 0
+        sub_count = []
         for loc, height in zip( all_locations, all_heights ):
-            index = np.where( (hdu[1].data['TIME'] >= i) & 
-                              ( hdu[1].data['TIME'] < i+step) &
-                              (hdu[1].data['XCORR'] > xlim[0]) & 
-                              ( hdu[1].data['XCORR'] < xlim[1]) &
-                              (hdu[1].data['YCORR'] > loc-(height/2) ) & 
+            data_index = np.where( ( hdu[1].data['TIME'] >= i ) & 
+                              ( hdu[1].data['TIME'] < i+step ) &
+                              ( hdu[1].data['XCORR'] > xlim[0] ) & 
+                              ( hdu[1].data['XCORR'] < xlim[1] ) &
+                              ( hdu[1].data['YCORR'] > loc-(height/2) ) & 
                               ( hdu[1].data['YCORR'] < loc+(height/2) ) &
+                              ~( hdu[1].data['DQ'] & SDQFLAGS ) &
                               ( (hdu[1].data['WAVELENGTH'] > 1217) | 
                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
 
-            sub_count += len(index) / float(step) / (xlim[1] - xlim[0]) / height
-            print 100 * np.sqrt(len(index) ) / len(index)
+            net = len(data_index) / float(step) / (xlim[1] - xlim[0]) / height
 
-        counts.append( sub_count )
-        errors.append( 100 * np.sqrt( len(index) ) / len(index) )
+            if fluxcal:
+                if '$' in fluxtab:
+                    fluxpath, fluxfile = fluxtab.split( '$' )
+                else:
+                    fluxpath = './'
+                    fluxfile = fluxtab
+
+                minwave = hdu[1].data[ data_index ]['wavelength'].min()
+                maxwave = hdu[1].data[ data_index ]['wavelength'].max()
+
+                #print 'Flux calibrating with: ', fluxfile
+                flux_hdu = pyfits.open( fluxfile )
+                flux_index = np.where( (flux_hdu[1].data['OPT_ELEM'] == OPT_ELEM) &
+                                       (flux_hdu[1].data['CENWAVE'] == CENWAVE) &
+                                       (flux_hdu[1].data['APERTURE'] == APERTURE) )[0]
+
+                mean_response_list = []
+                for sens_curve,wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
+                                                  flux_hdu[1].data[flux_index]['WAVELENGTH'] ):
+                    wave_index = np.where( (wave_curve >= minwave) &
+                                           (wave_curve <= maxwave ) )[0]
+
+                    if not len(wave_index): continue
+
+                    mean_response_list.append( sens_curve[ wave_index ].mean() )
+
+                total_fluxcorr = np.mean( mean_response_list )
+
+                net /= total_fluxcorr
+                
+                sub_count.append( net )
+
+        counts.append( np.sum(sub_count) )
+        errors.append( 100 * np.sqrt( len(data_index) ) / len(data_index) )
         times.append( start + (i+1) * SECOND )
 
     counts = np.array( counts )
     errors = np.array( errors )
 
-    if fluxcal:
-        if '$' in fluxtab:
-            fluxpath, fluxfile = fluxtab.split( '$' )
-        else:
-            fluxpath = './'
-            fluxfile = fluxtab
-
-        print 'Flux calibrating with: ', fluxfile
-        flux_hdu = pyfits.open( fluxfile )
-        index = np.where( (flux_hdu[1].data['OPT_ELEM'] == OPT_ELEM) &
-                          (flux_hdu[1].data['CENWAVE'] == CENWAVE) &
-                          (flux_hdu[1].data['APERTURE'] == APERTURE) )[0]
-
-        total_fluxcorr = np.mean( [ flux_hdu[1].data[i]['SENSITIVITY'] 
-                                    for i in index ] )
-        counts /= total_fluxcorr            
-        errors /= total_fluxcorr
-
+   
     if normalize:
         counts /= np.median( counts )
 
