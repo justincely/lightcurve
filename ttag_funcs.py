@@ -52,11 +52,42 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
 
 #-------------------------------------------------------------------------------
 
-def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
+def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
                 fluxcal=False, fluxtab=None, normalize=False):
     """
-    Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve
+    Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve.
     
+    Parameters
+    ----------
+    filename : string
+        Name of fits file
+    step : int
+        Timestep for datapoints
+    xlim : tuple, optional
+        Lower and upper x bounds to extract
+    ylim : tuple, optional
+        Lower and upper y bounds to extract
+    extract: bool, optional
+        Extract from locations given in XTRACTAB instead of xlim,ylim
+    fluxcal: bool, optional
+        Convert total counts into flux using PHOTTAB
+    normalize: bool, optional
+        Normalize each lightcurve to mean value
+
+    Returns
+    -------
+    times : array
+        Array of time samples
+    counts : array
+        Array of counts or flux in each time sample
+    error : array
+        Array of error estimates for count array
+
+    Examples
+    --------
+    >>> lightcurve( 'ipppssoot_corrtag.fits' )
+    array([1, 2, 3, 4]), array([25, 25, 25, 25]), array([5, 5, 5, 5])
+
     """
     from astroraf.headers import key_exists 
     import pyfits
@@ -110,9 +141,13 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
                               ( (hdu[1].data['WAVELENGTH'] > 1217) | 
                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
 
-            net = len(data_index) / float(step) / (xlim[1] - xlim[0]) / height
+            net = len(data_index)
 
             if fluxcal:
+
+                net /=  (float(step) / (xlim[1] - xlim[0]) / height)
+
+
                 if '$' in fluxtab:
                     fluxpath, fluxfile = fluxtab.split( '$' )
                 else:
@@ -142,17 +177,20 @@ def lightcurve( filename, xlim=(0, 1024), ylim=(0, 1024), step=5, extract=True,
 
                 net /= total_fluxcorr
                 
-                sub_count.append( net )
+            sub_count.append( net )
 
-        counts.append( np.sum(sub_count) )
-        errors.append( 100 * np.sqrt( len(data_index) ) / len(data_index) )
+        sample_counts = np.sum( sub_count )
+
+        counts.append( sample_counts )
+        errors.append( np.sqrt( sample_counts ) )
         times.append( start + (i+1) * SECOND )
 
-    counts = np.array( counts )
-    errors = np.array( errors )
+    counts = np.array( counts ).astype( np.float64 )
+    errors = np.array( errors ).astype( np.float64 )
 
    
     if normalize:
-        counts /= np.median( counts )
+        errors = errors / counts
+        counts = counts / counts.mean()
 
     return times, counts, errors
