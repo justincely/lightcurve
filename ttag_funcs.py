@@ -90,6 +90,7 @@ def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
 
     """
     from astroraf.headers import key_exists 
+    from astroraf.misc import progress_bar
     import pyfits
     import numpy as np
    
@@ -127,12 +128,15 @@ def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
                       key_exists( hdu[1].header,'SP_LOC_%s'% (segment)  ) ]
 
     print 'Extracting at: ', all_locations
-    for i in range(0, end, step)[:-1]:
-        print i
+    steps = range(0, end, step)[:-1]
+    N_steps = len( steps )
+
+    for i,start in enumerate( steps ):
+        progress_bar( i, N_steps )
         sub_count = []
         for loc, height in zip( all_locations, all_heights ):
-            data_index = np.where( ( hdu[1].data['TIME'] >= i ) & 
-                              ( hdu[1].data['TIME'] < i+step ) &
+            data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
+                              ( hdu[1].data['TIME'] < start+step ) &
                               ( hdu[1].data['XCORR'] > xlim[0] ) & 
                               ( hdu[1].data['XCORR'] < xlim[1] ) &
                               ( hdu[1].data['YCORR'] > loc-(height/2) ) & 
