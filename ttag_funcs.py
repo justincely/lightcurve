@@ -52,7 +52,7 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
 
 #-------------------------------------------------------------------------------
 
-def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
+def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
                 fluxcal=False, fluxtab=None, normalize=False):
     """
     Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve.
@@ -110,7 +110,7 @@ def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
     if not fluxtab:
         fluxtab = hdu[0].header[ 'FLUXTAB' ]
 
-    start = hdu[1].header[ 'EXPSTART' ]
+    EXPSTART = hdu[1].header[ 'EXPSTART' ]
     end = hdu['events'].data[ 'time' ].max()
 
     print "Extracting light curve over", end, 'seconds'
@@ -128,8 +128,15 @@ def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
                       key_exists( hdu[1].header,'SP_LOC_%s'% (segment)  ) ]
 
     print 'Extracting at: ', all_locations
+    print 'With heights : ', all_heights
     steps = range(0, end, step)[:-1]
     N_steps = len( steps )
+
+    if (not xlim) and (DETECTOR == 'FUV'):
+        xlim = (0, 16384)
+    elif (not xlim) and (DETECTOR == 'NUV'):
+        xlim = (0, 1024)
+        
 
     for i,start in enumerate( steps ):
         progress_bar( i, N_steps )
@@ -187,7 +194,7 @@ def lightcurve( filename, step=5, xlim=(0, 1024), ylim=(0, 1024), extract=True,
 
         counts.append( sample_counts )
         errors.append( np.sqrt( sample_counts ) )
-        times.append( start + (i+1) * SECOND )
+        times.append( EXPSTART + (start+1) * SECOND )
 
     counts = np.array( counts ).astype( np.float64 )
     errors = np.array( errors ).astype( np.float64 )
