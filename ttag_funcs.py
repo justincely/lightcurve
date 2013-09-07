@@ -153,8 +153,8 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
                                              ystart, yend, SDQFLAGS )
 
             net = float(counts) / (yend-ystart) 
-            flux = net / get_flux_correction( fluxtab, opt_elem, 
-                                              cenwave, aperture, wmin, wmax )
+            flux = net / get_flux_correction( fluxtab, OPT_ELEM, 
+                                              CENWAVE, APERTURE, wmin, wmax )
 
             sub_count.append( counts )
             sub_net.append( net )
