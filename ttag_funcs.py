@@ -98,11 +98,17 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
     hdu = pyfits.open( filename )
 
     DETECTOR = hdu[0].header[ 'DETECTOR' ]
+
     if DETECTOR == 'NUV':
-        hdu_list = [ hdu, hdu, hdu ]
+        hdu_dict = {'A':hdu, 'B':hdu, 'C':hdu}
     elif DETECTOR == 'FUV':
-        arranged_filenames = get_both_filenames( filename )
-        hdu_list = [ pyfits.open( name ) for name in arranged_filenames if os.path.exists( name ) ]
+        file_a, file_b = get_both_filenames( filename )
+
+        hdu_dict = dict()
+        for name, letter in zip( [file_a, file_b], ['A', 'B'] ):
+            if os.path.exists( name ):
+                print name
+                hdu_dict[ letter ] = pyfits.open( name )
 
     OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
     CENWAVE = hdu[0].header[ 'CENWAVE' ]
@@ -123,10 +129,6 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
     all_errors = []
     all_times = []
 
-    y_start_locs, y_end_locs = get_extraction_regions( hdu )
-
-    print 'Extracting at: ', y_start_locs
-    print 'With heights : ', y_end_locs
     steps = range(0, end, step)[:-1]
     N_steps = len( steps )
 
@@ -145,7 +147,8 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
         sub_count = []
         sub_net = []
         sub_flux = []
-        for ystart, yend in zip( y_start_locs, y_end_locs ):
+        for segment, hdu in hdu_dict.iteritems():
+            ystart, yend = get_extraction_region( hdu, segment )
             counts, wmin, wmax = extract_counts(hdu, start, start+step, xlim[0], xlim[1], 
                                              ystart, yend, SDQFLAGS )
 
@@ -194,7 +197,7 @@ def get_both_filenames( filename ):
     filename_list = [filename, other_filename]
     filename_list.sort()
 
-    return filename_list
+    return ( filename_list[0], filename_list[1] )
 
 
 def get_extraction_region( hdu, segment ):
@@ -207,38 +210,6 @@ def get_extraction_region( hdu, segment ):
 
     y_start = location - height/2
     y_end = location + height/2
-
-    return y_start, y_end
-
-
-def get_extraction_regions( hdu ):
-    """Get y_start,y_end for given extraction
-
-    Any extraction regions with values of -999
-    will be removed and ignored
-
-    """
-    from astroraf.headers import key_exists 
-
-
-    all_heights = [ hdu[1].header[ 'SP_HGT_%s'% (segment) ] 
-                    for segment in ['A','B','C'] if 
-                    key_exists( hdu[1].header, 'SP_HGT_%s'% (segment)  ) ]
-
-    all_locations = [ hdu[1].header[ 'SP_LOC_%s'% (segment) ] 
-                      for segment in ['A','B','C'] if 
-                      key_exists( hdu[1].header,'SP_LOC_%s'% (segment)  ) ]
-
-    for l,h in zip( all_locations, all_heights ):
-        if l == -999:
-            all_locations.remove( l )
-            all_heights.remove( h )
-
-    y_start = [ location - height/2 for location,height in 
-                zip( all_locations, all_heights ) ]
-
-    y_end = [ location + height/2 for location,height in 
-                zip( all_locations, all_heights ) ]
 
     return y_start, y_end
 
