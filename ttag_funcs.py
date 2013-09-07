@@ -142,17 +142,8 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
         progress_bar( i, N_steps )
         sub_count = []
         for loc, height in zip( all_locations, all_heights ):
-            data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
-                              ( hdu[1].data['TIME'] < start+step ) &
-                              ( hdu[1].data['XCORR'] > xlim[0] ) & 
-                              ( hdu[1].data['XCORR'] < xlim[1] ) &
-                              ( hdu[1].data['YCORR'] > loc-(height/2) ) & 
-                              ( hdu[1].data['YCORR'] < loc+(height/2) ) &
-                              ~( hdu[1].data['DQ'] & SDQFLAGS ) &
-                              ( (hdu[1].data['WAVELENGTH'] > 1217) | 
-                                (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
-
-            net = len(data_index)
+            net = extract_counts(hdu, start, start+step, xlim[0], xlim[1], 
+                                 loc-(height/2), loc+(height/2), SDQFLAGS )
 
             if fluxcal:
 
@@ -205,3 +196,23 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
         counts = counts / counts.mean()
 
     return times, counts, errors
+
+
+def extract_counts(hdu, start, end, x_start, x_end, y_start, y_end, sdqflags=0):
+    """
+    Extract counts from given HDU using input parameters.
+
+    Lyman Alpha line counts will be excluded by default.
+
+    """
+    import numpy as np
+    data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
+                           ( hdu[1].data['TIME'] < end ) &
+                           ( hdu[1].data['XCORR'] > x_start ) & 
+                           ( hdu[1].data['XCORR'] < x_end ) &
+                           ( hdu[1].data['YCORR'] > y_start ) & 
+                           ( hdu[1].data['YCORR'] < y_end ) &
+                           ~( hdu[1].data['DQ'] & sdqflags ) &
+                           ( (hdu[1].data['WAVELENGTH'] > 1217) | 
+                             (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
+    return len(data_index)
