@@ -91,16 +91,19 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
     """
     from astroraf.misc import progress_bar
     import pyfits
+    import os
     import numpy as np
    
     SECOND = 1.15741e-5
     hdu = pyfits.open( filename )
 
-    if not len( hdu['events'].data ):
-        return ( [], [] )
-
     DETECTOR = hdu[0].header[ 'DETECTOR' ]
-    SEGMENT = hdu[0].header[ 'SEGMENT' ]
+    if DETECTOR == 'NUV':
+        hdu_list = [ hdu, hdu, hdu ]
+    elif DETECTOR == 'FUV':
+        arranged_filenames = get_both_filenames( filename )
+        hdu_list = [ pyfits.open( name ) for name in arranged_filenames if os.path.exists( name ) ]
+
     OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
     CENWAVE = hdu[0].header[ 'CENWAVE' ]
     APERTURE = hdu[0].header[ 'APERTURE' ]
@@ -114,9 +117,11 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
 
     print "Extracting light curve over", end, 'seconds'
 
-    counts = []
-    errors = []
-    times = []
+    all_counts = []
+    all_net = []
+    all_flux = []
+    all_errors = []
+    all_times = []
 
     y_start_locs, y_end_locs = get_extraction_regions( hdu )
 
@@ -129,65 +134,81 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
         xlim = (0, 16384)
     elif (not xlim) and (DETECTOR == 'NUV'):
         xlim = (0, 1024)
+
+    if (not ylim) and (DETECTOR == 'FUV'):
+        ylim = 1024
+    elif (not ylim) and (DETECTOR == 'NUV'):
+        ylim = 512
         
     for i,start in enumerate( steps ):
         progress_bar( i, N_steps )
         sub_count = []
+        sub_net = []
+        sub_flux = []
         for ystart, yend in zip( y_start_locs, y_end_locs ):
-            net = extract_counts(hdu, start, start+step, xlim[0], xlim[1], 
-                                 ystart, yend, SDQFLAGS )
+            counts, wmin, wmax = extract_counts(hdu, start, start+step, xlim[0], xlim[1], 
+                                             ystart, yend, SDQFLAGS )
 
-            if fluxcal:
+            net = float(counts) / (yend-ystart) 
+            flux = net / get_flux_correction( fluxtab, wmin, wmax )
 
-                net /=  (float(step) / (xlim[1] - xlim[0]) / height)
-
-
-                if '$' in fluxtab:
-                    fluxpath, fluxfile = fluxtab.split( '$' )
-                else:
-                    fluxpath = './'
-                    fluxfile = fluxtab
-
-                minwave = hdu[1].data[ data_index ]['wavelength'].min()
-                maxwave = hdu[1].data[ data_index ]['wavelength'].max()
-
-                #print 'Flux calibrating with: ', fluxfile
-                flux_hdu = pyfits.open( fluxfile )
-                flux_index = np.where( (flux_hdu[1].data['OPT_ELEM'] == OPT_ELEM) &
-                                       (flux_hdu[1].data['CENWAVE'] == CENWAVE) &
-                                       (flux_hdu[1].data['APERTURE'] == APERTURE) )[0]
-
-                mean_response_list = []
-                for sens_curve,wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
-                                                  flux_hdu[1].data[flux_index]['WAVELENGTH'] ):
-                    wave_index = np.where( (wave_curve >= minwave) &
-                                           (wave_curve <= maxwave ) )[0]
-
-                    if not len(wave_index): continue
-
-                    mean_response_list.append( sens_curve[ wave_index ].mean() )
-
-                total_fluxcorr = np.mean( mean_response_list )
-
-                net /= total_fluxcorr
-                
-            sub_count.append( net )
+            sub_count.append( counts )
+            sub_net.append( net )
+            sub_flux.append( flux )
 
         sample_counts = np.sum( sub_count )
 
-        counts.append( sample_counts )
-        errors.append( np.sqrt( sample_counts ) )
-        times.append( EXPSTART + (start+1) * SECOND )
+        all_counts.append( sample_counts )
+        all_net.append( np.sum(sub_net) )
+        all_flux.append( np.sum(sub_flux) )
+        all_errors.append( np.sqrt( sample_counts ) )
+        all_times.append( EXPSTART + (start+1) * SECOND )
 
-    counts = np.array( counts ).astype( np.float64 )
-    errors = np.array( errors ).astype( np.float64 )
+    counts = np.array( all_counts ).astype( np.float64 )
+    net = np.array( all_net ).astype( np.float64 )
+    flux = np.array( all_flux ).astype( np.float64 )
+    times = np.array( all_times ).astype( np.float64 )
+    errors = np.array( all_errors ).astype( np.float64 )
 
    
     if normalize:
         errors = errors / counts
         counts = counts / counts.mean()
+        net = net / net.mean()
+        flux = flux / flux.mean()
 
     return times, counts, errors
+
+
+def get_both_filenames( filename ):
+    import os
+    import pyfits
+
+    assert pyfits.getval( filename, 'DETECTOR' ) == 'FUV', 'This only works for FUV data'
+
+    if pyfits.getval(filename, 'SEGMENT') == 'FUVA':
+        other_filename = filename.replace('_a.fits', '_b.fits')
+    elif pyfits.getval(filename, 'SEGMENT') == 'FUVB':
+        other_filename = filename.replace('_b.fits', '_a.fits')
+        
+    filename_list = [filename, other_filename]
+    filename_list.sort()
+
+    return filename_list
+
+
+def get_extraction_region( hdu, segment ):
+    """Get y_start,y_end for given extraction
+
+    """
+
+    height =  hdu[1].header['SP_HGT_%s'% (segment)]
+    location = hdu[1].header['SP_LOC_%s'% (segment)]
+
+    y_start = location - height/2
+    y_end = location + height/2
+
+    return y_start, y_end
 
 
 def get_extraction_regions( hdu ):
@@ -239,4 +260,43 @@ def extract_counts(hdu, start, end, x_start, x_end, y_start, y_end, sdqflags=0):
                            ~( hdu[1].data['DQ'] & sdqflags ) &
                            ( (hdu[1].data['WAVELENGTH'] > 1217) | 
                              (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
-    return len(data_index)
+
+    minwave = hdu[1].data[ data_index ]['wavelength'].min()
+    maxwave = hdu[1].data[ data_index ]['wavelength'].max()
+
+    return len(data_index), minwave, maxwave
+
+
+def get_flux_correction( fluxtab, minwave, maxwave):
+    import pyfits
+    import numpy as np
+    import os
+
+    if '$' in fluxtab:
+        fluxpath, fluxfile = fluxtab.split( '$' )
+    else:
+        fluxpath = './'
+        fluxfile = fluxtab
+
+    if not os.path.exists( fluxfile ):
+        #print 'WARNING: Fluxfile not available, using unity flux calibration'
+        return 1
+
+    flux_hdu = pyfits.open( fluxfile )
+    flux_index = np.where( (flux_hdu[1].data['OPT_ELEM'] == OPT_ELEM) &
+                           (flux_hdu[1].data['CENWAVE'] == CENWAVE) &
+                           (flux_hdu[1].data['APERTURE'] == APERTURE) )[0]
+
+    mean_response_list = []
+    for sens_curve,wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
+                                      flux_hdu[1].data[flux_index]['WAVELENGTH'] ):
+        wave_index = np.where( (wave_curve >= minwave) &
+                               (wave_curve <= maxwave ) )[0]
+
+        if not len(wave_index): continue
+
+        mean_response_list.append( sens_curve[ wave_index ].mean() )
+
+    total_fluxcorr = np.mean( mean_response_list )
+
+    return total_fluxcorr
