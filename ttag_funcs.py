@@ -89,7 +89,6 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
     array([1, 2, 3, 4]), array([25, 25, 25, 25]), array([5, 5, 5, 5])
 
     """
-    from astroraf.headers import key_exists 
     from astroraf.misc import progress_bar
     import pyfits
     import numpy as np
@@ -119,16 +118,10 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
     errors = []
     times = []
 
-    all_heights = [ hdu[1].header[ 'SP_HGT_%s'% (segment) ] 
-                    for segment in ['A','B','C'] if 
-                    key_exists( hdu[1].header, 'SP_HGT_%s'% (segment)  ) ]
-  
-    all_locations = [ hdu[1].header[ 'SP_LOC_%s'% (segment) ] 
-                      for segment in ['A','B','C'] if 
-                      key_exists( hdu[1].header,'SP_LOC_%s'% (segment)  ) ]
+    y_start_locs, y_end_locs = get_extraction_regions( hdu )
 
-    print 'Extracting at: ', all_locations
-    print 'With heights : ', all_heights
+    print 'Extracting at: ', y_start_locs
+    print 'With heights : ', y_end_locs
     steps = range(0, end, step)[:-1]
     N_steps = len( steps )
 
@@ -137,13 +130,12 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
     elif (not xlim) and (DETECTOR == 'NUV'):
         xlim = (0, 1024)
         
-
     for i,start in enumerate( steps ):
         progress_bar( i, N_steps )
         sub_count = []
-        for loc, height in zip( all_locations, all_heights ):
+        for ystart, yend in zip( y_start_locs, y_end_locs ):
             net = extract_counts(hdu, start, start+step, xlim[0], xlim[1], 
-                                 loc-(height/2), loc+(height/2), SDQFLAGS )
+                                 ystart, yend, SDQFLAGS )
 
             if fluxcal:
 
@@ -196,6 +188,38 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
         counts = counts / counts.mean()
 
     return times, counts, errors
+
+
+def get_extraction_regions( hdu ):
+    """Get y_start,y_end for given extraction
+
+    Any extraction regions with values of -999
+    will be removed and ignored
+
+    """
+    from astroraf.headers import key_exists 
+
+
+    all_heights = [ hdu[1].header[ 'SP_HGT_%s'% (segment) ] 
+                    for segment in ['A','B','C'] if 
+                    key_exists( hdu[1].header, 'SP_HGT_%s'% (segment)  ) ]
+
+    all_locations = [ hdu[1].header[ 'SP_LOC_%s'% (segment) ] 
+                      for segment in ['A','B','C'] if 
+                      key_exists( hdu[1].header,'SP_LOC_%s'% (segment)  ) ]
+
+    for l,h in zip( all_locations, all_heights ):
+        if l == -999:
+            all_locations.remove( l )
+            all_heights.remove( h )
+
+    y_start = [ location - height/2 for location,height in 
+                zip( all_locations, all_heights ) ]
+
+    y_end = [ location + height/2 for location,height in 
+                zip( all_locations, all_heights ) ]
+
+    return y_start, y_end
 
 
 def extract_counts(hdu, start, end, x_start, x_end, y_start, y_end, sdqflags=0):
