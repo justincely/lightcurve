@@ -153,7 +153,8 @@ def lightcurve( filename, step=5, xlim=None, ylim=None, extract=True,
                                              ystart, yend, SDQFLAGS )
 
             net = float(counts) / (yend-ystart) 
-            flux = net / get_flux_correction( fluxtab, wmin, wmax )
+            flux = net / get_flux_correction( fluxtab, opt_elem, 
+                                              cenwave, aperture, wmin, wmax )
 
             sub_count.append( counts )
             sub_net.append( net )
@@ -238,7 +239,7 @@ def extract_counts(hdu, start, end, x_start, x_end, y_start, y_end, sdqflags=0):
     return len(data_index), minwave, maxwave
 
 
-def get_flux_correction( fluxtab, minwave, maxwave):
+def get_flux_correction( fluxtab, opt_elem, cenwave, aperture, minwave, maxwave):
     import pyfits
     import numpy as np
     import os
@@ -254,9 +255,9 @@ def get_flux_correction( fluxtab, minwave, maxwave):
         return 1
 
     flux_hdu = pyfits.open( fluxfile )
-    flux_index = np.where( (flux_hdu[1].data['OPT_ELEM'] == OPT_ELEM) &
-                           (flux_hdu[1].data['CENWAVE'] == CENWAVE) &
-                           (flux_hdu[1].data['APERTURE'] == APERTURE) )[0]
+    flux_index = np.where( (flux_hdu[1].data['OPT_ELEM'] == opt_elem) &
+                           (flux_hdu[1].data['CENWAVE'] == cenwave) &
+                           (flux_hdu[1].data['APERTURE'] == aperture) )[0]
 
     mean_response_list = []
     for sens_curve,wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
