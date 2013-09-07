@@ -1,7 +1,14 @@
-__all__ = [ 'remake_asn', 'read_asn' ]
-
 import pyfits
-import calcos
+try: 
+    import calcos
+    HAS_CALCOS = True
+except:
+    HAS_CALCOS = False
+
+if HAS_CALCOS:
+    __all__ = [ 'remake_asn', 'read_asn' ]
+else:
+    __all__ = [ 'read_asn' ]
 
 def remake_asn( asn_name, member_ext='_x1d.fits', product_ext='_x1dsum.fits',
                 allow_missing=False ):
