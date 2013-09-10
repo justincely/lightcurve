@@ -20,14 +20,15 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
     
     """
     
-    try: histogram2d
-    except NameError: from numpy import histogram2d, where, zeros
-    
-    try: getdata
-    except NameError: from pyfits import getdata
-    
-    try: events = getdata(in_data, 1)
-    except: events = in_data
+    from numpy import histogram2d, where, zeros
+    from pyfits import getdata
+
+    if isinstance( in_data, str ):
+        hdu = pyfits.open( in_data )
+    else:
+        hdu = in_data
+
+    events = hdu['events'].data
 
     xlength = (ranges[1][1]+1)
     ylength = (ranges[0][1]+1)
@@ -40,16 +41,17 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
         ranges = ( (0, 1023), (0, 1023) )
 
     if times:
-        index = where( (events['TIME']>=times[0]) & 
+        index = where( (events['TIME'] >= times[0]) & 
                        (events['TIME'] <= times[1]) )
         events =  events[index]
 
-    index = where((events['PHA']>=pha[0])&(events['PHA']<=pha[1]))
+    index = where( (events['PHA'] >= pha[0]) & 
+                   (events['PHA'] <= pha[1]) )
 
     if len(index[0]):
         image = histogram2d( events[ytype][index], 
-                                       events[xtype][index], 
-                                       bins=bins, range=ranges)[0]
+                             events[xtype][index], 
+                             bins=bins, range=ranges)[0]
     else:
         image = zeros( (bins[0]//binning[0], bins[1]//binning[1]) )
 
