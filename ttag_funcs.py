@@ -97,16 +97,27 @@ class lightcurve:
     """
 
     def __init__(self, filename, step=5, xlim=None, ylim=None, extract=True,
-                 fluxcal=False, fluxtab=None, normalize=False, writeout=False):
+                 fluxtab=None, normalize=False, writeout=False):
 
         SECOND = 1.15741e-5
         hdu = pyfits.open( filename )
         self.hdu = hdu
 
         DETECTOR = hdu[0].header[ 'DETECTOR' ]
+        OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
+        CENWAVE = hdu[0].header[ 'CENWAVE' ]
+        APERTURE = hdu[0].header[ 'APERTURE' ]
+        SDQFLAGS = hdu[1].header[ 'SDQFLAGS' ]
 
         if DETECTOR == 'NUV':
-            hdu_dict = {'A':hdu, 'B':hdu, 'C':hdu}
+            if OPT_ELEM == 'G230L':
+                hdu_dict = {'A':hdu, 'B':hdu}
+            else:
+                hdu_dict = {'A':hdu, 'B':hdu, 'C':hdu}
+
+            print 'Making lightcurve for %s'% filename
+            print 'Extracting on stripes: ' + ','.join( np.sort(hdu_dict.keys()) )
+
         elif DETECTOR == 'FUV':
             file_a, file_b = self._get_both_filenames(filename )
 
@@ -116,11 +127,13 @@ class lightcurve:
                     hdu_dict[ letter ] = pyfits.open( name )
 
             print 'Making lightcurve from: ' + ', '.join( [file_a, file_b] )
+            print 'Extracting on stripes: ' +','.join( np.sort(hdu_dict.keys()) )
 
-        OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
-        CENWAVE = hdu[0].header[ 'CENWAVE' ]
-        APERTURE = hdu[0].header[ 'APERTURE' ]
-        SDQFLAGS = hdu[1].header[ 'SDQFLAGS' ]
+
+        print 'DETECTOR: %s'% DETECTOR
+        print 'APERTURE: %s'% APERTURE
+        print 'OPT_ELEM: %s'% OPT_ELEM
+        print 'CENWAVE : %s'% CENWAVE
 
         if not fluxtab:
             fluxtab = hdu[0].header[ 'FLUXTAB' ]
@@ -128,7 +141,7 @@ class lightcurve:
         EXPSTART = hdu[1].header[ 'EXPSTART' ]
         end = hdu['events'].data[ 'time' ].max()
 
-        print "Extracting light curve over", end, 'seconds'
+        print "Extracting over", end, 'seconds'
 
         all_counts = []
         all_net = []
@@ -193,6 +206,12 @@ class lightcurve:
 
 
     def _get_both_filenames(self, filename ):
+        """ Get a list of both filenames for FUV data
+
+        Regardless if rootname_corrtag_a.fits or rootname_corrtag_b.fits 
+        is passed in, both will be returned in a list.
+
+        """
 
         assert pyfits.getval( filename, 'DETECTOR' ) == 'FUV', 'This only works for FUV data'
 
@@ -228,6 +247,7 @@ class lightcurve:
         Lyman Alpha line counts will be excluded by default.
 
         """
+
         data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
                                ( hdu[1].data['TIME'] < end ) &
                                ( hdu[1].data['XCORR'] > x_start ) & 
@@ -245,6 +265,8 @@ class lightcurve:
 
 
     def _get_flux_correction(self, fluxtab, opt_elem, cenwave, aperture, minwave, maxwave):
+        """ Return integrated flux calibration over given wavelength range 
+        """
 
         if '$' in fluxtab:
             fluxpath, fluxfile = fluxtab.split( '$' )
@@ -277,6 +299,8 @@ class lightcurve:
 
 
     def write(self, outname=None):
+        """ Write out to FITS file
+        """
 
         if not outname:
             outname = self.hdu[0].header['rootname'] + '_curve.fits'
