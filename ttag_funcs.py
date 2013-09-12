@@ -160,9 +160,10 @@ class lightcurve:
         all_bkgnd = []
         all_error = []
         all_times = []
+        all_mjd = []
 
-        steps = range(0, end, step)[:-1]
-        N_steps = len( steps )
+        all_times = np.array( range(0, end, step)[:-1] )
+        N_steps = len( all_times )
 
         if (not xlim) and (DETECTOR == 'FUV'):
             xlim = (0, 16384)
@@ -174,7 +175,7 @@ class lightcurve:
         elif (not ylim) and (DETECTOR == 'NUV'):
             ylim = 512
 
-        for i,start in enumerate( steps ):
+        for i,start in enumerate( all_times ):
             progress_bar( i, N_steps )
             sub_count = []
             sub_bkgnd = []
@@ -217,12 +218,13 @@ class lightcurve:
             all_flux.append( np.sum(sub_flux) )
             all_bkgnd.append( sample_bkgnd )
             all_error.append( np.sqrt( sample_counts + sample_bkgnd ) )
-            all_times.append( EXPSTART + (start+1) * SECOND )
+            all_mjd.append( EXPSTART + (start * SECOND) )
 
         self.counts = np.array( all_counts ).astype( np.float64 )
         self.net = np.array( all_net ).astype( np.float64 )
         self.flux = np.array( all_flux ).astype( np.float64 )
         self.background = np.array( all_bkgnd ).astype( np.float64 )
+        self.mjd = np.array( all_mjd ).astype( np.float64 )
         self.times = np.array( all_times ).astype( np.float64 )
         self.error = np.array( all_error ).astype( np.float64 )
 
@@ -360,14 +362,15 @@ class lightcurve:
         for kw in keyword_list:
             hdu_out[0].header[kw] = self.hdu[0].header[kw]
  
-        time_col = pyfits.Column('time', 'D', 'MJD', array=self.times)
+        time_col = pyfits.Column('time', 'D', 'second', array=self.times)
+        mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)     
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
         flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
         bkgnd_col = pyfits.Column('background', 'D', 'cnts', array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
-        tab = pyfits.new_table( [time_col, counts_col, net_col, 
+        tab = pyfits.new_table( [time_col, mjd_col, counts_col, net_col, 
                                  flux_col, bkgnd_col, error_col] )
 
         hdu_out.append( tab )
