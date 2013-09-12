@@ -309,6 +309,26 @@ class lightcurve:
         return len(data_index), minwave, maxwave
 
 
+    def _get_mean_pha(self, hdu, start, end, x_start, x_end, 
+                      y_start, y_end, sdqflags=0):
+        """
+        Find mean PHA of events
+
+        """
+
+        data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
+                               ( hdu[1].data['TIME'] < end ) &
+                               ( hdu[1].data['XCORR'] >= x_start ) & 
+                               ( hdu[1].data['XCORR'] < x_end ) &
+                               ( hdu[1].data['YCORR'] >= y_start ) & 
+                               ( hdu[1].data['YCORR'] < y_end ) &
+                               ~( hdu[1].data['DQ'] & sdqflags ) &
+                               ( (hdu[1].data['WAVELENGTH'] > 1217) | 
+                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
+
+        return hdu[1].data['PHA'][index].mean()
+
+
     def _get_flux_correction(self, fluxtab, opt_elem, cenwave, 
                              aperture, minwave, maxwave):
         """ Return integrated flux calibration over given wavelength range 
