@@ -97,11 +97,22 @@ class lightcurve:
     """
 
     def __init__(self, filename, step=5, xlim=None, ylim=None, extract=True,
-                 fluxtab=None, normalize=False, writeout=False):
+                 fluxtab=None, normalize=False, writeto=None, clobber=False):
 
         SECOND = 1.15741e-5
         hdu = pyfits.open( filename )
         self.hdu = hdu
+        
+        if writeto:
+            if isinstance( writeto, bool ):
+                self.outname = self.hdu[0].header['rootname'] + '_curve.fits'
+            elif isinstance( writeto, str ):
+                self.outname = writeto
+            else:
+                raise NameError( 'writeto should be True/False our string :' )
+
+            if os.path.exists( self.outname ) and not clobber:
+                raise IOError( 'Output already exists %s'% self.outname )
 
         DETECTOR = hdu[0].header[ 'DETECTOR' ]
         OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
@@ -146,6 +157,7 @@ class lightcurve:
         all_counts = []
         all_net = []
         all_flux = []
+        all_bkgnd = []
         all_error = []
         all_times = []
 
@@ -165,32 +177,52 @@ class lightcurve:
         for i,start in enumerate( steps ):
             progress_bar( i, N_steps )
             sub_count = []
+            sub_bkgnd = []
             sub_net = []
             sub_flux = []
             for segment, hdu in hdu_dict.iteritems():
-                ystart, yend = self._get_extraction_region( hdu, segment )
-                counts, wmin, wmax = self._extract_counts(hdu, start, start+step, xlim[0], xlim[1], 
-                                                          ystart, yend, SDQFLAGS )
+                ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
+                counts, wmin, wmax = self._extract_counts(hdu, start, 
+                                                          start+step, 
+                                                          xlim[0], xlim[1], 
+                                                          ystart, yend, 
+                                                          SDQFLAGS )
+
+                bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
+                b_counts, b_wmin, b_wmax = self._extract_counts(hdu, start, 
+                                                                start+step, 
+                                                                xlim[0], xlim[1], 
+                                                                bstart, bend, 
+                                                                SDQFLAGS )
+
+                b_correction = ( (bend - bstart) / (yend -ystart) )
+
+                background = b_counts * b_correction
 
                 net = float(counts) / (yend-ystart) 
                 flux = net / self._get_flux_correction( fluxtab, OPT_ELEM, 
-                                                  CENWAVE, APERTURE, wmin, wmax )
+                                                        CENWAVE, APERTURE, 
+                                                        wmin, wmax )
 
                 sub_count.append( counts )
+                sub_bkgnd.append( background )
                 sub_net.append( net )
                 sub_flux.append( flux )
 
             sample_counts = np.sum( sub_count )
+            sample_bkgnd = np.sum( sub_bkgnd )
 
-            all_counts.append( sample_counts )
+            all_counts.append( sample_counts - sample_bkgnd )
             all_net.append( np.sum(sub_net) )
             all_flux.append( np.sum(sub_flux) )
-            all_error.append( np.sqrt( sample_counts ) )
+            all_bkgnd.append( sample_bkgnd )
+            all_error.append( np.sqrt( sample_counts + sample_bkgnd ) )
             all_times.append( EXPSTART + (start+1) * SECOND )
 
         self.counts = np.array( all_counts ).astype( np.float64 )
         self.net = np.array( all_net ).astype( np.float64 )
         self.flux = np.array( all_flux ).astype( np.float64 )
+        self.background = np.array( all_bkgnd ).astype( np.float64 )
         self.times = np.array( all_times ).astype( np.float64 )
         self.error = np.array( all_error ).astype( np.float64 )
 
@@ -199,10 +231,11 @@ class lightcurve:
             self.error = self.error / self.counts
             self.counts = self.counts / self.counts.mean()
             self.net = self.net / self.net.mean()
+            self.background = self.background / self.background.mean()
             self.flux = self.flux / self.flux.mean()
 
-        if writeout:
-            self.write(  )
+        if writeto:
+            self.write( clobber=clobber  )
 
 
     def _get_both_filenames(self, filename ):
@@ -226,13 +259,22 @@ class lightcurve:
         return ( filename_list[0], filename_list[1] )
 
 
-    def _get_extraction_region(self, hdu, segment ):
+    def _get_extraction_region(self, hdu, segment, mode='spectrum' ):
         """Get y_start,y_end for given extraction
 
         """
 
-        height =  hdu[1].header['SP_HGT_%s'% (segment)]
-        location = hdu[1].header['SP_LOC_%s'% (segment)]
+        if mode == 'spectrum':
+            height =  hdu[1].header['SP_HGT_%s'% (segment)]
+            location = hdu[1].header['SP_LOC_%s'% (segment)]
+
+        elif mode == 'background1':
+            height =  hdu[1].header['B_HGT1_%s'% (segment)]
+            location = hdu[1].header['B_BKG1_%s'% (segment)] 
+
+        elif mode == 'background2':
+            height =  hdu[1].header['B_HGT2_%s'% (segment)]
+            location = hdu[1].header['B_BKG2_%s'% (segment)] 
 
         y_start = location - height/2
         y_end = location + height/2
@@ -240,7 +282,8 @@ class lightcurve:
         return y_start, y_end
 
 
-    def _extract_counts(self, hdu, start, end, x_start, x_end, y_start, y_end, sdqflags=0):
+    def _extract_counts(self, hdu, start, end, x_start, x_end, 
+                        y_start, y_end, sdqflags=0):
         """
         Extract counts from given HDU using input parameters.
 
@@ -250,9 +293,9 @@ class lightcurve:
 
         data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
                                ( hdu[1].data['TIME'] < end ) &
-                               ( hdu[1].data['XCORR'] > x_start ) & 
+                               ( hdu[1].data['XCORR'] >= x_start ) & 
                                ( hdu[1].data['XCORR'] < x_end ) &
-                               ( hdu[1].data['YCORR'] > y_start ) & 
+                               ( hdu[1].data['YCORR'] >= y_start ) & 
                                ( hdu[1].data['YCORR'] < y_end ) &
                                ~( hdu[1].data['DQ'] & sdqflags ) &
                                ( (hdu[1].data['WAVELENGTH'] > 1217) | 
@@ -264,7 +307,8 @@ class lightcurve:
         return len(data_index), minwave, maxwave
 
 
-    def _get_flux_correction(self, fluxtab, opt_elem, cenwave, aperture, minwave, maxwave):
+    def _get_flux_correction(self, fluxtab, opt_elem, cenwave, 
+                             aperture, minwave, maxwave):
         """ Return integrated flux calibration over given wavelength range 
         """
 
@@ -298,12 +342,13 @@ class lightcurve:
         return total_fluxcorr
 
 
-    def write(self, outname=None):
+    def write(self, outname=None, clobber=False):
         """ Write out to FITS file
         """
 
-        if not outname:
-            outname = self.hdu[0].header['rootname'] + '_curve.fits'
+        if isinstance( outname, str ):
+            self.outname = outname
+
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
@@ -319,10 +364,12 @@ class lightcurve:
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
         flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
+        bkgnd_col = pyfits.Column('background', 'D', 'cnts', array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
-        tab = pyfits.new_table( [time_col, counts_col, net_col, flux_col, error_col] )
+        tab = pyfits.new_table( [time_col, counts_col, net_col, 
+                                 flux_col, bkgnd_col, error_col] )
 
         hdu_out.append( tab )
 
-        hdu_out.writeto( outname )  
+        hdu_out.writeto( self.outname, clobber=clobber )  
