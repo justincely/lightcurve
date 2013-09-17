@@ -59,7 +59,7 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
 
 #-------------------------------------------------------------------------------
 
-class lightcurve:
+class lightcurve(object):
     """
     Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve.
     
@@ -238,6 +238,18 @@ class lightcurve:
 
         if writeto:
             self.write( clobber=clobber  )
+
+
+    def __add__( self, other ):
+        self.counts = np.concatenate( [self.counts, other.counts] )
+        self.net = np.concatenate( [self.net, other.counts] )
+        self.flux = np.concatenate( [self.flux, other.flux] )
+        self.background = np.concatenate( [self.background, other.background] )
+        self.mjd = np.concatenate( [self.mjd, other.mjd] )
+        self.times = np.concatenate( [self.times, other.times + self.times[-1]] )
+        self.error = np.concatenate( [self.error, other.error] )
+
+        return self
 
 
     def _get_both_filenames(self, filename ):
