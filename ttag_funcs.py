@@ -313,7 +313,9 @@ class lightcurve(object):
                                ( hdu[1].data['YCORR'] < y_end ) &
                                ~( hdu[1].data['DQ'] & sdqflags ) &
                                ( (hdu[1].data['WAVELENGTH'] > 1217) | 
-                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
+                                 (hdu[1].data['WAVELENGTH'] < 1214) ) &
+                               ( (hdu[1].data['WAVELENGTH'] > 1308) | 
+                                 (hdu[1].data['WAVELENGTH'] < 1300) ) )[0]
 
         minwave = hdu[1].data[ data_index ]['wavelength'].min()
         maxwave = hdu[1].data[ data_index ]['wavelength'].max()
