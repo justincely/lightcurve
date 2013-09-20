@@ -303,8 +303,13 @@ class lightcurve:
                                ( (hdu[1].data['WAVELENGTH'] > 1217) | 
                                  (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
 
-        minwave = hdu[1].data[ data_index ]['wavelength'].min()
-        maxwave = hdu[1].data[ data_index ]['wavelength'].max()
+        if len(data_index):
+            minwave = hdu[1].data[ data_index ]['wavelength'].min()
+            maxwave = hdu[1].data[ data_index ]['wavelength'].max()
+        else:
+            minwave = 0
+            maxwave = 0
+
 
         return len(data_index), minwave, maxwave
 
