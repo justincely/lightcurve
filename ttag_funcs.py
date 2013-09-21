@@ -59,7 +59,7 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
 
 #-------------------------------------------------------------------------------
 
-class lightcurve:
+class lightcurve(object):
     """
     Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve.
     
@@ -240,6 +240,18 @@ class lightcurve:
             self.write( clobber=clobber  )
 
 
+    def __add__( self, other ):
+        self.counts = np.concatenate( [self.counts, other.counts] )
+        self.net = np.concatenate( [self.net, other.counts] )
+        self.flux = np.concatenate( [self.flux, other.flux] )
+        self.background = np.concatenate( [self.background, other.background] )
+        self.mjd = np.concatenate( [self.mjd, other.mjd] )
+        self.times = np.concatenate( [self.times, other.times + self.times[-1]] )
+        self.error = np.concatenate( [self.error, other.error] )
+
+        return self
+
+
     def _get_both_filenames(self, filename ):
         """ Get a list of both filenames for FUV data
 
@@ -301,7 +313,9 @@ class lightcurve:
                                ( hdu[1].data['YCORR'] < y_end ) &
                                ~( hdu[1].data['DQ'] & sdqflags ) &
                                ( (hdu[1].data['WAVELENGTH'] > 1217) | 
-                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
+                                 (hdu[1].data['WAVELENGTH'] < 1214) ) &
+                               ( (hdu[1].data['WAVELENGTH'] > 1308) | 
+                                 (hdu[1].data['WAVELENGTH'] < 1300) ) )[0]
 
         if len(data_index):
             minwave = hdu[1].data[ data_index ]['wavelength'].min()
