@@ -96,7 +96,7 @@ class lightcurve(object):
 
     """
 
-    def __init__(self, filename, step=5, xlim=None, ylim=None, extract=True,
+    def __init__(self, filename, step=5, xlim=None, ylim=None, wlim=None, extract=True,
                  fluxtab=None, normalize=False, writeto=None, clobber=False):
 
         SECOND = 1.15741e-5
@@ -175,6 +175,11 @@ class lightcurve(object):
         elif (not ylim) and (DETECTOR == 'NUV'):
             ylim = 512
 
+
+        if not wlim:
+            wlim = (0,5000)
+
+
         for i,start in enumerate( all_times ):
             progress_bar( i, N_steps )
             sub_count = []
@@ -187,6 +192,7 @@ class lightcurve(object):
                                                           start+step, 
                                                           xlim[0], xlim[1], 
                                                           ystart, yend, 
+                                                          wlim[0], wlim[1],
                                                           SDQFLAGS )
 
                 bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
@@ -194,6 +200,7 @@ class lightcurve(object):
                                                                 start+step, 
                                                                 xlim[0], xlim[1], 
                                                                 bstart, bend, 
+                                                                wlim[0], wlim[1],
                                                                 SDQFLAGS )
 
                 b_correction = ( (bend - bstart) / (yend -ystart) )
@@ -297,7 +304,7 @@ class lightcurve(object):
 
 
     def _extract_counts(self, hdu, start, end, x_start, x_end, 
-                        y_start, y_end, sdqflags=0):
+                        y_start, y_end, w_start, w_end, sdqflags=0):
         """
         Extract counts from given HDU using input parameters.
 
@@ -312,10 +319,14 @@ class lightcurve(object):
                                ( hdu[1].data['YCORR'] >= y_start ) & 
                                ( hdu[1].data['YCORR'] < y_end ) &
                                ~( hdu[1].data['DQ'] & sdqflags ) &
+                               ( (hdu[1].data['WAVELENGTH'] > w_start) & 
+                                 (hdu[1].data['WAVELENGTH'] < w_end) ) &
+
                                ( (hdu[1].data['WAVELENGTH'] > 1217) | 
                                  (hdu[1].data['WAVELENGTH'] < 1214) ) &
                                ( (hdu[1].data['WAVELENGTH'] > 1308) | 
                                  (hdu[1].data['WAVELENGTH'] < 1300) ) )[0]
+
 
         if len(data_index):
             minwave = hdu[1].data[ data_index ]['wavelength'].min()
