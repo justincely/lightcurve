@@ -252,6 +252,10 @@ class lightcurve(object):
         return self
 
 
+    def __str__(self):
+        return "COS Lightcurve Object from %"
+
+
     def _get_both_filenames(self, filename ):
         """ Get a list of both filenames for FUV data
 
