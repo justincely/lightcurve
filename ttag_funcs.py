@@ -21,7 +21,6 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
     """
     
     from numpy import histogram2d, where, zeros
-    from pyfits import getdata
 
     if isinstance( in_data, str ):
         hdu = pyfits.open( in_data )
@@ -29,11 +28,6 @@ def ttag_image(in_data, xtype='XCORR', ytype='YCORR', pha=(2, 30),
         hdu = in_data
 
     events = hdu['events'].data
-
-    xlength = (ranges[1][1]+1)
-    ylength = (ranges[0][1]+1)
-    xbinning = binning[1]
-    ybinning = binning[0]
 
     if NUV:
         bins = (1024, 1024)
@@ -96,61 +90,38 @@ class lightcurve(object):
 
     """
 
-    def __init__(self, filename, step=5, xlim=None, ylim=None, wlim=None, extract=True,
+    def __init__(self, filename, step=5, xlim=None, ylim=None, wlim=None, 
                  fluxtab=None, normalize=False, writeto=None, clobber=False):
 
         SECOND = 1.15741e-5
-        hdu = pyfits.open( filename )
-        self.hdu = hdu
-        
-        if writeto:
-            if isinstance( writeto, bool ):
-                self.outname = self.hdu[0].header['rootname'] + '_curve.fits'
-            elif isinstance( writeto, str ):
-                self.outname = writeto
-            else:
-                raise NameError( 'writeto should be True/False our string :' )
 
-            if os.path.exists( self.outname ) and not clobber:
-                raise IOError( 'Output already exists %s'% self.outname )
+        self.hdu = pyfits.open( filename )
+        self.input_filename = filename
 
-        DETECTOR = hdu[0].header[ 'DETECTOR' ]
-        OPT_ELEM = hdu[0].header[ 'OPT_ELEM' ]
-        CENWAVE = hdu[0].header[ 'CENWAVE' ]
-        APERTURE = hdu[0].header[ 'APERTURE' ]
-        SDQFLAGS = hdu[1].header[ 'SDQFLAGS' ]
+        self.clobber = clobber
 
-        if DETECTOR == 'NUV':
-            if OPT_ELEM == 'G230L':
-                hdu_dict = {'A':hdu, 'B':hdu}
-            else:
-                hdu_dict = {'A':hdu, 'B':hdu, 'C':hdu}
+        self._check_output( writeto )
 
-            print 'Making lightcurve for %s'% filename
-            print 'Extracting on stripes: ' + ','.join( np.sort(hdu_dict.keys()) )
+        self.detector = self.hdu[0].header[ 'DETECTOR' ]
+        self.opt_elem = self.hdu[0].header[ 'OPT_ELEM' ]
+        self.cenwave = self.hdu[0].header[ 'CENWAVE' ]
+        self.aperture = self.hdu[0].header[ 'APERTURE' ]
+        self.sdqflags = self.hdu[1].header[ 'SDQFLAGS' ]
 
-        elif DETECTOR == 'FUV':
-            file_a, file_b = self._get_both_filenames(filename )
+        self._get_hdus()
 
-            hdu_dict = dict()
-            for name, letter in zip( [file_a, file_b], ['A', 'B'] ):
-                if os.path.exists( name ):
-                    hdu_dict[ letter ] = pyfits.open( name )
+        print 'Making lightcurve from: ' + ', '.join( self.input_list )
+        print 'Extracting on stripes: ' +','.join( np.sort( self.hdu_dict.keys()) )
 
-            print 'Making lightcurve from: ' + ', '.join( [file_a, file_b] )
-            print 'Extracting on stripes: ' +','.join( np.sort(hdu_dict.keys()) )
+        print 'DETECTOR: %s'% self.detector
+        print 'APERTURE: %s'% self.aperture
+        print 'OPT_ELEM: %s'% self.opt_elem
+        print 'CENWAVE : %s'% self.cenwave
 
+        self.fluxtab = fluxtab or self.hdu[0].header[ 'FLUXTAB' ]
 
-        print 'DETECTOR: %s'% DETECTOR
-        print 'APERTURE: %s'% APERTURE
-        print 'OPT_ELEM: %s'% OPT_ELEM
-        print 'CENWAVE : %s'% CENWAVE
-
-        if not fluxtab:
-            fluxtab = hdu[0].header[ 'FLUXTAB' ]
-
-        EXPSTART = hdu[1].header[ 'EXPSTART' ]
-        end = hdu['events'].data[ 'time' ].max()
+        EXPSTART = self.hdu[1].header[ 'EXPSTART' ]
+        end = self.hdu['events'].data[ 'time' ].max()
 
         print "Extracting over", end, 'seconds'
 
@@ -165,51 +136,51 @@ class lightcurve(object):
         all_times = np.array( range(0, end, step)[:-1] )
         N_steps = len( all_times )
 
-        if (not xlim) and (DETECTOR == 'FUV'):
+        if (not xlim) and (self.detector == 'FUV'):
             xlim = (0, 16384)
-        elif (not xlim) and (DETECTOR == 'NUV'):
+        elif (not xlim) and (self.detector == 'NUV'):
             xlim = (0, 1024)
 
-        if (not ylim) and (DETECTOR == 'FUV'):
+        if (not ylim) and (self.detector == 'FUV'):
             ylim = 1024
-        elif (not ylim) and (DETECTOR == 'NUV'):
+        elif (not ylim) and (self.detector == 'NUV'):
             ylim = 512
 
 
         if not wlim:
-            wlim = (0,5000)
+            wlim = (0, 5000)
 
 
-        for i,start in enumerate( all_times ):
+        for i, start in enumerate( all_times ):
             progress_bar( i, N_steps )
             sub_count = []
             sub_bkgnd = []
             sub_net = []
             sub_flux = []
-            for segment, hdu in hdu_dict.iteritems():
+            for segment, hdu in self.hdu_dict.iteritems():
                 ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
                 counts, wmin, wmax = self._extract_counts(hdu, start, 
-                                                          start+step, 
+                                                          start + step, 
                                                           xlim[0], xlim[1], 
                                                           ystart, yend, 
                                                           wlim[0], wlim[1],
-                                                          SDQFLAGS )
+                                                          self.sdqflags )
 
                 bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
                 b_counts, b_wmin, b_wmax = self._extract_counts(hdu, start, 
-                                                                start+step, 
+                                                                start + step, 
                                                                 xlim[0], xlim[1], 
                                                                 bstart, bend, 
                                                                 wlim[0], wlim[1],
-                                                                SDQFLAGS )
+                                                                self.sdqflags )
 
                 b_correction = ( (bend - bstart) / (yend -ystart) )
 
                 background = b_counts * b_correction
 
                 net = float(counts) / (yend-ystart) 
-                flux = net / self._get_flux_correction( fluxtab, OPT_ELEM, 
-                                                        CENWAVE, APERTURE, 
+                flux = net / self._get_flux_correction( self.fluxtab, self.opt_elem, 
+                                                        self.cenwave, self.aperture, 
                                                         wmin, wmax )
 
                 sub_count.append( counts )
@@ -244,7 +215,7 @@ class lightcurve(object):
             self.flux = self.flux / self.flux.mean()
 
         if writeto:
-            self.write( clobber=clobber  )
+            self.write( clobber=self.clobber  )
 
 
     def __add__( self, other ):
@@ -260,7 +231,56 @@ class lightcurve(object):
 
 
     def __str__(self):
-        return "COS Lightcurve Object from %"
+        """Prettier representation of object instanct"""
+        
+        return "COS Lightcurve Object of %s" % ( ','.join( self.file_list ) ) 
+
+
+    def _check_output(self, writeto):
+        """ Determine what was supplied to writeto and set self.outname
+
+        If a string, lightcurve will be written to value.
+        If True, output will be rootname_curve.fits
+        """
+
+        if writeto:
+            if isinstance( writeto, bool ):
+                self.outname = self.hdu[0].header['rootname'] + '_curve.fits'
+            elif isinstance( writeto, str ):
+                self.outname = writeto
+            else:
+                raise NameError( 'writeto should be True/False our string :' )
+            
+            if os.path.exists( self.outname ) and not self.clobber:
+                raise IOError( 'Output already exists %s'% self.outname )
+        else:
+            pass
+
+
+    def _get_hdus(self):
+        """Populate HDU dictionary from available corrtag files
+        """
+
+        if self.detector == 'NUV':
+            all_filenames = [ self.input_filename ]
+
+            if OPT_ELEM == 'G230L':
+                hdu_dict = {'A':self.hdu, 'B':self.hdu}
+            else:
+                hdu_dict = {'A':self.hdu, 'B':self.hdu, 'C':self.hdu}
+
+        elif self.detector == 'FUV':
+            file_a, file_b = self._get_both_filenames( self.input_filename )
+
+            hdu_dict = dict()
+            all_filenames = []
+            for name, letter in zip( [file_a, file_b], ['A', 'B'] ):
+                if os.path.exists( name ):
+                    all_filenames.append( name )
+                    hdu_dict[ letter ] = pyfits.open( name )
+
+        self.hdu_dict = hdu_dict
+        self.input_list = all_filenames
 
 
     def _get_both_filenames(self, filename ):
@@ -290,16 +310,16 @@ class lightcurve(object):
         """
 
         if mode == 'spectrum':
-            height =  hdu[1].header['SP_HGT_%s'% (segment)]
-            location = hdu[1].header['SP_LOC_%s'% (segment)]
+            height =  hdu[1].header['SP_HGT_%s' % (segment)]
+            location = hdu[1].header['SP_LOC_%s' % (segment)]
 
         elif mode == 'background1':
-            height =  hdu[1].header['B_HGT1_%s'% (segment)]
-            location = hdu[1].header['B_BKG1_%s'% (segment)] 
+            height =  hdu[1].header['B_HGT1_%s' % (segment)]
+            location = hdu[1].header['B_BKG1_%s' % (segment)] 
 
         elif mode == 'background2':
-            height =  hdu[1].header['B_HGT2_%s'% (segment)]
-            location = hdu[1].header['B_BKG2_%s'% (segment)] 
+            height =  hdu[1].header['B_HGT2_%s' % (segment)]
+            location = hdu[1].header['B_BKG2_%s' % (segment)] 
 
         y_start = location - height/2
         y_end = location + height/2
@@ -343,26 +363,6 @@ class lightcurve(object):
         return len(data_index), minwave, maxwave
 
 
-    def _get_mean_pha(self, hdu, start, end, x_start, x_end, 
-                      y_start, y_end, sdqflags=0):
-        """
-        Find mean PHA of events
-
-        """
-
-        data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
-                               ( hdu[1].data['TIME'] < end ) &
-                               ( hdu[1].data['XCORR'] >= x_start ) & 
-                               ( hdu[1].data['XCORR'] < x_end ) &
-                               ( hdu[1].data['YCORR'] >= y_start ) & 
-                               ( hdu[1].data['YCORR'] < y_end ) &
-                               ~( hdu[1].data['DQ'] & sdqflags ) &
-                               ( (hdu[1].data['WAVELENGTH'] > 1217) | 
-                                 (hdu[1].data['WAVELENGTH'] < 1214) ) )[0]
-
-        return hdu[1].data['PHA'][index].mean()
-
-
     def _get_flux_correction(self, fluxtab, opt_elem, cenwave, 
                              aperture, minwave, maxwave):
         """ Return integrated flux calibration over given wavelength range 
@@ -384,7 +384,7 @@ class lightcurve(object):
                                (flux_hdu[1].data['APERTURE'] == aperture) )[0]
 
         mean_response_list = []
-        for sens_curve,wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
+        for sens_curve, wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
                                           flux_hdu[1].data[flux_index]['WAVELENGTH'] ):
             wave_index = np.where( (wave_curve >= minwave) &
                                    (wave_curve <= maxwave ) )[0]
@@ -404,7 +404,6 @@ class lightcurve(object):
 
         if isinstance( outname, str ):
             self.outname = outname
-
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
