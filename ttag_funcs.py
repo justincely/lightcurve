@@ -90,18 +90,18 @@ class lightcurve(object):
 
     """
 
-    def __init__(self, filename, step=5, xlim=None, ylim=None, wlim=None, 
+    def __init__(self, filename, step=5, xlim=None, wlim=(-1, 10000), 
                  fluxtab=None, normalize=False, writeto=None, clobber=False):
-
-        SECOND = 1.15741e-5
+        """ Initialize and extract lightcurve from input corrtag
+        """
 
         self.hdu = pyfits.open( filename )
         self.input_filename = filename
-
         self.clobber = clobber
 
         self._check_output( writeto )
 
+        self.fluxtab = fluxtab or self.hdu[0].header[ 'FLUXTAB' ]
         self.detector = self.hdu[0].header[ 'DETECTOR' ]
         self.opt_elem = self.hdu[0].header[ 'OPT_ELEM' ]
         self.cenwave = self.hdu[0].header[ 'CENWAVE' ]
@@ -112,47 +112,78 @@ class lightcurve(object):
 
         print 'Making lightcurve from: ' + ', '.join( self.input_list )
         print 'Extracting on stripes: ' +','.join( np.sort( self.hdu_dict.keys()) )
-
         print 'DETECTOR: %s'% self.detector
         print 'APERTURE: %s'% self.aperture
         print 'OPT_ELEM: %s'% self.opt_elem
         print 'CENWAVE : %s'% self.cenwave
 
-        self.fluxtab = fluxtab or self.hdu[0].header[ 'FLUXTAB' ]
-
-        EXPSTART = self.hdu[1].header[ 'EXPSTART' ]
-        end = self.hdu['events'].data[ 'time' ].max()
-
-        print "Extracting over", end, 'seconds'
-
-        all_counts = []
-        all_net = []
-        all_flux = []
-        all_bkgnd = []
-        all_error = []
-        all_times = []
-        all_mjd = []
-
-        all_times = np.array( range(0, end, step)[:-1] )
-        N_steps = len( all_times )
 
         if (not xlim) and (self.detector == 'FUV'):
             xlim = (0, 16384)
         elif (not xlim) and (self.detector == 'NUV'):
             xlim = (0, 1024)
 
-        if (not ylim) and (self.detector == 'FUV'):
-            ylim = 1024
-        elif (not ylim) and (self.detector == 'NUV'):
-            ylim = 512
+        self.extract_lightcurve(xlim, wlim, step)
+
+        if normalize:
+            self.error = self.error / self.counts
+            self.counts = self.counts / self.counts.mean()
+            self.net = self.net / self.net.mean()
+            self.background = self.background / self.background.mean()
+            self.flux = self.flux / self.flux.mean()
+
+        if writeto:
+            self.write( clobber=self.clobber  )
 
 
-        if not wlim:
-            wlim = (0, 5000)
+    def __add__( self, other ):
+        """ Overload the '+' operator to concatenate lightcurve objects
 
+        Only the data arrays will be concatenated.  All header keywords
+        are left untouched, and will thus be representative of only the 
+        first object in the evaluation
+        
+        """
+
+        self.counts = np.concatenate( [self.counts, other.counts] )
+        self.net = np.concatenate( [self.net, other.counts] )
+        self.flux = np.concatenate( [self.flux, other.flux] )
+        self.background = np.concatenate( [self.background, other.background] )
+        self.mjd = np.concatenate( [self.mjd, other.mjd] )
+        self.times = np.concatenate( [self.times, other.times + self.times[-1]] )
+        self.error = np.concatenate( [self.error, other.error] )
+
+        return self
+
+
+    def __str__(self):
+        """Prettier representation of object instanct"""
+        
+        return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
+
+
+    def extract_lightcurve(self, xlim, wlim, step):
+        """ Loop over HDUs and extract the lightcurve
+        
+        """
+        
+        SECOND = 1.15741e-5
+        EXPSTART = self.hdu[1].header[ 'EXPSTART' ]
+        end = self.hdu['events'].data[ 'time' ].max()
+
+        print "Total Time = %ds" %  ( int(end) )
+        print "Bins = %ds" % (step)
+
+        all_counts = []
+        all_net = []
+        all_flux = []
+        all_bkgnd = []
+        all_error = []
+        all_times = range(0, end, step)[:-1]
+        all_mjd = []
 
         for i, start in enumerate( all_times ):
-            progress_bar( i, N_steps )
+            progress_bar( i, len( all_times ) )
             sub_count = []
             sub_bkgnd = []
             sub_net = []
@@ -198,42 +229,14 @@ class lightcurve(object):
             all_error.append( np.sqrt( sample_counts + sample_bkgnd ) )
             all_mjd.append( EXPSTART + (start * SECOND) )
 
-        self.counts = np.array( all_counts ).astype( np.float64 )
-        self.net = np.array( all_net ).astype( np.float64 )
-        self.flux = np.array( all_flux ).astype( np.float64 )
-        self.background = np.array( all_bkgnd ).astype( np.float64 )
-        self.mjd = np.array( all_mjd ).astype( np.float64 )
-        self.times = np.array( all_times ).astype( np.float64 )
-        self.error = np.array( all_error ).astype( np.float64 )
+        self.counts = np.array( all_counts )
+        self.net = np.array( all_net )
+        self.flux = np.array( all_flux )
+        self.background = np.array( all_bkgnd )
+        self.mjd = np.array( all_mjd )
+        self.times = np.array( all_times )
+        self.error = np.array( all_error )
 
-
-        if normalize:
-            self.error = self.error / self.counts
-            self.counts = self.counts / self.counts.mean()
-            self.net = self.net / self.net.mean()
-            self.background = self.background / self.background.mean()
-            self.flux = self.flux / self.flux.mean()
-
-        if writeto:
-            self.write( clobber=self.clobber  )
-
-
-    def __add__( self, other ):
-        self.counts = np.concatenate( [self.counts, other.counts] )
-        self.net = np.concatenate( [self.net, other.counts] )
-        self.flux = np.concatenate( [self.flux, other.flux] )
-        self.background = np.concatenate( [self.background, other.background] )
-        self.mjd = np.concatenate( [self.mjd, other.mjd] )
-        self.times = np.concatenate( [self.times, other.times + self.times[-1]] )
-        self.error = np.concatenate( [self.error, other.error] )
-
-        return self
-
-
-    def __str__(self):
-        """Prettier representation of object instanct"""
-        
-        return "COS Lightcurve Object of %s" % ( ','.join( self.file_list ) ) 
 
 
     def _check_output(self, writeto):
@@ -264,7 +267,7 @@ class lightcurve(object):
         if self.detector == 'NUV':
             all_filenames = [ self.input_filename ]
 
-            if OPT_ELEM == 'G230L':
+            if self.opt_elem == 'G230L':
                 hdu_dict = {'A':self.hdu, 'B':self.hdu}
             else:
                 hdu_dict = {'A':self.hdu, 'B':self.hdu, 'C':self.hdu}
@@ -338,11 +341,15 @@ class lightcurve(object):
 
         data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
                                ( hdu[1].data['TIME'] < end ) &
+
                                ( hdu[1].data['XCORR'] >= x_start ) & 
                                ( hdu[1].data['XCORR'] < x_end ) &
+
                                ( hdu[1].data['YCORR'] >= y_start ) & 
                                ( hdu[1].data['YCORR'] < y_end ) &
+
                                ~( hdu[1].data['DQ'] & sdqflags ) &
+
                                ( (hdu[1].data['WAVELENGTH'] > w_start) & 
                                  (hdu[1].data['WAVELENGTH'] < w_end) ) &
 
@@ -351,14 +358,12 @@ class lightcurve(object):
                                ( (hdu[1].data['WAVELENGTH'] > 1308) | 
                                  (hdu[1].data['WAVELENGTH'] < 1300) ) )[0]
 
-
         if len(data_index):
             minwave = hdu[1].data[ data_index ]['wavelength'].min()
             maxwave = hdu[1].data[ data_index ]['wavelength'].max()
         else:
             minwave = 0
             maxwave = 0
-
 
         return len(data_index), minwave, maxwave
 
@@ -407,13 +412,8 @@ class lightcurve(object):
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
-        keyword_list = ['TELESCOP', 'INSTRUME', 'DETECTOR', 'OPT_ELEM',
-                        'ROOTNAME', 'TARGNAME', 'RA_TARG', 'DEC_TARG',
-                        'PROPOSID', 'OPUS_VER', 'CAL_VER', 'PROCTIME',
-                        'APERTURE', 'OPT_ELEM', 'CENWAVE', ]
 
-        for kw in keyword_list:
-            hdu_out[0].header[kw] = self.hdu[0].header[kw]
+        hdu_out[0].header = self.hdu[0].header
  
         time_col = pyfits.Column('time', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)     
@@ -427,5 +427,7 @@ class lightcurve(object):
                                  flux_col, bkgnd_col, error_col] )
 
         hdu_out.append( tab )
+
+        #hdu_out[1].header = self.hdu[1].header
 
         hdu_out.writeto( self.outname, clobber=clobber )  
