@@ -125,12 +125,7 @@ class lightcurve(object):
 
         self.extract_lightcurve(xlim, wlim, step)
 
-        if normalize:
-            self.error = self.error / self.counts
-            self.counts = self.counts / self.counts.mean()
-            self.net = self.net / self.net.mean()
-            self.background = self.background / self.background.mean()
-            self.flux = self.flux / self.flux.mean()
+        if normalize: self.normalize()
 
         if writeto:
             self.write( clobber=self.clobber  )
@@ -161,6 +156,14 @@ class lightcurve(object):
         
         return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
 
+
+    def normalize(self):
+        """ Normalize arrays around mean"""
+        self.error = self.error / self.counts
+        self.counts = self.counts / self.counts.mean()
+        self.net = self.net / self.net.mean()
+        self.background = self.background / self.background.mean()
+        self.flux = self.flux / self.flux.mean()
 
     def extract_lightcurve(self, xlim, wlim, step):
         """ Loop over HDUs and extract the lightcurve
