@@ -172,44 +172,44 @@ class lightcurve(object):
                  fluxtab=None, normalize=False, writeto=None, clobber=False):
         """ Extract light curve from COS data"""
 
-        cls = lightcurve()
+        out_obj = cls()
 
         cls.hdu = pyfits.open( filename )
-        cls.input_filename = filename
-        cls.clobber = clobber
+        out_obj.input_filename = filename
+        out_obj.clobber = clobber
 
-        cls._check_output( writeto )
+        out_obj._check_output( writeto )
 
-        cls.fluxtab = fluxtab or cls.hdu[0].header[ 'FLUXTAB' ]
-        cls.detector = cls.hdu[0].header[ 'DETECTOR' ]
-        cls.opt_elem = cls.hdu[0].header[ 'OPT_ELEM' ]
-        cls.cenwave = cls.hdu[0].header[ 'CENWAVE' ]
-        cls.aperture = cls.hdu[0].header[ 'APERTURE' ]
-        cls.sdqflags = cls.hdu[1].header[ 'SDQFLAGS' ]
+        out_obj.fluxtab = fluxtab or out_obj.hdu[0].header[ 'FLUXTAB' ]
+        out_obj.detector = out_obj.hdu[0].header[ 'DETECTOR' ]
+        out_obj.opt_elem = out_obj.hdu[0].header[ 'OPT_ELEM' ]
+        out_obj.cenwave = out_obj.hdu[0].header[ 'CENWAVE' ]
+        out_obj.aperture = out_obj.hdu[0].header[ 'APERTURE' ]
+        out_obj.sdqflags = out_obj.hdu[1].header[ 'SDQFLAGS' ]
 
-        cls._get_hdus()
+        out_obj._get_hdus()
 
-        print 'Making lightcurve from: ' + ', '.join( cls.input_list )
-        print 'Extracting on stripes: ' +','.join( np.sort( cls.hdu_dict.keys()) )
-        print 'DETECTOR: %s'% cls.detector
-        print 'APERTURE: %s'% cls.aperture
-        print 'OPT_ELEM: %s'% cls.opt_elem
-        print 'CENWAVE : %s'% cls.cenwave
+        print 'Making lightcurve from: ' + ', '.join( out_obj.input_list )
+        print 'Extracting on stripes: ' +','.join( np.sort( out_obj.hdu_dict.keys()) )
+        print 'DETECTOR: %s'% out_obj.detector
+        print 'APERTURE: %s'% out_obj.aperture
+        print 'OPT_ELEM: %s'% out_obj.opt_elem
+        print 'CENWAVE : %s'% out_obj.cenwave
 
 
-        if (not xlim) and (cls.detector == 'FUV'):
+        if (not xlim) and (out_obj.detector == 'FUV'):
             xlim = (0, 16384)
-        elif (not xlim) and (cls.detector == 'NUV'):
+        elif (not xlim) and (out_obj.detector == 'NUV'):
             xlim = (0, 1024)
 
-        cls.extract_lightcurve(xlim, wlim, step)
+        out_obj.extract_lightcurve(xlim, wlim, step)
 
-        if normalize: cls.normalize()
+        if normalize: out_obj.normalize()
 
         if writeto:
-            cls.write( clobber=cls.clobber  )
+            out_obj.write( clobber=out_obj.clobber  )
 
-        return cls
+        return out_obj
 
     
     def normalize(self):
