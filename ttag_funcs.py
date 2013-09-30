@@ -104,10 +104,6 @@ class lightcurve(object):
 
     def __add__( self, other ):
         """ Overload the '+' operator to concatenate lightcurve objects
-
-        Only the data arrays will be concatenated.  All header keywords
-        are left untouched, and will thus be representative of only the 
-        first object in the evaluation
         
         """
 
@@ -131,6 +127,38 @@ class lightcurve(object):
         out_obj.times = out_obj.times[ sorted_index ]
         out_obj.error = out_obj.error[ sorted_index ]
         
+        return out_obj
+
+
+    def __mul__( self, other ):
+        """ Overload the * operator """
+        
+        out_obj = lightcurve()
+
+        out_obj.counts = self.counts * other
+        out_obj.net = self.net * other
+        out_obj.flux = self.flux * other
+        out_obj.background = self.background * other
+        out_obj.error = (self.error / self.counts) * other
+        out_obj.times = self.times
+        out_obj.mjd = self.mjd
+
+        return out_obj
+
+
+    def __div__( self, other ):
+        """ Overload the / operator """
+        
+        out_obj = lightcurve()
+
+        out_obj.counts = self.counts / other
+        out_obj.net = self.net / other
+        out_obj.flux = self.flux / other
+        out_obj.background = self.background / other
+        out_obj.error = (self.error / self.counts) / other
+        out_obj.times = self.times
+        out_obj.mjd = self.mjd
+
         return out_obj
 
 
