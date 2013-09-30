@@ -90,45 +90,16 @@ class lightcurve(object):
 
     """
 
-    def __init__(self, filename, step=5, xlim=None, wlim=(-1, 10000), 
-                 fluxtab=None, normalize=False, writeto=None, clobber=False):
+    def __init__(self):
         """ Initialize and extract lightcurve from input corrtag
         """
 
-        self.hdu = pyfits.open( filename )
-        self.input_filename = filename
-        self.clobber = clobber
-
-        self._check_output( writeto )
-
-        self.fluxtab = fluxtab or self.hdu[0].header[ 'FLUXTAB' ]
-        self.detector = self.hdu[0].header[ 'DETECTOR' ]
-        self.opt_elem = self.hdu[0].header[ 'OPT_ELEM' ]
-        self.cenwave = self.hdu[0].header[ 'CENWAVE' ]
-        self.aperture = self.hdu[0].header[ 'APERTURE' ]
-        self.sdqflags = self.hdu[1].header[ 'SDQFLAGS' ]
-
-        self._get_hdus()
-
-        print 'Making lightcurve from: ' + ', '.join( self.input_list )
-        print 'Extracting on stripes: ' +','.join( np.sort( self.hdu_dict.keys()) )
-        print 'DETECTOR: %s'% self.detector
-        print 'APERTURE: %s'% self.aperture
-        print 'OPT_ELEM: %s'% self.opt_elem
-        print 'CENWAVE : %s'% self.cenwave
-
-
-        if (not xlim) and (self.detector == 'FUV'):
-            xlim = (0, 16384)
-        elif (not xlim) and (self.detector == 'NUV'):
-            xlim = (0, 1024)
-
-        self.extract_lightcurve(xlim, wlim, step)
-
-        if normalize: self.normalize()
-
-        if writeto:
-            self.write( clobber=self.clobber  )
+        self.times = np.array( [] )
+        self.counts = np.array( [] )
+        self.net = np.array( [] )
+        self.flux = np.array( [] )
+        self.background = np.array( [] )
+        self.error = np.array( [] )
 
 
     def __add__( self, other ):
@@ -140,15 +111,27 @@ class lightcurve(object):
         
         """
 
-        self.counts = np.concatenate( [self.counts, other.counts] )
-        self.net = np.concatenate( [self.net, other.counts] )
-        self.flux = np.concatenate( [self.flux, other.flux] )
-        self.background = np.concatenate( [self.background, other.background] )
-        self.mjd = np.concatenate( [self.mjd, other.mjd] )
-        self.times = np.concatenate( [self.times, other.times + self.times[-1]] )
-        self.error = np.concatenate( [self.error, other.error] )
+        out_obj = lightcurve()
 
-        return self
+        out_obj.counts = np.concatenate( [self.counts, other.counts] )
+        out_obj.net = np.concatenate( [self.net, other.counts] )
+        out_obj.flux = np.concatenate( [self.flux, other.flux] )
+        out_obj.background = np.concatenate( [self.background, other.background] )
+        out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
+        out_obj.times = np.concatenate( [self.times, other.times] )
+        out_obj.error = np.concatenate( [self.error, other.error] )
+
+        sorted_index = np.argsort( out_obj.mjd )
+        
+        out_obj.counts = out_obj.counts[ sorted_index ]
+        out_obj.net = out_obj.net[ sorted_index ]
+        out_obj.flux = out_obj.flux[ sorted_index ]
+        out_obj.background = out_obj.background[ sorted_index ]
+        out_obj.mjd = out_obj.mjd[ sorted_index ]
+        out_obj.times = out_obj.times[ sorted_index ]
+        out_obj.error = out_obj.error[ sorted_index ]
+        
+        return out_obj
 
 
     def __str__(self):
@@ -156,7 +139,51 @@ class lightcurve(object):
         
         return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
 
+    @classmethod
+    def extract_from_cos(cls, filename, step=5, xlim=None, wlim=(-1, 10000), 
+                 fluxtab=None, normalize=False, writeto=None, clobber=False):
+        """ Extract light curve from COS data"""
 
+        cls = lightcurve()
+
+        cls.hdu = pyfits.open( filename )
+        cls.input_filename = filename
+        cls.clobber = clobber
+
+        cls._check_output( writeto )
+
+        cls.fluxtab = fluxtab or cls.hdu[0].header[ 'FLUXTAB' ]
+        cls.detector = cls.hdu[0].header[ 'DETECTOR' ]
+        cls.opt_elem = cls.hdu[0].header[ 'OPT_ELEM' ]
+        cls.cenwave = cls.hdu[0].header[ 'CENWAVE' ]
+        cls.aperture = cls.hdu[0].header[ 'APERTURE' ]
+        cls.sdqflags = cls.hdu[1].header[ 'SDQFLAGS' ]
+
+        cls._get_hdus()
+
+        print 'Making lightcurve from: ' + ', '.join( cls.input_list )
+        print 'Extracting on stripes: ' +','.join( np.sort( cls.hdu_dict.keys()) )
+        print 'DETECTOR: %s'% cls.detector
+        print 'APERTURE: %s'% cls.aperture
+        print 'OPT_ELEM: %s'% cls.opt_elem
+        print 'CENWAVE : %s'% cls.cenwave
+
+
+        if (not xlim) and (cls.detector == 'FUV'):
+            xlim = (0, 16384)
+        elif (not xlim) and (cls.detector == 'NUV'):
+            xlim = (0, 1024)
+
+        cls.extract_lightcurve(xlim, wlim, step)
+
+        if normalize: cls.normalize()
+
+        if writeto:
+            cls.write( clobber=cls.clobber  )
+
+        return cls
+
+    
     def normalize(self):
         """ Normalize arrays around mean"""
         self.error = self.error / self.counts
@@ -164,6 +191,7 @@ class lightcurve(object):
         self.net = self.net / self.net.mean()
         self.background = self.background / self.background.mean()
         self.flux = self.flux / self.flux.mean()
+
 
     def extract_lightcurve(self, xlim, wlim, step):
         """ Loop over HDUs and extract the lightcurve
