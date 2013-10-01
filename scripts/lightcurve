@@ -1,0 +1,28 @@
+#!/usr/bin/env/python
+
+import argparse
+from lightcurve import LightCurve
+
+#------------------------------------------------------------
+
+def parse_args():
+    '''
+    Parse command line arguments.  Returns args object.
+    '''
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('filename', type=str,  
+                        help='filename of COS corrtag dataset' )
+
+    parser.add_argument('--step', dest='step', type=int, default=5,
+                        help='timestep for lightcurve')
+
+    args = parser.parse_args()
+    return args
+
+#------------------------------------------------------------
+
+if __name__ == "__main__":
+    args = parse_args()
+    LightCurve.extract_from_cos( args.filename, step=args.step, writeto=True )
+

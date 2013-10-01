@@ -3,7 +3,7 @@ Selection of functions dealing with time-tag data in FITS format
 
 """
 
-__all__ = ['lightcurve']
+__all__ = ['LightCurve']
 
 from astroraf.misc import progress_bar
 import pyfits
@@ -12,7 +12,7 @@ import numpy as np
 
 #-------------------------------------------------------------------------------
 
-class lightcurve(object):
+class LightCurve(object):
     """
     Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve.
     
@@ -66,7 +66,7 @@ class lightcurve(object):
         
         """
 
-        out_obj = lightcurve()
+        out_obj = LightCurve()
 
         out_obj.counts = np.concatenate( [self.counts, other.counts] )
         out_obj.net = np.concatenate( [self.net, other.counts] )
@@ -92,7 +92,7 @@ class lightcurve(object):
     def __mul__( self, other ):
         """ Overload the * operator """
         
-        out_obj = lightcurve()
+        out_obj = LightCurve()
 
         out_obj.counts = self.counts * other
         out_obj.net = self.net * other
@@ -108,7 +108,7 @@ class lightcurve(object):
     def __div__( self, other ):
         """ Overload the / operator """
         
-        out_obj = lightcurve()
+        out_obj = LightCurve()
 
         out_obj.counts = self.counts / other
         out_obj.net = self.net / other
