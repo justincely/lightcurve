@@ -54,6 +54,7 @@ class LightCurve(object):
         """
 
         self.times = np.array( [] )
+        self.mjd = np.array( [] )
         self.counts = np.array( [] )
         self.net = np.array( [] )
         self.flux = np.array( [] )
@@ -170,7 +171,23 @@ class LightCurve(object):
 
         return out_obj
 
-    
+    @classmethod
+    def extract_from_fits(cls, filename):    
+        """ Read fits lightcurve from fits file back into object"""
+        out_obj = cls()
+        
+        hdu = pyfits.open( filename )
+        
+        out_obj.times = hdu[1].data['time']
+        out_obj.mjd = hdu[1].data['mjd']
+        out_obj.counts = hdu[1].data['counts']
+        out_obj.net = hdu[1].data['net']
+        out_obj.flux = hdu[1].data['flux']
+        out_obj.background = hdu[1].data['background']
+        out_obj.error = hdu[1].data['error']
+
+        return out_obj
+
     def normalize(self):
         """ Normalize arrays around mean"""
         self.error = self.error / self.counts
@@ -430,8 +447,10 @@ class LightCurve(object):
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
-
-        hdu_out[0].header = self.hdu[0].header
+        try:
+            hdu_out[0].header = self.hdu[0].header
+        except:
+            pass
  
         time_col = pyfits.Column('time', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)     
@@ -446,6 +465,9 @@ class LightCurve(object):
 
         hdu_out.append( tab )
 
-        #hdu_out[1].header = self.hdu[1].header
+        try:
+            hdu_out[1].header = self.hdu[1].header
+        except:
+            pass
 
         hdu_out.writeto( self.outname, clobber=clobber )  
