@@ -6,7 +6,7 @@ Selection of functions dealing with time-tag data in FITS format
 __all__ = ['LightCurve']
 
 from astroraf.misc import progress_bar
-import pyfits
+from astropy.io import fits as pyfits
 import os
 import numpy as np
 
@@ -134,7 +134,7 @@ class LightCurve(object):
 
         out_obj = cls()
 
-        cls.hdu = pyfits.open( filename )
+        out_obj.hdu = pyfits.open( filename, memmap=False )
         out_obj.input_filename = filename
         out_obj.clobber = clobber
 
@@ -447,11 +447,9 @@ class LightCurve(object):
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
-        try:
-            hdu_out[0].header = self.hdu[0].header
-        except:
-            pass
- 
+        try: hdu_out[0].header = self.hdu[0].header
+        except: pass 
+
         time_col = pyfits.Column('time', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)     
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
@@ -465,9 +463,8 @@ class LightCurve(object):
 
         hdu_out.append( tab )
 
-        try:
-            hdu_out[1].header = self.hdu[1].header
-        except:
-            pass
+        try: hdu_out[1].header = self.hdu[1].header
+        except: pass
+        
+        hdu_out.writeto( self.outname, clobber=clobber, output_verify='fix' )  
 
-        hdu_out.writeto( self.outname, clobber=clobber )  
