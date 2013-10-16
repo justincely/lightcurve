@@ -134,7 +134,7 @@ class LightCurve(object):
 
         out_obj = cls()
 
-        out_obj.hdu = pyfits.open( filename, memmap=False )
+        out_obj.hdu = pyfits.open( filename, memmap=False, ignore_missing_end=True )
         out_obj.input_filename = filename
         out_obj.clobber = clobber
 
@@ -176,7 +176,7 @@ class LightCurve(object):
         """ Read fits lightcurve from fits file back into object"""
         out_obj = cls()
         
-        hdu = pyfits.open( filename )
+        hdu = pyfits.open( filename, ignore_missing_end=True )
         
         out_obj.times = hdu[1].data['time']
         out_obj.mjd = hdu[1].data['mjd']
@@ -315,7 +315,7 @@ class LightCurve(object):
             for name, letter in zip( [file_a, file_b], ['A', 'B'] ):
                 if os.path.exists( name ):
                     all_filenames.append( name )
-                    hdu_dict[ letter ] = pyfits.open( name )
+                    hdu_dict[ letter ] = pyfits.open( name, ignore_missing_end=True )
 
         self.hdu_dict = hdu_dict
         self.input_list = all_filenames
@@ -460,11 +460,7 @@ class LightCurve(object):
         
         tab = pyfits.new_table( [time_col, mjd_col, counts_col, net_col, 
                                  flux_col, bkgnd_col, error_col] )
-
         hdu_out.append( tab )
 
-        try: hdu_out[1].header = self.hdu[1].header
-        except: pass
-        
         hdu_out.writeto( self.outname, clobber=clobber, output_verify='fix' )  
 
