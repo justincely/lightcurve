@@ -1,6 +1,4 @@
-License for any calls to AURA produced functions.
-
-Copyright (C) 2013 Association of Universities for Research in Astronomy (AURA)
+Copyright (C) 2013 Justin Ely
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -13,11 +11,11 @@ modification, are permitted provided that the following conditions are met:
        disclaimer in the documentation and/or other materials provided
        with the distribution.
 
-    3. The name of AURA and its representatives may not be used to
+    3. The name of Justin Ely may not be used to
        endorse or promote products derived from this software without
        specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY AURA ``AS IS'' AND ANY EXPRESS OR IMPLIED
+THIS SOFTWARE IS PROVIDED BY JUSTIN ELY ``AS IS'' AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL AURA BE LIABLE FOR ANY DIRECT, INDIRECT,
