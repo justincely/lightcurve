@@ -1,0 +1,1 @@
+{"name":"Lightcurve","tagline":"","body":"### Lightcurve.\r\nTool for creating lightcurves from time-tag data!\r\n\r\n```\r\n>>> from lightcurve import LightCurve \r\n>>> data = LightCurve.extract_from_cos( 'rootname_corrtag_a.fits' )\r\n```\r\n\r\n### Overview\r\n...\r\n","google":"","note":"Don't delete this file! It's used internally to help with page regeneration."}
