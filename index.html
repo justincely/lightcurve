@@ -65,6 +65,7 @@
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
 
 <pre><code>&gt;&gt;&gt; from lightcurve import LightCurve 
+&gt;&gt;&gt; # Read the lightcurve into memory
 &gt;&gt;&gt; data = LightCurve.extract_from_cos( 'rootname_corrtag_a.fits' )
 
 Making lightcurve from: rootname_corrtag_a.fits
@@ -80,7 +81,11 @@ Bins = 5s
 &gt;&gt;&gt; print data
 COS LightCurve object of rootname_corrtag_a.fits
 
-&gt;&gt;&gt; data.mjd, data.flux #etc
+&gt;&gt;&gt; #Now just access the data
+&gt;&gt;&gt; data.mjd, data.counts #etc
+
+&gt;&gt;&gt; #Write directly to a file
+&gt;&gt;&gt; LightCurve.extract_from_cos( 'rootname_corrtag_a.fits', writeto=True)
 </code></pre>
 
         </section>
