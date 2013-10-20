@@ -5,7 +5,7 @@ Selection of functions dealing with time-tag data in FITS format
 
 __all__ = ['LightCurve']
 
-from astroraf.misc import progress_bar
+from astropy.utils.console import ProgressBar
 from astropy.io import fits as pyfits
 import os
 import numpy as np
@@ -52,7 +52,6 @@ class LightCurve(object):
     def __init__(self):
         """ Initialize and extract lightcurve from input corrtag
         """
-
         self.times = np.array( [] )
         self.mjd = np.array( [] )
         self.counts = np.array( [] )
@@ -124,8 +123,46 @@ class LightCurve(object):
 
     def __str__(self):
         """Prettier representation of object instanct"""
-        
         return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
+
+
+    @classmethod
+    def check_filetype(self, filename):
+        """Determine the type of data being input"""
+        corrtag_names = set( ['TIME', 
+                              'RAWX', 
+                              'RAWY',
+                              'XCORR',
+                              'YCORR',
+                              'XDOPP',
+                              'XFULL',
+                              'YFULL',
+                              'WAVELENGTH',
+                              'EPSILON',
+                              'DQ',
+                              'PHA'] )
+
+        lightcurve_names = set( ['TIME',
+                                 'MJD',
+                                 'COUNTS',
+                                 'NET',
+                                 'FLUX',
+                                 'BACKGROUND',
+                                 'ERROR'] )
+
+        hdu = pyfits.open( filename )
+        input_names = set( [item.upper() for 
+                           item in hdu[1].data.names ] )
+        hdu.close()
+
+        if input_names == corrtag_names:
+            filetype = 'corrtag'
+        elif input_names == lightcurve_list:
+            filetype = 'lightcurve'
+        else:
+            filetype = None
+
+        return filetype
 
     @classmethod
     def extract_from_cos(cls, filename, step=5, xlim=None, wlim=(-1, 10000), 
@@ -156,13 +193,12 @@ class LightCurve(object):
         print 'OPT_ELEM: %s'% out_obj.opt_elem
         print 'CENWAVE : %s'% out_obj.cenwave
 
-
         if (not xlim) and (out_obj.detector == 'FUV'):
             xlim = (0, 16384)
         elif (not xlim) and (out_obj.detector == 'NUV'):
             xlim = (0, 1024)
 
-        out_obj.extract_lightcurve(xlim, wlim, step)
+        out_obj.generate_lightcurve(xlim, wlim, step)
 
         if normalize: out_obj.normalize()
 
@@ -172,7 +208,7 @@ class LightCurve(object):
         return out_obj
 
     @classmethod
-    def extract_from_fits(cls, filename):    
+    def open_lightcurve(cls, filename):    
         """ Read fits lightcurve from fits file back into object"""
         out_obj = cls()
         
@@ -197,7 +233,7 @@ class LightCurve(object):
         self.flux = self.flux / self.flux.mean()
 
 
-    def extract_lightcurve(self, xlim, wlim, step):
+    def generate_lightcurve(self, xlim, wlim, step):
         """ Loop over HDUs and extract the lightcurve
         
         """
@@ -217,8 +253,7 @@ class LightCurve(object):
         all_times = range(0, end, step)[:-1]
         all_mjd = []
 
-        for i, start in enumerate( all_times ):
-            progress_bar( i, len( all_times ) )
+        for start in ProgressBar.iterate( all_times ):
             sub_count = []
             sub_bkgnd = []
             sub_net = []

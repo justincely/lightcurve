@@ -24,5 +24,10 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    LightCurve.extract_from_cos( args.filename, step=args.step, writeto=True )
 
+    filetype = LightCurve.check_filetype( args.filename )
+
+    if filetype == 'corrtag':
+        LightCurve.extract_from_cos( args.filename, step=args.step, writeto=True )
+    else:
+        raise IOError( "I don't understand the filetype" )
