@@ -44,7 +44,6 @@
 
 <h3>
 <a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h3>
-
 <p>The LightCurve tool uses event list datasets to create lightcurves instead of extracted spectra.  Because of this, 
   the end data quality is heavily dependent on the quality of the initial pipeline to produce these event lists.  For 
   more information on the pipelines for each instrument, please go to their respective instrument teams and or science 
@@ -52,10 +51,36 @@
 </p>
 
 <h3>
+<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h3>
+<p>Installation Instructions
+<ol>
+  <li>Clone from GitHub or download the package with the links on the right.</li>
+  <li>cd into the lightcurve directory.</li>
+  <li>$python setup.py install</li>
+  <li>Enjoy!</li>
+</ol>
+</p>
+
+<h3>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
 
 <pre><code>&gt;&gt;&gt; from lightcurve import LightCurve 
 &gt;&gt;&gt; data = LightCurve.extract_from_cos( 'rootname_corrtag_a.fits' )
+
+Making lightcurve from: rootname_corrtag_a.fits
+Extracting on stripes: A
+DETECTOR: FUV
+APERTURE: PSA
+OPT_ELEM: G140L
+CENWAVE : 1105
+Total Time = 1319s
+Bins = 5s
+|===========================================| 263 /263  (100.00%)     02m47s
+
+&gt;&gt;&gt; print data
+COS LightCurve object of rootname_corrtag_a.fits
+
+&gt;&gt;&gt; data.mjd, data.flux #etc
 </code></pre>
 
         </section>
