@@ -11,12 +11,18 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('filename', type=str,  
+    parser.add_argument('input', type=str, nargs='*',
                         help='filename of COS corrtag dataset' )
 
     parser.add_argument('--step', dest='step', type=int, default=5,
-                        help='timestep for lightcurve')
+                        help='timestep for lightcurve in seconds')
 
+    parser.add_argument('--outname', dest='outname', type=str, default='',
+                        help='Output lightcurve name')
+
+    parser.add_argument('--cat', dest='concatenate', action='store_true', default=False,
+                        help='Concatenate all input curves?')
+    
     args = parser.parse_args()
     return args
 
@@ -25,9 +31,27 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    filetype = LightCurve.check_filetype( args.filename )
+    all_datasets = args.input
+    all_filetypes = map( LightCurve.check_filetype, all_datasets )
 
-    if filetype == 'corrtag':
-        LightCurve.extract_from_cos( args.filename, step=args.step, writeto=True )
+    if args.concatenate:
+        out_lc = LightCurve()
+
+        for dataset,datatype in zip(all_datasets, all_filetypes):
+
+            if datatype == 'corrtag':
+                new_lc = LightCurve.extract_from_cos( dataset, step=args.step )
+            else:
+                raise IOError( "I don't understand the filetype" )
+
+            out_lc += new_lc
+
+        out_lc.write( args.outname or 'composite_curve.fits' )
+
+
     else:
-        raise IOError( "I don't understand the filetype" )
+        for dataset, datatype in zip( all_datasets, all_filetypes ):
+            if datatype == 'corrtag':
+                LightCurve.extract_from_cos( dataset, step=args.step, writeto=True )
+            else:
+                raise IOError( "I don't understand the filetype" )
