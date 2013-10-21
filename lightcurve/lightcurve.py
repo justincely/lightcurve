@@ -171,7 +171,7 @@ class LightCurve(object):
 
         out_obj = cls()
 
-        out_obj.hdu = pyfits.open( filename, memmap=False, ignore_missing_end=True )
+        out_obj.hdu = pyfits.open( filename )
         out_obj.input_filename = filename
         out_obj.clobber = clobber
 
@@ -212,7 +212,7 @@ class LightCurve(object):
         """ Read fits lightcurve from fits file back into object"""
         out_obj = cls()
         
-        hdu = pyfits.open( filename, ignore_missing_end=True )
+        hdu = pyfits.open( filename)
         
         out_obj.times = hdu[1].data['time']
         out_obj.mjd = hdu[1].data['mjd']
@@ -240,7 +240,8 @@ class LightCurve(object):
         
         SECOND = 1.15741e-5
         EXPSTART = self.hdu[1].header[ 'EXPSTART' ]
-        end = self.hdu['events'].data[ 'time' ].max()
+        end = min( self.hdu['events'].data[ 'time' ].max(), self.hdu[1].header['TIME'] )
+        
 
         print "Total Time = %ds" %  ( int(end) )
         print "Bins = %ds" % (step)
