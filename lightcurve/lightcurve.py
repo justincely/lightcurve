@@ -240,7 +240,7 @@ class LightCurve(object):
         
         SECOND = 1.15741e-5
         EXPSTART = self.hdu[1].header[ 'EXPSTART' ]
-        end = min( self.hdu['events'].data[ 'time' ].max(), self.hdu[1].header['TIME'] )
+        end = min( self.hdu['events'].data[ 'time' ].max(), self.hdu[1].header['EXPEND'] )
         
 
         print "Total Time = %ds" %  ( int(end) )
