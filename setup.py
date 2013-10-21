@@ -5,7 +5,7 @@ import glob
 setup(
     name = 'lightcurve',
     url = 'https://github.com/justincely/lightcurve',
-    version = '0.0.1', 
+    version = '0.1.0', 
     description = 'Create lightcurves from HST/COS data',
     author = 'Justin Ely',
     author_email = 'ely@stsci.edu',
@@ -16,7 +16,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Astronomy',
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Software Development :: Libraries :: Python Modules'],
-    requires = ['numpy','pyfits'],
+    requires = ['numpy','pyfits','astropy'],
     scripts =  ['scripts/lightcurve']
     )
 
