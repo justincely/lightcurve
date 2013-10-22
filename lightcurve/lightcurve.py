@@ -248,17 +248,19 @@ class LightCurve(object):
 
         all_counts = []
         all_net = []
-        all_flux = []
         all_bkgnd = []
         all_error = []
         all_times = range(0, end, step)[:-1]
         all_mjd = []
 
+        int_flux_curve = self._get_flux_correction( self.fluxtab, self.opt_elem, 
+                                                    self.cenwave, self.aperture, 
+                                                    wlim[0], wlim[1] )
+
         for start in ProgressBar.iterate( all_times ):
             sub_count = []
             sub_bkgnd = []
             sub_net = []
-            sub_flux = []
             for segment, hdu in self.hdu_dict.iteritems():
                 ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
                 counts, wmin, wmax = self._extract_counts(hdu, start, 
@@ -281,28 +283,23 @@ class LightCurve(object):
                 background = b_counts * b_correction
 
                 net = float(counts) / (yend-ystart) 
-                flux = net / self._get_flux_correction( self.fluxtab, self.opt_elem, 
-                                                        self.cenwave, self.aperture, 
-                                                        wmin, wmax )
 
                 sub_count.append( counts )
                 sub_bkgnd.append( background )
                 sub_net.append( net )
-                sub_flux.append( flux )
 
             sample_counts = np.sum( sub_count )
             sample_bkgnd = np.sum( sub_bkgnd )
 
             all_counts.append( sample_counts - sample_bkgnd )
             all_net.append( np.sum(sub_net) )
-            all_flux.append( np.sum(sub_flux) )
             all_bkgnd.append( sample_bkgnd )
             all_error.append( np.sqrt( sample_counts + sample_bkgnd ) )
             all_mjd.append( EXPSTART + (start * SECOND) )
 
         self.counts = np.array( all_counts )
         self.net = np.array( all_net )
-        self.flux = np.array( all_flux )
+        self.flux = self.net / int_flux_curve
         self.background = np.array( all_bkgnd )
         self.mjd = np.array( all_mjd )
         self.times = np.array( all_times )
@@ -446,12 +443,14 @@ class LightCurve(object):
 
         if '$' in fluxtab:
             fluxpath, fluxfile = fluxtab.split( '$' )
+            fluxfile = os.path.join( os.environ['lref'], fluxfile )
         else:
             fluxpath = './'
             fluxfile = fluxtab
 
         if not os.path.exists( fluxfile ):
-            #print 'WARNING: Fluxfile not available, using unity flux calibration'
+            print ' WARNING: Fluxfile not available %s,' % fluxfile
+            print ' using unity flux calibration instead.'
             return 1
 
         flux_hdu = pyfits.open( fluxfile )
@@ -467,9 +466,9 @@ class LightCurve(object):
 
             if not len(wave_index): continue
 
-            mean_response_list.append( sens_curve[ wave_index ].mean() )
+            mean_response_list.append( sens_curve[ wave_index ].sum() )
 
-        total_fluxcorr = np.mean( mean_response_list )
+        total_fluxcorr = np.sum( mean_response_list )
 
         return total_fluxcorr
 
