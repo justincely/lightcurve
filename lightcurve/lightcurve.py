@@ -443,12 +443,15 @@ class LightCurve(object):
 
         if '$' in fluxtab:
             fluxpath, fluxfile = fluxtab.split( '$' )
-            fluxfile = os.path.join( os.environ['lref'], fluxfile )
+            try:
+                fluxfile = os.path.join( os.environ['lref'], fluxfile )
+            except KeyError:
+                fluxfile = None
         else:
             fluxpath = './'
             fluxfile = fluxtab
 
-        if not os.path.exists( fluxfile ):
+        if (not fluxfile) or (not os.path.exists( fluxfile ) ):
             print ' WARNING: Fluxfile not available %s,' % fluxfile
             print ' using unity flux calibration instead.'
             return 1
