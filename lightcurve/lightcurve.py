@@ -54,11 +54,13 @@ class LightCurve(object):
         """
 
         if 'filename' in kwargs:
-            filetype = self.check_filetype( kwargs['filename'] )
+            filetype = self._check_filetype( kwargs['filename'] )
 
             if filetype == 'corrtag':
                 self.read_cos( kwargs['filename'] )
                 self.extract()
+            elif filetype == 'lightcurve':
+                self.open_lightcurve( kwargs['filename'] )
 
         else:
             self.times = np.array( [] )
@@ -74,17 +76,24 @@ class LightCurve(object):
 
         out_obj = LightCurve()
 
-        out_obj.gross = np.concatenate( [self.gross, other.gross] )
-        out_obj.background = np.concatenate( [self.background, other.background] )
-        out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
-        out_obj.times = np.concatenate( [self.times, other.times] )
+        if isinstance( other, LightCurve ):
+            out_obj.gross = np.concatenate( [self.gross, other.gross] )
+            out_obj.background = np.concatenate( [self.background, other.background] )
+            out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
+            out_obj.times = np.concatenate( [self.times, other.times] )
 
-        sorted_index = np.argsort( out_obj.mjd )
-        
-        out_obj.gross = out_obj.gross[ sorted_index ]
-        out_obj.background = out_obj.background[ sorted_index ]
-        out_obj.mjd = out_obj.mjd[ sorted_index ]
-        out_obj.times = out_obj.times[ sorted_index ]
+            sorted_index = np.argsort( out_obj.mjd )
+
+            out_obj.gross = out_obj.gross[ sorted_index ]
+            out_obj.background = out_obj.background[ sorted_index ]
+            out_obj.mjd = out_obj.mjd[ sorted_index ]
+            out_obj.times = out_obj.times[ sorted_index ]
+
+        else:
+            out_obj.gross = self.gross + other
+            out_obj.background = self.background + other
+            out_obj.times = self.times
+            out_obj.mjd = self.mjd
         
         return out_obj
 
@@ -150,7 +159,7 @@ class LightCurve(object):
 
 
     @classmethod
-    def check_filetype(self, filename):
+    def _check_filetype(self, filename):
         """Determine the type of data being input"""
         corrtag_names = set( ['TIME', 
                               'RAWX', 
@@ -205,10 +214,10 @@ class LightCurve(object):
         
         hdu = pyfits.open( filename)
         
-        out_obj.times = hdu[1].data['time']
+        out_obj.times = hdu[1].data['times']
         out_obj.gross = hdu[1].data['gross']
         out_obj.mjd = hdu[1].data['mjd']
-        out_obj.flux = hdu[1].data['flux']
+        #out_obj.flux = hdu[1].data['flux']
         out_obj.background = hdu[1].data['background']
 
         return out_obj
@@ -222,8 +231,6 @@ class LightCurve(object):
 
     def extract(self, step=1, xlim=(0,16384), wlim=(-1,10000), ylim=(0,1024) ):
         """ Loop over HDUs and extract the lightcurve
-        
-        
 
         """
         SECOND_PER_MJD = 1.15741e-5
