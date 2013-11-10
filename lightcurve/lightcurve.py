@@ -20,32 +20,17 @@ class LightCurve(object):
     ----------
     filename : string
         Name of fits file
-    step : int
-        Timestep for datapoints
-    xlim : tuple, optional
-        Lower and upper x bounds to extract
-    ylim : tuple, optional
-        Lower and upper y bounds to extract
-    extract: bool, optional
-        Extract from locations given in XTRACTAB instead of xlim,ylim
-    fluxcal: bool, optional
-        Convert total counts into flux using PHOTTAB
-    normalize: bool, optional
-        Normalize each lightcurve to mean value
 
     Returns
     -------
-    times : array
-        Array of time samples
-    counts : array
-        Array of counts or flux in each time sample
-    error : array
-        Array of error estimates for count array
+    lightcurve object
 
     Examples
     --------
-    >>> lightcurve( 'ipppssoot_corrtag.fits' )
-    array([1, 2, 3, 4]), array([25, 25, 25, 25]), array([5, 5, 5, 5])
+    >>> obj = LightCurve( filename='ipppssoot_corrtag.fits' )
+    obj.gross
+    obj.background
+    obj.error
 
     """
 
@@ -70,7 +55,10 @@ class LightCurve(object):
 
 
     def __add__( self, other ):
-        """ Overload the '+' operator to concatenate lightcurve objects
+        """ Overload the '+' operator.  If other is a float or int, the entire
+        the value is added to the gross and background arrays.  If other is
+        another LightCurve object, the arrays are concatenated and re-sorted
+        in order of the MJD array.
         
         """
 
@@ -78,7 +66,8 @@ class LightCurve(object):
 
         if isinstance( other, LightCurve ):
             out_obj.gross = np.concatenate( [self.gross, other.gross] )
-            out_obj.background = np.concatenate( [self.background, other.background] )
+            out_obj.background = np.concatenate( [self.background, 
+                                                  other.background] )
             out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
             out_obj.times = np.concatenate( [self.times, other.times] )
 
@@ -126,8 +115,13 @@ class LightCurve(object):
 
     def __str__(self):
         """Prettier representation of object instanct"""
-        return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
+        
+        if not 'input_list' in dir( self ):
+            self.input_list = ['None']
+
+        return "Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
  
+
     @property
     def counts(self):
         """ Calculate counts array """
@@ -160,7 +154,12 @@ class LightCurve(object):
 
     @classmethod
     def _check_filetype(self, filename):
-        """Determine the type of data being input"""
+        """Determine the type of data being input.
+        
+        File type is determined by the culumns in the first data extension.
+
+        """
+        
         corrtag_names = set( ['TIME', 
                               'RAWX', 
                               'RAWY',
@@ -229,18 +228,29 @@ class LightCurve(object):
         self.background = self.background / self.background.mean()
 
 
-    def extract(self, step=1, xlim=(0,16384), wlim=(-1,10000), ylim=(0,1024) ):
+    def extract(self, step=1, xlim=(0,16384), wlim=(-1,10000), ylim=None ):
         """ Loop over HDUs and extract the lightcurve
 
         """
+
+
         SECOND_PER_MJD = 1.15741e-5
         end = min( self.hdu['events'].data[ 'time' ].max(), self.hdu[1].header['EXPTIME'] )
-        all_steps = np.arange(0, end, step)[:-1]
+        all_steps = np.arange(0, end+step, step)
+
+        if all_steps[-1] > end:
+            truncate = True
+        else:
+            truncate = False
 
         gross = 0
         background = 0
         for segment, hdu in self.hdu_dict.iteritems():
-            ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
+            if not ylim:
+                ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
+            else:
+                ystart, yend = ylim[0], ylim[1]
+
             index = self._extract_index(hdu,
                                         xlim[0], xlim[1], 
                                         ystart, yend, 
@@ -264,6 +274,11 @@ class LightCurve(object):
         self.mjd = self.hdu[1].header[ 'EXPSTART' ] + np.array( all_steps[:-1] ) * SECOND_PER_MJD
         self.times = np.ones( len( gross ) ) * step
 
+        if truncate:
+            self.gross = self.gross[:-1]
+            self.background = self.background[:-1]
+            self.mjd = self.mjd[:-1]
+            self.times = self.times[:-1]
 
     def _check_output(self, writeto):
         """ Determine what was supplied to writeto and set self.outname
@@ -447,7 +462,7 @@ class LightCurve(object):
         bkgnd_col = pyfits.Column('background', 'D', 'cnts', array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
-        tab = pyfits.new_table( [time_col,
+        tab = pyfits.new_table( [times_col,
                                  mjd_col,
                                  gross_col,
                                  counts_col,
