@@ -55,10 +55,11 @@ class LightCurve(object):
         self.times = np.array( [] )
         self.mjd = np.array( [] )
         self.counts = np.array( [] )
-        self.net = np.array( [] )
-        self.flux = np.array( [] )
         self.background = np.array( [] )
-        self.error = np.array( [] )
+
+        #self.net = np.array( [] )
+        self.flux = np.array( [] )
+        #self.error = np.array( [] )
 
 
     def __add__( self, other ):
@@ -69,22 +70,18 @@ class LightCurve(object):
         out_obj = LightCurve()
 
         out_obj.counts = np.concatenate( [self.counts, other.counts] )
-        out_obj.net = np.concatenate( [self.net, other.counts] )
         out_obj.flux = np.concatenate( [self.flux, other.flux] )
         out_obj.background = np.concatenate( [self.background, other.background] )
         out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
         out_obj.times = np.concatenate( [self.times, other.times] )
-        out_obj.error = np.concatenate( [self.error, other.error] )
 
         sorted_index = np.argsort( out_obj.mjd )
         
         out_obj.counts = out_obj.counts[ sorted_index ]
-        out_obj.net = out_obj.net[ sorted_index ]
         out_obj.flux = out_obj.flux[ sorted_index ]
         out_obj.background = out_obj.background[ sorted_index ]
         out_obj.mjd = out_obj.mjd[ sorted_index ]
         out_obj.times = out_obj.times[ sorted_index ]
-        out_obj.error = out_obj.error[ sorted_index ]
         
         return out_obj
 
@@ -95,10 +92,8 @@ class LightCurve(object):
         out_obj = LightCurve()
 
         out_obj.counts = self.counts * other
-        out_obj.net = self.net * other
         out_obj.flux = self.flux * other
         out_obj.background = self.background * other
-        out_obj.error = (self.error / self.counts) * other
         out_obj.times = self.times
         out_obj.mjd = self.mjd
 
@@ -111,10 +106,8 @@ class LightCurve(object):
         out_obj = LightCurve()
 
         out_obj.counts = self.counts / other
-        out_obj.net = self.net / other
         out_obj.flux = self.flux / other
         out_obj.background = self.background / other
-        out_obj.error = (self.error / self.counts) / other
         out_obj.times = self.times
         out_obj.mjd = self.mjd
 
@@ -124,6 +117,26 @@ class LightCurve(object):
     def __str__(self):
         """Prettier representation of object instanct"""
         return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
+ 
+
+    @property
+    def error(self):
+        """ Calculate error array """
+
+        if not len(self.counts):
+            return self.counts.copy()
+        else:
+            return np.sqrt( self.counts + self.background )
+
+        
+    @property
+    def net(self):
+        """ Calculate net array """
+
+        if not len(self.counts):
+            return self.counts.copy()
+        else:
+            return self.counts / self.times.astype( np.float64 )
 
 
     @classmethod
@@ -228,7 +241,6 @@ class LightCurve(object):
         """ Normalize arrays around mean"""
         self.error = self.error / self.counts
         self.counts = self.counts / self.counts.mean()
-        self.net = self.net / self.net.mean()
         self.background = self.background / self.background.mean()
         self.flux = self.flux / self.flux.mean()
 
@@ -247,9 +259,7 @@ class LightCurve(object):
         print "Bins = %ds" % (step)
 
         all_counts = []
-        all_net = []
         all_bkgnd = []
-        all_error = []
         all_times = range(0, end, step)[:-1]
         all_mjd = []
 
@@ -260,7 +270,6 @@ class LightCurve(object):
         for start in ProgressBar.iterate( all_times ):
             sub_count = []
             sub_bkgnd = []
-            sub_net = []
             for segment, hdu in self.hdu_dict.iteritems():
                 ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
                 counts, wmin, wmax = self._extract_counts(hdu, start, 
@@ -282,29 +291,21 @@ class LightCurve(object):
 
                 background = b_counts * b_correction
 
-                net = float(counts) / (yend-ystart) 
-
                 sub_count.append( counts )
                 sub_bkgnd.append( background )
-                sub_net.append( net )
 
             sample_counts = np.sum( sub_count )
             sample_bkgnd = np.sum( sub_bkgnd )
 
             all_counts.append( sample_counts - sample_bkgnd )
-            all_net.append( np.sum(sub_net) )
             all_bkgnd.append( sample_bkgnd )
-            all_error.append( np.sqrt( sample_counts + sample_bkgnd ) )
             all_mjd.append( EXPSTART + (start * SECOND) )
 
         self.counts = np.array( all_counts )
-        self.net = np.array( all_net )
         self.flux = self.net / int_flux_curve
         self.background = np.array( all_bkgnd )
         self.mjd = np.array( all_mjd )
         self.times = np.array( all_times )
-        self.error = np.array( all_error )
-
 
 
     def _check_output(self, writeto):
@@ -312,6 +313,7 @@ class LightCurve(object):
 
         If a string, lightcurve will be written to value.
         If True, output will be rootname_curve.fits
+
         """
 
         if writeto:
