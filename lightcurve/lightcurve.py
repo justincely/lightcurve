@@ -179,7 +179,7 @@ class LightCurve(object):
 
     @classmethod
     def extract_from_cos(cls, filename, step=5, xlim=None, wlim=(-1, 10000), 
-                 fluxtab=None, normalize=False, writeto=None, clobber=False):
+                         fluxtab=None, normalize=False, writeto=None, clobber=False):
         """ Extract light curve from COS data"""
 
         out_obj = cls()
@@ -200,11 +200,11 @@ class LightCurve(object):
         out_obj._get_hdus()
 
         print 'Making lightcurve from: ' + ', '.join( out_obj.input_list )
-        print 'Extracting on stripes: ' +','.join( np.sort( out_obj.hdu_dict.keys()) )
-        print 'DETECTOR: %s'% out_obj.detector
-        print 'APERTURE: %s'% out_obj.aperture
-        print 'OPT_ELEM: %s'% out_obj.opt_elem
-        print 'CENWAVE : %s'% out_obj.cenwave
+        print 'Extracting on stripes: ' + ','.join( np.sort( out_obj.hdu_dict.keys()) )
+        print 'DETECTOR: %s' % out_obj.detector
+        print 'APERTURE: %s' % out_obj.aperture
+        print 'OPT_ELEM: %s' % out_obj.opt_elem
+        print 'CENWAVE : %s' % out_obj.cenwave
 
         if (not xlim) and (out_obj.detector == 'FUV'):
             xlim = (0, 16384)
