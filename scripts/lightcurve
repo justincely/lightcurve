@@ -1,6 +1,7 @@
 #!/usr/bin/env/python
 
 import argparse
+import re
 from lightcurve import LightCurve
 
 #------------------------------------------------------------
@@ -14,8 +15,8 @@ def parse_args():
     parser.add_argument('input', type=str, nargs='*',
                         help='filename of COS corrtag dataset' )
 
-    parser.add_argument('--step', dest='step', type=int, default=5,
-                        help='timestep for lightcurve in seconds')
+    #parser.add_argument('--step', dest='step', type=int, default=5,
+    #                    help='timestep for lightcurve in seconds')
 
     parser.add_argument('--outname', dest='outname', type=str, default='',
                         help='Output lightcurve name')
@@ -32,17 +33,14 @@ if __name__ == "__main__":
     args = parse_args()
 
     all_datasets = args.input
-    all_filetypes = map( LightCurve.check_filetype, all_datasets )
 
     if args.concatenate:
+        print "Concatenating datasets"
         out_lc = LightCurve()
 
-        for dataset,datatype in zip(all_datasets, all_filetypes):
-
-            if datatype == 'corrtag':
-                new_lc = LightCurve.extract_from_cos( dataset, step=args.step )
-            else:
-                raise IOError( "I don't understand the filetype" )
+        for dataset in all_datasets:
+            print dataset
+            new_lc = LightCurve( filename=dataset )
 
             out_lc += new_lc
 
@@ -50,8 +48,9 @@ if __name__ == "__main__":
 
 
     else:
-        for dataset, datatype in zip( all_datasets, all_filetypes ):
-            if datatype == 'corrtag':
-                LightCurve.extract_from_cos( dataset, step=args.step, writeto=True )
-            else:
-                raise IOError( "I don't understand the filetype" )
+        for dataset in all_datasets:
+            print dataset
+            out_lc = LightCurve( filename=dataset )
+            curvename = dataset.replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
+            out_lc.write( args.outname or curvename )
+
