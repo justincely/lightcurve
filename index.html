@@ -61,26 +61,17 @@ on the right side of the page.
 
 <pre><code>&gt;&gt;&gt; from lightcurve import LightCurve 
 &gt;&gt;&gt; # Read the lightcurve into memory
-&gt;&gt;&gt; data = LightCurve.extract_from_cos( 'rootname_corrtag_a.fits' )
-
-Making lightcurve from: rootname_corrtag_a.fits
-Extracting on stripes: A
-DETECTOR: FUV
-APERTURE: PSA
-OPT_ELEM: G140L
-CENWAVE : 1105
-Total Time = 1319s
-Bins = 5s
-|===========================================| 263 /263  (100.00%)     02m47s
-
-&gt;&gt;&gt; print data
-COS LightCurve object of rootname_corrtag_a.fits
+&gt;&gt;&gt; data = LightCurve( filename='rootname_corrtag_a.fits' )
 
 &gt;&gt;&gt; #Now just access the data
-&gt;&gt;&gt; data.mjd, data.counts #etc
+&gt;&gt;&gt; data.mjd, data.gross, data.error #etc
 
-&gt;&gt;&gt; #Write directly to a file
-&gt;&gt;&gt; LightCurve.extract_from_cos( 'rootname_corrtag_a.fits', writeto=True)
+&gt;&gt;&gt; #Re-extract data with a different stepsize and wavelength range
+&gt;&gt;&gt; data.extract(step=5, wlim=(1100,1200) )
+&gt;&gt;&gt; data.mjd, data.gross, data.error #etc
+
+&gt;&gt;&gt; #Write to a file
+&gt;&gt;&gt; data.write()
 &gt;&gt;&gt; ls
 rootname_curve.fits
 </code></pre>
