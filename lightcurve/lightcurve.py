@@ -175,9 +175,9 @@ class LightCurve(object):
 
         lightcurve_names = set( ['TIME',
                                  'MJD',
+                                 'GROSS',
                                  'COUNTS',
                                  'NET',
-                                 'FLUX',
                                  'BACKGROUND',
                                  'ERROR'] )
 
@@ -188,7 +188,7 @@ class LightCurve(object):
 
         if input_names == corrtag_names:
             filetype = 'corrtag'
-        elif input_names == lightcurve_list:
+        elif input_names == lightcurve_names:
             filetype = 'lightcurve'
         else:
             filetype = None
@@ -207,7 +207,7 @@ class LightCurve(object):
 
     @classmethod
     def open_lightcurve(cls, filename):    
-        """ Read fits lightcurve from fits file back into object"""
+        """ Read lightcurve from fits file back into object"""
 
         out_obj = cls()
         
@@ -279,6 +279,7 @@ class LightCurve(object):
             self.background = self.background[:-1]
             self.mjd = self.mjd[:-1]
             self.times = self.times[:-1]
+
 
     def _check_output(self, writeto):
         """ Determine what was supplied to writeto and set self.outname
@@ -455,7 +456,7 @@ class LightCurve(object):
 
         times_col = pyfits.Column('times', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd) 
-        gross_col = pyfits.Column('gross', 'D', 'counts', array=self.counts)    
+        gross_col = pyfits.Column('gross', 'D', 'counts', array=self.gross)    
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
         #flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
