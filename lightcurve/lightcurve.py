@@ -260,14 +260,14 @@ class LightCurve(object):
 
         all_counts = []
         all_bkgnd = []
-        all_times = range(0, end, step)[:-1]
+        all_steps = range(0, end, step)[:-1]
         all_mjd = []
 
         int_flux_curve = self._get_flux_correction( self.fluxtab, self.opt_elem, 
                                                     self.cenwave, self.aperture, 
                                                     wlim[0], wlim[1] )
 
-        for start in ProgressBar.iterate( all_times ):
+        for start in ProgressBar.iterate( all_steps ):
             sub_count = []
             sub_bkgnd = []
             for segment, hdu in self.hdu_dict.iteritems():
@@ -305,7 +305,7 @@ class LightCurve(object):
         self.flux = self.net / int_flux_curve
         self.background = np.array( all_bkgnd )
         self.mjd = np.array( all_mjd )
-        self.times = np.array( all_times )
+        self.times = np.ones( len(self.counts) ) * step
 
 
     def _check_output(self, writeto):
