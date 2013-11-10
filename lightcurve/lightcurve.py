@@ -49,17 +49,22 @@ class LightCurve(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """ Initialize and extract lightcurve from input corrtag
         """
-        self.times = np.array( [] )
-        self.mjd = np.array( [] )
-        self.counts = np.array( [] )
-        self.background = np.array( [] )
 
-        #self.net = np.array( [] )
-        self.flux = np.array( [] )
-        #self.error = np.array( [] )
+        if 'filename' in kwargs:
+            filetype = self.check_filetype( kwargs['filename'] )
+
+            if filetype == 'corrtag':
+                self.read_cos( kwargs['filename'] )
+                self.extract()
+
+        else:
+            self.times = np.array( [] )
+            self.mjd = np.array( [] )
+            self.gross = np.array( [] )
+            self.background = np.array( [] )
 
 
     def __add__( self, other ):
@@ -69,16 +74,14 @@ class LightCurve(object):
 
         out_obj = LightCurve()
 
-        out_obj.counts = np.concatenate( [self.counts, other.counts] )
-        out_obj.flux = np.concatenate( [self.flux, other.flux] )
+        out_obj.gross = np.concatenate( [self.gross, other.gross] )
         out_obj.background = np.concatenate( [self.background, other.background] )
         out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
         out_obj.times = np.concatenate( [self.times, other.times] )
 
         sorted_index = np.argsort( out_obj.mjd )
         
-        out_obj.counts = out_obj.counts[ sorted_index ]
-        out_obj.flux = out_obj.flux[ sorted_index ]
+        out_obj.gross = out_obj.gross[ sorted_index ]
         out_obj.background = out_obj.background[ sorted_index ]
         out_obj.mjd = out_obj.mjd[ sorted_index ]
         out_obj.times = out_obj.times[ sorted_index ]
@@ -91,8 +94,7 @@ class LightCurve(object):
         
         out_obj = LightCurve()
 
-        out_obj.counts = self.counts * other
-        out_obj.flux = self.flux * other
+        out_obj.gross = self.gross * other
         out_obj.background = self.background * other
         out_obj.times = self.times
         out_obj.mjd = self.mjd
@@ -105,8 +107,7 @@ class LightCurve(object):
         
         out_obj = LightCurve()
 
-        out_obj.counts = self.counts / other
-        out_obj.flux = self.flux / other
+        out_obj.gross = self.gross / other
         out_obj.background = self.background / other
         out_obj.times = self.times
         out_obj.mjd = self.mjd
@@ -118,6 +119,15 @@ class LightCurve(object):
         """Prettier representation of object instanct"""
         return "COS Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
  
+    @property
+    def counts(self):
+        """ Calculate counts array """
+        
+        if not len( self.gross ):
+            return self.gross.copy()
+        else:
+            return self.gross - self.background
+
 
     @property
     def error(self):
@@ -177,135 +187,75 @@ class LightCurve(object):
 
         return filetype
 
-    @classmethod
-    def extract_from_cos(cls, filename, step=5, xlim=None, wlim=(-1, 10000), 
-                         fluxtab=None, normalize=False, writeto=None, clobber=False):
+
+    def read_cos(self, filename ):
         """ Extract light curve from COS data"""
 
-        out_obj = cls()
+        self.hdu = pyfits.open( filename )
+        self.input_filename = filename
 
-        out_obj.hdu = pyfits.open( filename )
-        out_obj.input_filename = filename
-        out_obj.clobber = clobber
+        self._get_hdus()
 
-        out_obj._check_output( writeto )
-
-        out_obj.fluxtab = fluxtab or out_obj.hdu[0].header[ 'FLUXTAB' ]
-        out_obj.detector = out_obj.hdu[0].header[ 'DETECTOR' ]
-        out_obj.opt_elem = out_obj.hdu[0].header[ 'OPT_ELEM' ]
-        out_obj.cenwave = out_obj.hdu[0].header[ 'CENWAVE' ]
-        out_obj.aperture = out_obj.hdu[0].header[ 'APERTURE' ]
-        out_obj.sdqflags = out_obj.hdu[1].header[ 'SDQFLAGS' ]
-
-        out_obj._get_hdus()
-
-        print 'Making lightcurve from: ' + ', '.join( out_obj.input_list )
-        print 'Extracting on stripes: ' + ','.join( np.sort( out_obj.hdu_dict.keys()) )
-        print 'DETECTOR: %s' % out_obj.detector
-        print 'APERTURE: %s' % out_obj.aperture
-        print 'OPT_ELEM: %s' % out_obj.opt_elem
-        print 'CENWAVE : %s' % out_obj.cenwave
-
-        if (not xlim) and (out_obj.detector == 'FUV'):
-            xlim = (0, 16384)
-        elif (not xlim) and (out_obj.detector == 'NUV'):
-            xlim = (0, 1024)
-
-        out_obj.generate_lightcurve(xlim, wlim, step)
-
-        if normalize: out_obj.normalize()
-
-        if writeto:
-            out_obj.write( clobber=out_obj.clobber  )
-
-        return out_obj
 
     @classmethod
     def open_lightcurve(cls, filename):    
         """ Read fits lightcurve from fits file back into object"""
+
         out_obj = cls()
         
         hdu = pyfits.open( filename)
         
         out_obj.times = hdu[1].data['time']
+        out_obj.gross = hdu[1].data['gross']
         out_obj.mjd = hdu[1].data['mjd']
-        out_obj.counts = hdu[1].data['counts']
-        out_obj.net = hdu[1].data['net']
         out_obj.flux = hdu[1].data['flux']
         out_obj.background = hdu[1].data['background']
-        out_obj.error = hdu[1].data['error']
 
         return out_obj
 
+
     def normalize(self):
         """ Normalize arrays around mean"""
-        self.error = self.error / self.counts
-        self.counts = self.counts / self.counts.mean()
+        self.gross = self.gross / self.gross.mean()
         self.background = self.background / self.background.mean()
-        self.flux = self.flux / self.flux.mean()
 
 
-    def generate_lightcurve(self, xlim, wlim, step):
+    def extract(self, step=1, xlim=(0,16384), wlim=(-1,10000), ylim=(0,1024) ):
         """ Loop over HDUs and extract the lightcurve
         
+        
+
         """
-        
-        SECOND = 1.15741e-5
-        EXPSTART = self.hdu[1].header[ 'EXPSTART' ]
-        end = min( self.hdu['events'].data[ 'time' ].max(), self.hdu[1].header['EXPEND'] )
-        
+        SECOND_PER_MJD = 1.15741e-5
+        end = min( self.hdu['events'].data[ 'time' ].max(), self.hdu[1].header['EXPTIME'] )
+        all_steps = np.arange(0, end, step)[:-1]
 
-        print "Total Time = %ds" %  ( int(end) )
-        print "Bins = %ds" % (step)
+        gross = 0
+        background = 0
+        for segment, hdu in self.hdu_dict.iteritems():
+            ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
+            index = self._extract_index(hdu,
+                                        xlim[0], xlim[1], 
+                                        ystart, yend, 
+                                        wlim[0], wlim[1],
+                                        hdu[1].header['sdqflags'] )
+            gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps )[0]
 
-        all_counts = []
-        all_bkgnd = []
-        all_steps = range(0, end, step)[:-1]
-        all_mjd = []
+            bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
+            index = self._extract_index(hdu,
+                                         xlim[0], xlim[1], 
+                                         bstart, bend, 
+                                         wlim[0], wlim[1],
+                                         hdu[1].header['sdqflags'] )
+            b_gross = np.histogram( hdu[ 'events' ].data['time'][index], all_steps )[0]
 
-        int_flux_curve = self._get_flux_correction( self.fluxtab, self.opt_elem, 
-                                                    self.cenwave, self.aperture, 
-                                                    wlim[0], wlim[1] )
+            b_correction = ( (bend - bstart) / (yend -ystart) )
+            background += b_gross * b_correction
 
-        for start in ProgressBar.iterate( all_steps ):
-            sub_count = []
-            sub_bkgnd = []
-            for segment, hdu in self.hdu_dict.iteritems():
-                ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
-                counts, wmin, wmax = self._extract_counts(hdu, start, 
-                                                          start + step, 
-                                                          xlim[0], xlim[1], 
-                                                          ystart, yend, 
-                                                          wlim[0], wlim[1],
-                                                          self.sdqflags )
-
-                bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
-                b_counts, b_wmin, b_wmax = self._extract_counts(hdu, start, 
-                                                                start + step, 
-                                                                xlim[0], xlim[1], 
-                                                                bstart, bend, 
-                                                                wlim[0], wlim[1],
-                                                                self.sdqflags )
-
-                b_correction = ( (bend - bstart) / (yend -ystart) )
-
-                background = b_counts * b_correction
-
-                sub_count.append( counts )
-                sub_bkgnd.append( background )
-
-            sample_counts = np.sum( sub_count )
-            sample_bkgnd = np.sum( sub_bkgnd )
-
-            all_counts.append( sample_counts - sample_bkgnd )
-            all_bkgnd.append( sample_bkgnd )
-            all_mjd.append( EXPSTART + (start * SECOND) )
-
-        self.counts = np.array( all_counts )
-        self.flux = self.net / int_flux_curve
-        self.background = np.array( all_bkgnd )
-        self.mjd = np.array( all_mjd )
-        self.times = np.ones( len(self.counts) ) * step
+        self.gross = gross
+        self.background = background
+        self.mjd = self.hdu[1].header[ 'EXPSTART' ] + np.array( all_steps[:-1] ) * SECOND_PER_MJD
+        self.times = np.ones( len( gross ) ) * step
 
 
     def _check_output(self, writeto):
@@ -332,17 +282,18 @@ class LightCurve(object):
 
     def _get_hdus(self):
         """Populate HDU dictionary from available corrtag files
+
         """
 
-        if self.detector == 'NUV':
+        if self.hdu[0].header['detector'] == 'NUV':
             all_filenames = [ self.input_filename ]
 
-            if self.opt_elem == 'G230L':
+            if self.hdu[0].header['opt_elem'] == 'G230L':
                 hdu_dict = {'A':self.hdu, 'B':self.hdu}
             else:
                 hdu_dict = {'A':self.hdu, 'B':self.hdu, 'C':self.hdu}
 
-        elif self.detector == 'FUV':
+        elif self.hdu[0].header['detector'] == 'FUV':
             file_a, file_b = self._get_both_filenames( self.input_filename )
 
             hdu_dict = dict()
@@ -400,7 +351,7 @@ class LightCurve(object):
         return y_start, y_end
 
 
-    def _extract_counts(self, hdu, start, end, x_start, x_end, 
+    def _extract_index(self, hdu, x_start, x_end, 
                         y_start, y_end, w_start, w_end, sdqflags=0):
         """
         Extract counts from given HDU using input parameters.
@@ -409,10 +360,7 @@ class LightCurve(object):
 
         """
 
-        data_index = np.where( ( hdu[1].data['TIME'] >= start ) & 
-                               ( hdu[1].data['TIME'] < end ) &
-
-                               ( hdu[1].data['XCORR'] >= x_start ) & 
+        data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
                                ( hdu[1].data['XCORR'] < x_end ) &
 
                                ( hdu[1].data['YCORR'] >= y_start ) & 
@@ -428,14 +376,7 @@ class LightCurve(object):
                                ( (hdu[1].data['WAVELENGTH'] > 1308) | 
                                  (hdu[1].data['WAVELENGTH'] < 1300) ) )[0]
 
-        if len(data_index):
-            minwave = hdu[1].data[ data_index ]['wavelength'].min()
-            maxwave = hdu[1].data[ data_index ]['wavelength'].max()
-        else:
-            minwave = 0
-            maxwave = 0
-
-        return len(data_index), minwave, maxwave
+        return data_index
 
 
     def _get_flux_correction(self, fluxtab, opt_elem, cenwave, 
@@ -490,17 +431,23 @@ class LightCurve(object):
         try: hdu_out[0].header = self.hdu[0].header
         except: pass 
 
-        time_col = pyfits.Column('time', 'D', 'second', array=self.times)
-        mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)     
+        times_col = pyfits.Column('times', 'D', 'second', array=self.times)
+        mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd) 
+        gross_col = pyfits.Column('gross', 'D', 'counts', array=self.counts)    
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
-        flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
+        #flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
         bkgnd_col = pyfits.Column('background', 'D', 'cnts', array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
-        tab = pyfits.new_table( [time_col, mjd_col, counts_col, net_col, 
-                                 flux_col, bkgnd_col, error_col] )
+        tab = pyfits.new_table( [time_col,
+                                 mjd_col,
+                                 gross_col,
+                                 counts_col,
+                                 net_col,
+                                 bkgnd_col,
+                                 error_col] )
         hdu_out.append( tab )
 
-        hdu_out.writeto( self.outname, clobber=clobber, output_verify='fix' )  
+        hdu_out.writeto( self.outname, clobber=clobber)  
 

@@ -12,16 +12,29 @@ def test_empty():
     """ Test that a new class instance contains empty arrays """
 
     obj = LightCurve()
-    for item in [ obj.times, obj.mjd, obj.counts, obj.background]:
+    for item in [ obj.times, obj.mjd, obj.gross, obj.counts, obj.background]:
         assert np.array_equal( item, np.array( [] ) ), 'Arrays are not empty'
                 
+#-------------------------------------------------------------------------------
+
+def test_counts():
+    """ Test the count calculation """
+
+    obj = LightCurve()
+    obj.gross = np.ones( 10 ) * 5
+    obj.background = np.ones( 10 ) * 1 
+
+    assert np.array_equal( obj.counts, np.ones( 10 ) * 4), \
+        'Counts not calculated right'
+
 #-------------------------------------------------------------------------------
 
 def test_net():
     """ Test the net calculation """
 
     obj = LightCurve()
-    obj.counts = np.ones( 10 ) * 5
+    obj.gross = np.ones( 10 ) * 5
+    obj.background = np.zeros( 10 )
     obj.times = np.ones( 10 ) * 2
 
     assert np.array_equal( obj.net, np.ones( 10 ) * 2.5), \
@@ -30,19 +43,19 @@ def test_net():
 #-------------------------------------------------------------------------------
 
 def test_error():
-    """ Test the net calculation """
+    """ Test the error calculation """
 
     obj = LightCurve()
-    obj.counts = np.ones( 10 ) * 20
+    obj.gross = np.ones( 10 ) * 20
     obj.background = np.zeros( 10 )
 
     assert np.array_equal( obj.error, np.ones( 10 ) * np.sqrt( 20 )), \
-        'Error not calculated right'
+        'Error not calculated right with no background'
 
     obj.background = np.ones( 10 ) * 5
 
-    assert np.array_equal( obj.error, np.ones( 10 ) * 5 ), \
-        'Error not calculated right'
+    assert np.array_equal( obj.error, np.ones( 10 ) * np.sqrt( 20) ), \
+        'Error not calculated right with a constant background'
 
 #-------------------------------------------------------------------------------
 
