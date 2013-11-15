@@ -15,8 +15,14 @@ def parse_args():
     parser.add_argument('input', type=str, nargs='*',
                         help='filename of COS corrtag dataset' )
 
-    #parser.add_argument('--step', dest='step', type=int, default=5,
-    #                    help='timestep for lightcurve in seconds')
+    parser.add_argument('--step', dest='step', type=float, default=1,
+                        help='timestep for lightcurve in seconds')
+
+    parser.add_argument('--wmin', dest='wmin', type=float, default=1,
+                        help='Minimum wavelength for extraction')
+
+    parser.add_argument('--wmax', dest='wmax', type=float, default=10000,
+                        help='Maximum wavelength for extraction')
 
     parser.add_argument('--outname', dest='outname', type=str, default='',
                         help='Output lightcurve name')
@@ -40,7 +46,7 @@ if __name__ == "__main__":
 
         for dataset in all_datasets:
             print dataset
-            new_lc = LightCurve( filename=dataset )
+            new_lc = LightCurve( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
 
             out_lc += new_lc
 
@@ -50,7 +56,7 @@ if __name__ == "__main__":
     else:
         for dataset in all_datasets:
             print dataset
-            out_lc = LightCurve( filename=dataset )
+            out_lc = LightCurve( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
             curvename = dataset.replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
             out_lc.write( args.outname or curvename )
 

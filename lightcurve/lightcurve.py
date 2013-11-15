@@ -39,17 +39,24 @@ class LightCurve(object):
         """ Initialize and extract lightcurve from input corrtag
         """
 
+        if 'step' in kwargs: step=kwargs['step']
+        else: step = 1
+
+        if 'wlim' in kwargs: wlim = kwargs['wlim']
+        else: wlim = (1,10000)
+
         if 'filename' in kwargs:
-            filetype = self._check_filetype( kwargs['filename'] )
+            filetype = self._check_filetype( kwargs['filename'])
 
             if filetype == 'corrtag':
-                self.read_cos( kwargs['filename'] )
-                self.extract()
+                self.read_cos( kwargs['filename'])
+                self.extract( step=step, wlim=wlim )
             elif filetype == 'lightcurve':
                 self.open_lightcurve( kwargs['filename'] )
 
         else:
             self.times = np.array( [] )
+            self.flux = np.array( [] )
             self.mjd = np.array( [] )
             self.gross = np.array( [] )
             self.background = np.array( [] )
@@ -67,6 +74,7 @@ class LightCurve(object):
 
         if isinstance( other, LightCurve ):
             out_obj.gross = np.concatenate( [self.gross, other.gross] )
+            out_obj.flux = np.concatenate( [self.flux, other.flux] )
             out_obj.background = np.concatenate( [self.background, 
                                                   other.background] )
             out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
@@ -94,6 +102,7 @@ class LightCurve(object):
         out_obj = LightCurve()
 
         out_obj.gross = self.gross * other
+        out_obj.flux = self.flux * other
         out_obj.background = self.background * other
         out_obj.times = self.times
         out_obj.mjd = self.mjd
@@ -107,6 +116,7 @@ class LightCurve(object):
         out_obj = LightCurve()
 
         out_obj.gross = self.gross / other
+        out_obj.flux = self.flux / other
         out_obj.background = self.background / other
         out_obj.times = self.times
         out_obj.mjd = self.mjd
@@ -250,6 +260,9 @@ class LightCurve(object):
         background_flux = 0
 
         for segment, hdu in self.hdu_dict.iteritems():
+
+            ### Source Calculation
+            
             if not ylim:
                 ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
             else:
@@ -264,10 +277,13 @@ class LightCurve(object):
                                    weights=hdu[ 'events' ].data['epsilon'][index] )[0]
 
             response_array = self._get_fluxes( hdu, index )
+            tds_corr = self._get_tds( hdu, index )
 
-            flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                    weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] / step 
+            weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array 
+            flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights)[0]
 
+
+            ### Background calculation
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
             index = self._extract_index(hdu,
@@ -281,9 +297,9 @@ class LightCurve(object):
                                                  weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
             
             response_array = self._get_fluxes( hdu, index )
-
-            background_flux +=  b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                                       weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] / step
+            tds_corr = self._get_tds( hdu, index )
+            weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array
+            background_flux +=  b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights )[0] 
 
 
         self.gross = gross
@@ -425,6 +441,70 @@ class LightCurve(object):
         return data_index
 
 
+    def _get_tds(self, hdu, index):
+        """ return tds correction for each event
+        """
+
+        try:
+            tdstab = hdu[0].header['TDSTAB']
+        except KeyError:
+            tdstab = ''
+
+
+        if '$' in tdstab:
+            tdspath, tdsfile = tdstab.split( '$' )
+            try:
+                tdsfile = os.path.join( os.environ[tdspath], tdsfile )
+            except KeyError:
+                tdsfile = None
+        else:
+            tdspath = './'
+            tdsfile = tdstab
+
+
+        if (not tdsfile) or (not os.path.exists( tdsfile ) ):
+            print ' WARNING: Fluxfile not available %s,' % tdsfile
+            print ' using unity flux calibration instead.'
+            return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        
+        tds_data = pyfits.getdata( tdsfile,ext=1 )
+        REF_TIME = pyfits.getval( tdstab,'REF_TIME',ext=1)
+        mode_index = np.where( (tds_data['OPT_ELEM'] == hdu[0].header['opt_elem'] ) &
+                               (tds_data['APERTURE'] == hdu[0].header['aperture'] ) &
+                               (tds_data['SEGMENT'] == hdu[0].header['segment'] ) )[0]
+
+        mode_line = tds_data[ mode_index ]
+
+        tds_nwl = mode_line['NWL'][0]
+        tds_nt = mode_line['NT'][0]
+        tds_wavelength = mode_line['WAVELENGTH'][0]
+        smaller_index = np.where( mode_line['TIME'][0][:tds_nt] < hdu[1].header['EXPSTART'] )[0]
+        time_index = smaller_index.max()
+
+        tds_slope = mode_line['SLOPE'][0]
+        tds_intercept = mode_line['INTERCEPT'][0]
+
+        calculate_drop = lambda time, ref_time, slope, intercept: \
+            ( (( time - ref_time ) * slope) / (365.25*100) ) + intercept
+
+        correction_array = np.zeros( len(tds_wavelength) )
+        for i,wave in enumerate( tds_wavelength ):
+            correction = calculate_drop( hdu[1].header['EXPSTART'], 
+                                         REF_TIME, 
+                                         tds_slope[time_index,i], 
+                                         tds_intercept[time_index,i] )
+            correction_array[i] = correction
+
+        #-------
+        # interpolate onto input arrays
+        #------
+
+        interp_function = interp1d( tds_wavelength, correction_array, 1 )
+        response_correction = interp_function( hdu[1].data['wavelength'][index] )
+
+        return response_correction
+
+
     def _get_fluxes(self, hdu, index):
         """ Return response curve and wavelength range for specified mode
         """
@@ -461,9 +541,9 @@ class LightCurve(object):
         interp_func = interp1d( flux_hdu[1].data[flux_index]['WAVELENGTH'].flatten(), 
                                 flux_hdu[1].data[flux_index]['SENSITIVITY'].flatten() )
 
-        all_fluxes = interp_func( hdu[ 'events' ].data['wavelength'][index] )
+        all_resp = interp_func( hdu[ 'events' ].data['wavelength'][index] )
 
-        return all_fluxes
+        return all_resp
 
 
     def write(self, outname=None, clobber=False):
@@ -483,7 +563,7 @@ class LightCurve(object):
         gross_col = pyfits.Column('gross', 'D', 'counts', array=self.gross)    
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
-        #flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
+        flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
         bkgnd_col = pyfits.Column('background', 'D', 'cnts', array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
@@ -492,9 +572,60 @@ class LightCurve(object):
                                  gross_col,
                                  counts_col,
                                  net_col,
+                                 flux_col,
                                  bkgnd_col,
                                  error_col] )
         hdu_out.append( tab )
 
         hdu_out.writeto( self.outname, clobber=clobber)  
+
+
+#--------------------------------------------------------------
+
+def backout_tds( response, wavelength, mjd, opt_elem, aperture, segment, tdstab='/grp/hst/cdbs/lref/w7h1935dl_tds.fits'):
+    """
+    Backs out TDS from response curve
+
+    #COPY from COS reference files repository
+    """
+
+    #print 'Removing TDS for:', opt_elem, aperture, segment
+    #print 'Using:',tdstab,' From:',mjd
+
+
+    #-------#
+    # get correction array 
+    #-------#
+    tds_data = pyfits.getdata( tdstab,ext=1 )
+    REF_TIME = pyfits.getval( tdstab,'REF_TIME',ext=1)
+    mode_index = np.where( (tds_data['OPT_ELEM'] == opt_elem) &
+                           (tds_data['APERTURE'] == aperture) &
+                           (tds_data['SEGMENT'] == segment) )[0]
+
+    mode_line = tds_data[ mode_index ]
+   
+    tds_nwl = mode_line['NWL'][0]
+    tds_nt = mode_line['NT'][0]
+    tds_wavelength = mode_line['WAVELENGTH'][0]
+    smaller_index = np.where( mode_line['TIME'][0][:tds_nt] < mjd )[0]
+    time_index = smaller_index.max()
+
+    tds_slope = mode_line['SLOPE'][0]
+    tds_intercept = mode_line['INTERCEPT'][0]
+
+    correction_array = np.zeros( len(tds_wavelength) )
+    for i,wave in enumerate( tds_wavelength ):
+        correction = calculate_drop( mjd, REF_TIME, tds_slope[time_index,i], tds_intercept[time_index,i] )
+        correction_array[i] = correction
+
+    #-------
+    # interpolate onto input arrays
+    #------
+
+    interp_function = interp1d( tds_wavelength, correction_array, 1 )
+    interp_correction = interp_function( wavelength )
+
+    return response / interp_correction
+
+ #--------------------------------------------------------------
 
