@@ -256,7 +256,9 @@ class LightCurve(object):
                                         ystart, yend, 
                                         wlim[0], wlim[1],
                                         hdu[1].header['sdqflags'] )
-            gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps )[0]
+            gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
+                                   weights=hdu[ 'events' ].data['epsilon'][index] )[0] 
+
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
             index = self._extract_index(hdu,
@@ -264,7 +266,8 @@ class LightCurve(object):
                                          bstart, bend, 
                                          wlim[0], wlim[1],
                                          hdu[1].header['sdqflags'] )
-            b_gross = np.histogram( hdu[ 'events' ].data['time'][index], all_steps )[0]
+            b_gross = np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
+                                   weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
 
             b_correction = ( (bend - bstart) / (yend -ystart) )
             background += b_gross * b_correction
