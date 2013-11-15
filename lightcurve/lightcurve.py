@@ -9,6 +9,7 @@ from astropy.utils.console import ProgressBar
 from astropy.io import fits as pyfits
 import os
 import numpy as np
+from scipy.interpolate import interp1d
 
 #-------------------------------------------------------------------------------
 
@@ -228,7 +229,7 @@ class LightCurve(object):
         self.background = self.background / self.background.mean()
 
 
-    def extract(self, step=1, xlim=(0,16384), wlim=(-1,10000), ylim=None ):
+    def extract(self, step=1, xlim=(0,16384), wlim=(2,10000), ylim=None ):
         """ Loop over HDUs and extract the lightcurve
 
         """
@@ -244,7 +245,10 @@ class LightCurve(object):
             truncate = False
 
         gross = 0
+        flux = 0
         background = 0
+        background_flux = 0
+
         for segment, hdu in self.hdu_dict.iteritems():
             if not ylim:
                 ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
@@ -257,28 +261,40 @@ class LightCurve(object):
                                         wlim[0], wlim[1],
                                         hdu[1].header['sdqflags'] )
             gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                   weights=hdu[ 'events' ].data['epsilon'][index] )[0] 
+                                   weights=hdu[ 'events' ].data['epsilon'][index] )[0]
+
+            response_array = self._get_fluxes( hdu, index )
+
+            flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
+                                    weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] 
 
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
             index = self._extract_index(hdu,
-                                         xlim[0], xlim[1], 
-                                         bstart, bend, 
-                                         wlim[0], wlim[1],
-                                         hdu[1].header['sdqflags'] )
-            b_gross = np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                   weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
+                                        xlim[0], xlim[1], 
+                                        bstart, bend, 
+                                        wlim[0], wlim[1],
+                                        hdu[1].header['sdqflags'] )
+            
+            b_corr = ( (bend - bstart) / (yend -ystart) )
+            background += b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
+                                                 weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
+            
+            response_array = self._get_fluxes( hdu, index )
+            print response_array
+            background_flux +=  b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
+                                                       weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] 
 
-            b_correction = ( (bend - bstart) / (yend -ystart) )
-            background += b_gross * b_correction
 
         self.gross = gross
+        self.flux = flux - background_flux
         self.background = background
         self.mjd = self.hdu[1].header[ 'EXPSTART' ] + np.array( all_steps[:-1] ) * SECOND_PER_MJD
         self.times = np.ones( len( gross ) ) * step
 
         if truncate:
             self.gross = self.gross[:-1]
+            self.flux = self.flux[:-1]
             self.background = self.background[:-1]
             self.mjd = self.mjd[:-1]
             self.times = self.times[:-1]
@@ -386,13 +402,17 @@ class LightCurve(object):
 
         """
 
+        #if hdu[0].header['OPT_ELEM'] == 'G140L':
+        #    w_start = max( 920, wstart )
+        #    w_end = min( 1800, wend )
+
         data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
                                ( hdu[1].data['XCORR'] < x_end ) &
 
                                ( hdu[1].data['YCORR'] >= y_start ) & 
                                ( hdu[1].data['YCORR'] < y_end ) &
 
-                               ~( hdu[1].data['DQ'] & sdqflags ) &
+                               np.logical_not( hdu[1].data['DQ'] & sdqflags ) &
 
                                ( (hdu[1].data['WAVELENGTH'] > w_start) & 
                                  (hdu[1].data['WAVELENGTH'] < w_end) ) &
@@ -405,10 +425,15 @@ class LightCurve(object):
         return data_index
 
 
-    def _get_flux_correction(self, fluxtab, opt_elem, cenwave, 
-                             aperture, minwave, maxwave):
-        """ Return integrated flux calibration over given wavelength range 
+    def _get_fluxes(self, hdu, index):
+        """ Return response curve and wavelength range for specified mode
         """
+
+        try:
+            fluxtab = hdu[0].header['FLUXTAB']
+        except KeyError:
+            fluxtab = ''
+
 
         if '$' in fluxtab:
             fluxpath, fluxfile = fluxtab.split( '$' )
@@ -423,26 +448,22 @@ class LightCurve(object):
         if (not fluxfile) or (not os.path.exists( fluxfile ) ):
             print ' WARNING: Fluxfile not available %s,' % fluxfile
             print ' using unity flux calibration instead.'
-            return 1
+            return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+
 
         flux_hdu = pyfits.open( fluxfile )
-        flux_index = np.where( (flux_hdu[1].data['OPT_ELEM'] == opt_elem) &
-                               (flux_hdu[1].data['CENWAVE'] == cenwave) &
-                               (flux_hdu[1].data['APERTURE'] == aperture) )[0]
+        flux_index = np.where( (flux_hdu[1].data['SEGMENT'] == hdu[0].header['segment']) &
+                               (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
+                               (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']) &
+                               (flux_hdu[1].data['APERTURE'] == hdu[0].header['aperture']) )[0]
 
-        mean_response_list = []
-        for sens_curve, wave_curve in zip( flux_hdu[1].data[flux_index]['SENSITIVITY'],
-                                          flux_hdu[1].data[flux_index]['WAVELENGTH'] ):
-            wave_index = np.where( (wave_curve >= minwave) &
-                                   (wave_curve <= maxwave ) )[0]
 
-            if not len(wave_index): continue
+        interp_func = interp1d( flux_hdu[1].data[flux_index]['WAVELENGTH'].flatten(), 
+                                flux_hdu[1].data[flux_index]['SENSITIVITY'].flatten() )
 
-            mean_response_list.append( sens_curve[ wave_index ].sum() )
+        all_fluxes = interp_func( hdu[ 'events' ].data['wavelength'][index] )
 
-        total_fluxcorr = np.sum( mean_response_list )
-
-        return total_fluxcorr
+        return all_fluxes
 
 
     def write(self, outname=None, clobber=False):

@@ -30,7 +30,7 @@ def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
     xdopp_col = pyfits.Column('xdopp', 'I', 'counts', array=x_coords )    
     xfull_col = pyfits.Column('xfull', 'I', 'counts', array=x_coords )
     yfull_col = pyfits.Column('yfull', 'I', 'counts', array=y_coords )
-    wavelength_col = pyfits.Column('wavelength', 'I', 'counts/s', array=np.ones( n_events ) * 1400 )
+    wavelength_col = pyfits.Column('wavelength', 'I', 'counts/s', array=np.ones( n_events ) * 1200 )
     epsilon_col = pyfits.Column('epsilon', 'D', 'ergs/s', array=np.ones( n_events ) * epsilon )
     dq_col = pyfits.Column('dq', 'I', 'cnts', array=np.zeros( n_events ) )
     pha_col = pyfits.Column('pha', 'I', 'counts', array=np.ones( n_events ) * 14 )
@@ -88,5 +88,4 @@ def test_epsilon():
 
     lc = LightCurve( filename=test_file )
 
-    lc.extract( step=1 )
     assert lc.gross.sum() == 16384 * 1.25, 'Espilon not accounted for'
