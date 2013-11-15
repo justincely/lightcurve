@@ -1,5 +1,5 @@
 """
-Selection of functions dealing with time-tag data in FITS format
+Class and tools for extracting lightcurve data from time-tag event lists
 
 """
 
@@ -115,11 +115,19 @@ class LightCurve(object):
         
         out_obj = LightCurve()
 
-        out_obj.gross = self.gross / other
-        out_obj.flux = self.flux / other
-        out_obj.background = self.background / other
-        out_obj.times = self.times
-        out_obj.mjd = self.mjd
+        if isinstance( other, LightCurve ):
+            out_obj.gross = self.gross / other.gross
+            out_obj.flux = self.flux / other.gross
+            out_obj.background = self.background / other.background
+            out_obj.times = self.times / other.times
+            out_obj.mjd = self.mjd
+
+        else:
+            out_obj.gross = self.gross / other
+            out_obj.flux = self.flux / other
+            out_obj.background = self.background / other
+            out_obj.times = self.times
+            out_obj.mjd = self.mjd
 
         return out_obj
 
@@ -152,7 +160,21 @@ class LightCurve(object):
         else:
             return np.sqrt( self.counts + self.background )
 
+    @property
+    def flux_error(self):
+        """ Estimate the error in the flux array 
         
+        Flux error is currently estimated as having the same magnitude
+        relative to flux as the error has to counts.  Very simple approximation
+        for now
+
+        """
+
+        if not len(self.gross):
+            return self.gross.copy()
+        else:
+            return (self.error / self.counts ) *  self.flux
+
     @property
     def net(self):
         """ Calculate net array """
@@ -162,6 +184,17 @@ class LightCurve(object):
         else:
             return self.counts / self.times.astype( np.float64 )
 
+        
+    @property
+    def signal_to_noise(self):
+        """ Quick signal to noise estimate
+        """
+
+        if not len(self.gross):
+            return self.gross.copy()
+        else:
+            return self.gross / self.error
+        
 
     @classmethod
     def _check_filetype(self, filename):
@@ -227,7 +260,7 @@ class LightCurve(object):
         out_obj.times = hdu[1].data['times']
         out_obj.gross = hdu[1].data['gross']
         out_obj.mjd = hdu[1].data['mjd']
-        #out_obj.flux = hdu[1].data['flux']
+        out_obj.flux = hdu[1].data['flux']
         out_obj.background = hdu[1].data['background']
 
         return out_obj
