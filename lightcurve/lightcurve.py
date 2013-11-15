@@ -266,7 +266,7 @@ class LightCurve(object):
             response_array = self._get_fluxes( hdu, index )
 
             flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                    weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] 
+                                    weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] / step 
 
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
@@ -281,9 +281,9 @@ class LightCurve(object):
                                                  weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
             
             response_array = self._get_fluxes( hdu, index )
-            print response_array
+
             background_flux +=  b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                                       weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] 
+                                                       weights=(hdu[ 'events' ].data['epsilon'][index] / response_array) )[0] / step
 
 
         self.gross = gross
