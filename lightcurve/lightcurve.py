@@ -438,7 +438,7 @@ class LightCurve(object):
         if '$' in fluxtab:
             fluxpath, fluxfile = fluxtab.split( '$' )
             try:
-                fluxfile = os.path.join( os.environ['lref'], fluxfile )
+                fluxfile = os.path.join( os.environ[fluxpath], fluxfile )
             except KeyError:
                 fluxfile = None
         else:
