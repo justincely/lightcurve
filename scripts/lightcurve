@@ -2,6 +2,8 @@
 
 import argparse
 import re
+import os
+
 from lightcurve import LightCurve
 
 #------------------------------------------------------------
@@ -57,6 +59,6 @@ if __name__ == "__main__":
         for dataset in all_datasets:
             print dataset
             out_lc = LightCurve( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
-            curvename = dataset.replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
+            curvename = os.path.split( dataset )[1].replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
             out_lc.write( args.outname or curvename )
 
