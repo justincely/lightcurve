@@ -610,7 +610,7 @@ class LightCurve(object):
                                  error_col] )
         hdu_out.append( tab )
 
-        hdu_out.writeto( self.outname, clobber=clobber)  
+        hdu_out.writeto( self.outname.strip('.gz'), clobber=clobber)  
 
 
 #--------------------------------------------------------------
