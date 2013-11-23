@@ -483,25 +483,16 @@ class LightCurve(object):
         except KeyError:
             tdstab = ''
 
-
-        if '$' in tdstab:
-            tdspath, tdsfile = tdstab.split( '$' )
-            try:
-                tdsfile = os.path.join( os.environ[tdspath], tdsfile )
-            except KeyError:
-                tdsfile = None
-        else:
-            tdspath = './'
-            tdsfile = tdstab
-
+            
+        tdsfile = expand_refname( tdstab )
 
         if (not tdsfile) or (not os.path.exists( tdsfile ) ):
-            print ' WARNING: Fluxfile not available %s,' % tdsfile
-            print ' using unity flux calibration instead.'
+            print ' WARNING: tdsfile not available %s,' % tdsfile
+            print ' using unity TDS correction instead.'
             return np.ones( hdu[ 'events' ].data['time'].shape )[index]
         
-        tds_data = pyfits.getdata( tdsfile,ext=1 )
-        REF_TIME = pyfits.getval( tdstab,'REF_TIME',ext=1)
+        tds_data = pyfits.getdata( tdsfile, ext=1 )
+        REF_TIME = pyfits.getval( tdsfile, 'REF_TIME',ext=1)
         mode_index = np.where( (tds_data['OPT_ELEM'] == hdu[0].header['opt_elem'] ) &
                                (tds_data['APERTURE'] == hdu[0].header['aperture'] ) &
                                (tds_data['SEGMENT'] == hdu[0].header['segment'] ) )[0]
@@ -548,15 +539,7 @@ class LightCurve(object):
             fluxtab = ''
 
 
-        if '$' in fluxtab:
-            fluxpath, fluxfile = fluxtab.split( '$' )
-            try:
-                fluxfile = os.path.join( os.environ[fluxpath], fluxfile )
-            except KeyError:
-                fluxfile = None
-        else:
-            fluxpath = './'
-            fluxfile = fluxtab
+        fluxfile = expand_refname( fluxtab )
 
         if (not fluxfile) or (not os.path.exists( fluxfile ) ):
             print ' WARNING: Fluxfile not available %s,' % fluxfile
@@ -612,53 +595,24 @@ class LightCurve(object):
 
         hdu_out.writeto( self.outname.strip('.gz'), clobber=clobber)  
 
-
 #--------------------------------------------------------------
 
-def backout_tds( response, wavelength, mjd, opt_elem, aperture, segment, tdstab='/grp/hst/cdbs/lref/w7h1935dl_tds.fits'):
-    """
-    Backs out TDS from response curve
+def expand_refname( refname ):
+    '''  Expand header reference file name to full path if $ is
+    present.
 
-    #COPY from COS reference files repository
-    """
+    '''
 
-    #print 'Removing TDS for:', opt_elem, aperture, segment
-    #print 'Using:',tdstab,' From:',mjd
+    if '$' in refname:
+        refpath, reffile = refname.split( '$' )
+        
+        try:
+            reffile = os.path.join( os.environ[refpath], reffile )
+        except KeyError:
+            pass
 
+    else:
+        refpath = './'
+        reffile = refname
 
-    #-------#
-    # get correction array 
-    #-------#
-    tds_data = pyfits.getdata( tdstab,ext=1 )
-    REF_TIME = pyfits.getval( tdstab,'REF_TIME',ext=1)
-    mode_index = np.where( (tds_data['OPT_ELEM'] == opt_elem) &
-                           (tds_data['APERTURE'] == aperture) &
-                           (tds_data['SEGMENT'] == segment) )[0]
-
-    mode_line = tds_data[ mode_index ]
-   
-    tds_nwl = mode_line['NWL'][0]
-    tds_nt = mode_line['NT'][0]
-    tds_wavelength = mode_line['WAVELENGTH'][0]
-    smaller_index = np.where( mode_line['TIME'][0][:tds_nt] < mjd )[0]
-    time_index = smaller_index.max()
-
-    tds_slope = mode_line['SLOPE'][0]
-    tds_intercept = mode_line['INTERCEPT'][0]
-
-    correction_array = np.zeros( len(tds_wavelength) )
-    for i,wave in enumerate( tds_wavelength ):
-        correction = calculate_drop( mjd, REF_TIME, tds_slope[time_index,i], tds_intercept[time_index,i] )
-        correction_array[i] = correction
-
-    #-------
-    # interpolate onto input arrays
-    #------
-
-    interp_function = interp1d( tds_wavelength, correction_array, 1 )
-    interp_correction = interp_function( wavelength )
-
-    return response / interp_correction
-
- #--------------------------------------------------------------
-
+    return reffile
