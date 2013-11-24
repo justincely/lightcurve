@@ -53,8 +53,7 @@ def test_error():
         'Error not calculated right with no background'
 
     obj.background = np.ones( 10 ) * 5
-
-    assert np.array_equal( obj.error, np.ones( 10 ) * np.sqrt( 20) ), \
+    assert np.array_equal( obj.error, np.ones( 10 ) * np.sqrt( 20 + 5 ) ), \
         'Error not calculated right with a constant background'
 
 #-------------------------------------------------------------------------------

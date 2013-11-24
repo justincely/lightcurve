@@ -155,10 +155,11 @@ class LightCurve(object):
     def error(self):
         """ Calculate error array """
 
-        if not len(self.counts):
-            return self.counts.copy()
+        if not len(self.gross):
+            return self.gross.copy()
         else:
-            return np.sqrt( self.counts + self.background )
+            return np.sqrt( self.gross + self.background )
+
 
     @property
     def flux_error(self):
@@ -174,6 +175,7 @@ class LightCurve(object):
             return self.gross.copy()
         else:
             return (self.error / self.counts ) *  self.flux
+
 
     @property
     def net(self):
@@ -324,8 +326,15 @@ class LightCurve(object):
                                         bstart, bend, 
                                         wlim[0], wlim[1],
                                         hdu[1].header['sdqflags'] )
+
+            bstart, bend = self._get_extraction_region( hdu, segment, 'background2' )
+            index = np.hstack( (index, self._extract_index(hdu,
+                                                          xlim[0], xlim[1], 
+                                                          bstart, bend, 
+                                                          wlim[0], wlim[1],
+                                                          hdu[1].header['sdqflags']) ) )
             
-            b_corr = ( (bend - bstart) / (yend -ystart) )
+            b_corr = ( (bend - bstart) / (yend -ystart) ) / 2.
             background += b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
                                                  weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
             
@@ -469,7 +478,8 @@ class LightCurve(object):
                                ( (hdu[1].data['WAVELENGTH'] > 1217) | 
                                  (hdu[1].data['WAVELENGTH'] < 1214) ) &
                                ( (hdu[1].data['WAVELENGTH'] > 1308) | 
-                                 (hdu[1].data['WAVELENGTH'] < 1300) ) )[0]
+                                 (hdu[1].data['WAVELENGTH'] < 1300) ) 
+                               ) [0]
 
         return data_index
 
@@ -580,6 +590,7 @@ class LightCurve(object):
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
         flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
+        flux_error_col = pyfits.Column('flux_error', 'D', 'ergs/s', array=self.flux_error)
         bkgnd_col = pyfits.Column('background', 'D', 'cnts', array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
@@ -589,6 +600,7 @@ class LightCurve(object):
                                  counts_col,
                                  net_col,
                                  flux_col,
+                                 flux_error_col,
                                  bkgnd_col,
                                  error_col] )
         hdu_out.append( tab )

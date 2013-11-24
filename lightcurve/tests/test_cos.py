@@ -57,6 +57,8 @@ def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
         hdu_out[1].header.update( 'sp_loc_{}'.format( segment ), 100 )
         hdu_out[1].header.update( 'b_hgt1_{}'.format( segment ), 20 )
         hdu_out[1].header.update( 'b_bkg1_{}'.format( segment ), 150 )
+        hdu_out[1].header.update( 'b_hgt2_{}'.format( segment ), 20 )
+        hdu_out[1].header.update( 'b_bkg2_{}'.format( segment ), 50 )
 
     hdu_out[1].header.update( 'sdqflags', 16 )
 
