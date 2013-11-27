@@ -605,7 +605,11 @@ class LightCurve(object):
                                  error_col] )
         hdu_out.append( tab )
 
-        hdu_out.writeto( self.outname.strip('.gz'), clobber=clobber)  
+        if self.outname.endswith('.gz'):
+            print "Nope, can't write to gzipped files"
+            self.outname = self.outname[:-3]
+
+        hdu_out.writeto( self.outname, clobber=clobber)  
 
 #--------------------------------------------------------------
 
