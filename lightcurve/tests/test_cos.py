@@ -3,7 +3,8 @@ Tests for extraction of COS data.
 
 """
 
-from ..lightcurve import LightCurve
+from lightcurve import io
+
 import numpy as np
 import pyfits
 import os
@@ -70,7 +71,7 @@ def test_FUV():
     """ Test the FUV file extraction """
 
     generate_test_files()
-    lc = LightCurve(filename='test_corrtag_a.fits')
+    lc = io.open(filename='test_corrtag_a.fits')
 
     for stepsize in [.1, .5, 1, 2, 5, 10]:
         lc.extract( step=stepsize )
@@ -88,6 +89,6 @@ def test_epsilon():
     test_file = 'epsilon_corrtag_a.fits' 
     generate_test_files( outname=test_file, epsilon=1.25 )
 
-    lc = LightCurve( filename=test_file )
+    lc = io.open( filename=test_file )
 
     assert lc.gross.sum() == 16384 * 1.25, 'Espilon not accounted for'

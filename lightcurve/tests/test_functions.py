@@ -3,7 +3,7 @@ Test Misc functions
 
 """
 
-from ..lightcurve import expand_refname
+from ..cos import expand_refname
 import os
 
 #-------------------------------------------------------------------------------

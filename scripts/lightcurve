@@ -5,6 +5,7 @@ import re
 import os
 
 from lightcurve import LightCurve
+from lightcurve import io
 
 #------------------------------------------------------------
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
 
         for dataset in all_datasets:
             print dataset
-            new_lc = LightCurve( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
+            new_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
 
             out_lc += new_lc
 
@@ -58,7 +59,7 @@ if __name__ == "__main__":
     else:
         for dataset in all_datasets:
             print dataset
-            out_lc = LightCurve( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
+            out_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
             curvename = os.path.split( dataset )[1].replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
             out_lc.write( args.outname or curvename )
 
