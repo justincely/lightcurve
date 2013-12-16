@@ -57,10 +57,15 @@ class CosCurve( LightCurve ):
 
         """
 
-
         SECOND_PER_MJD = 1.15741e-5
-        end = min( self.hdu['events'].data[ 'time' ].max(), 
-                   self.hdu[1].header['EXPTIME'] )
+
+
+        if not len( self.hdu[1].data['time'] ): 
+            end = 0
+        else:
+            end = min( self.hdu['events'].data[ 'time' ].max(), 
+                       self.hdu[1].header['EXPTIME'] )
+
 
         all_steps = np.arange(0, end+step, step)
 

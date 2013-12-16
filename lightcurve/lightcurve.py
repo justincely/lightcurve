@@ -49,6 +49,7 @@ class LightCurve(object):
         self.mjd = np.array( [] )
         self.background = np.array( [] )
         self.flux = np.array( [] )
+        self.times = np.array( [] )
 
 
     def __add__( self, other ):
