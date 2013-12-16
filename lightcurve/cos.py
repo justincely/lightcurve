@@ -329,6 +329,13 @@ class CosCurve( LightCurve ):
         interp_func = interp1d( flux_hdu[1].data[flux_index]['WAVELENGTH'].flatten(), 
                                 flux_hdu[1].data[flux_index]['SENSITIVITY'].flatten() )
 
+        if not hdu['events'].data['wavelength'][index].max() < flux_hdu[1].data[flux_index]['wavelength'].flatten().max():
+            raise ValueError( "Data wavelengths are above the response curve values" )
+
+        if not hdu['events'].data['wavelength'][index].min() < flux_hdu[1].data[flux_index]['wavelength'].flatten().min():
+            raise ValueError( "Data wavelengths are below the response curve values" )
+
+
         all_resp = interp_func( hdu[ 'events' ].data['wavelength'][index] )
 
         return all_resp
