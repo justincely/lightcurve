@@ -10,7 +10,9 @@ virtualenv:
     system_site_packages: true
 
 before_install:
-    sudo apt-get install -qq python-numpy python-scipy
+    sh ci/setup.sh
+    sudo apt-get install python-numpy 
+    sudo apt-get install python-scipy
 
 # command to install dependencies
 install: "pip install -r requirements.txt"
