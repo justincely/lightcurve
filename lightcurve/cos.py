@@ -88,11 +88,11 @@ class CosCurve( LightCurve ):
             else:
                 ystart, yend = ylim[0], ylim[1]
 
-            index = self._extract_index(hdu,
-                                        xlim[0], xlim[1], 
-                                        ystart, yend, 
-                                        wlim[0], wlim[1],
-                                        hdu[1].header['sdqflags'] )
+            index = extract_index(hdu,
+                                  xlim[0], xlim[1], 
+                                  ystart, yend, 
+                                  wlim[0], wlim[1],
+                                  hdu[1].header['sdqflags'] )
             gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
                                    weights=hdu[ 'events' ].data['epsilon'][index] )[0]
 
@@ -106,18 +106,18 @@ class CosCurve( LightCurve ):
             ### Background calculation
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
-            index = self._extract_index(hdu,
-                                        xlim[0], xlim[1], 
-                                        bstart, bend, 
-                                        wlim[0], wlim[1],
-                                        hdu[1].header['sdqflags'] )
+            index = extract_index(hdu,
+                                  xlim[0], xlim[1], 
+                                  bstart, bend, 
+                                  wlim[0], wlim[1],
+                                  hdu[1].header['sdqflags'] )
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background2' )
-            index = np.hstack( (index, self._extract_index(hdu,
-                                                          xlim[0], xlim[1], 
-                                                          bstart, bend, 
-                                                          wlim[0], wlim[1],
-                                                          hdu[1].header['sdqflags']) ) )
+            index = np.hstack( (index, extract_index(hdu,
+                                                     xlim[0], xlim[1], 
+                                                     bstart, bend, 
+                                                     wlim[0], wlim[1],
+                                                     hdu[1].header['sdqflags']) ) )
             
             b_corr = ( (bend - bstart) / (yend -ystart) ) / 2.
             background += b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
@@ -214,39 +214,6 @@ class CosCurve( LightCurve ):
         return y_start, y_end
 
 
-    def _extract_index(self, hdu, x_start, x_end, 
-                        y_start, y_end, w_start, w_end, sdqflags=0):
-        """
-        Extract counts from given HDU using input parameters.
-
-        Lyman Alpha line counts will be excluded by default.
-
-        """
-
-        #if hdu[0].header['OPT_ELEM'] == 'G140L':
-        #    w_start = max( 920, wstart )
-        #    w_end = min( 1800, wend )
-
-        data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
-                               ( hdu[1].data['XCORR'] < x_end ) &
-
-                               ( hdu[1].data['YCORR'] >= y_start ) & 
-                               ( hdu[1].data['YCORR'] < y_end ) &
-
-                               np.logical_not( hdu[1].data['DQ'] & sdqflags ) &
-
-                               ( (hdu[1].data['WAVELENGTH'] > w_start) & 
-                                 (hdu[1].data['WAVELENGTH'] < w_end) ) &
-
-                               ( (hdu[1].data['WAVELENGTH'] > 1217) | 
-                                 (hdu[1].data['WAVELENGTH'] < 1214) ) &
-                               ( (hdu[1].data['WAVELENGTH'] > 1308) | 
-                                 (hdu[1].data['WAVELENGTH'] < 1300) ) 
-                               ) [0]
-
-        return data_index
-
-
     def _get_tds(self, hdu, index):
         """ return tds correction for each event
         """
@@ -340,6 +307,40 @@ class CosCurve( LightCurve ):
 
         return all_resp
 
+
+#--------------------------------------------------------------
+
+def extract_index( hdu, x_start, x_end, 
+                   y_start, y_end, w_start, w_end, sdqflags=0):
+    """
+    Extract counts from given HDU using input parameters.
+
+    Lyman Alpha line counts will be excluded by default.
+
+    """
+
+    #if hdu[0].header['OPT_ELEM'] == 'G140L':
+    #    w_start = max( 920, wstart )
+    #    w_end = min( 1800, wend )
+
+    data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
+                           ( hdu[1].data['XCORR'] < x_end ) &
+
+                           ( hdu[1].data['YCORR'] >= y_start ) & 
+                           ( hdu[1].data['YCORR'] < y_end ) &
+
+                           np.logical_not( hdu[1].data['DQ'] & sdqflags ) &
+
+                           ( (hdu[1].data['WAVELENGTH'] > w_start) & 
+                             (hdu[1].data['WAVELENGTH'] < w_end) ) &
+
+                           ( (hdu[1].data['WAVELENGTH'] > 1217) | 
+                             (hdu[1].data['WAVELENGTH'] < 1214) ) &
+                           ( (hdu[1].data['WAVELENGTH'] > 1308) | 
+                             (hdu[1].data['WAVELENGTH'] < 1300) ) 
+                           ) [0]
+
+    return data_index
 
 #--------------------------------------------------------------
 
