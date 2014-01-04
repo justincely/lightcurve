@@ -3,6 +3,8 @@ Class and tools for extracting lightcurve data from time-tag event lists
 
 """
 
+from __future__ import print_function
+
 __all__ = ['LightCurve']
 
 from astropy.io import fits as pyfits
@@ -227,7 +229,7 @@ class LightCurve(object):
         hdu_out.append( tab )
 
         if self.outname.endswith('.gz'):
-            print "Nope, can't write to gzipped files"
+            print("Nope, can't write to gzipped files")
             self.outname = self.outname[:-3]
 
         hdu_out.writeto( self.outname, clobber=clobber)  

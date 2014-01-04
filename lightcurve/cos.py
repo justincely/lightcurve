@@ -3,6 +3,8 @@ Holder of Cosmic Origins Spectrograph (COS) classes and utilities
 
 """
 
+from __future__ import print_function
+
 from astropy.io import fits as pyfits
 import os
 import numpy as np
@@ -227,8 +229,8 @@ class CosCurve( LightCurve ):
         tdsfile = expand_refname( tdstab )
 
         if (not tdsfile) or (not os.path.exists( tdsfile ) ):
-            print ' WARNING: tdsfile not available %s,' % tdsfile
-            print ' using unity TDS correction instead.'
+            print(' WARNING: tdsfile not available %s,' % tdsfile )
+            print(' using unity TDS correction instead.' )
             return np.ones( hdu[ 'events' ].data['time'].shape )[index]
         
         tds_data = pyfits.getdata( tdsfile, ext=1 )
@@ -281,8 +283,8 @@ class CosCurve( LightCurve ):
         fluxfile = expand_refname( fluxtab )
 
         if (not fluxfile) or (not os.path.exists( fluxfile ) ):
-            print ' WARNING: Fluxfile not available %s,' % fluxfile
-            print ' using unity flux calibration instead.'
+            print(' WARNING: Fluxfile not available %s,' % fluxfile )
+            print(' using unity flux calibration instead.' )
             return np.ones( hdu[ 'events' ].data['time'].shape )[index]
 
 
