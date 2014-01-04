@@ -1,7 +1,6 @@
 language: python
 
 python:
-  - "2.6"
   - "2.7"
   - "3.2"
   - "3.3"
@@ -12,12 +11,12 @@ virtualenv:
 before_install:
     - sudo apt-get update -q
     - sudo apt-get -y install -q gfortran libblas-dev liblapack-dev libatlas-dev swig    
+    - sudo apt-get install -qq python-scipy
     - pip freeze
 
 # command to install dependencies
 install:
     - yes w | pip install -q numpy
-    - yes w | pip install -q scipy 
     - "pip install -r requirements.txt"
 
 # command to run tests
