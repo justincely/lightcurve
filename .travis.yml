@@ -10,14 +10,14 @@ virtualenv:
     system_site_packages: true
 
 before_install:
-    - sudo apt-get update
-    - sudo apt-get install -qq gfortran libblas-dev liblapack-dev libatlas-dev swig    
+    - sudo apt-get update -q
+    - sudo apt-get -y install -q gfortran libblas-dev liblapack-dev libatlas-dev swig    
     - pip freeze
 
 # command to install dependencies
 install:
-    - pip install -q numpy
-    - pip install -q scipy 
+    - yes w | pip install -q numpy
+    - yes w | pip install -q scipy 
     - "pip install -r requirements.txt"
 
 # command to run tests
