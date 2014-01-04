@@ -6,7 +6,7 @@ Tests for extraction of COS data.
 from lightcurve import io
 
 import numpy as np
-import pyfits
+from astropy.io import fits as pyfits
 import os
 
 #-------------------------------------------------------------------------------
