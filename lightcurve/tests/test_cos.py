@@ -4,6 +4,7 @@ Tests for extraction of COS data.
 """
 
 from lightcurve import io
+from ..cos import extract_index
 
 import numpy as np
 from astropy.io import fits as pyfits
@@ -92,3 +93,22 @@ def test_epsilon():
     lc = io.open( filename=test_file )
 
     assert lc.gross.sum() == 16384 * 1.25, 'Espilon not accounted for'
+
+#-------------------------------------------------------------------------------
+
+def test_extract_index():
+    """test that the extracted indexes works"""
+
+    test_file = 'dq_corrtag_a.fits'
+    generate_test_files( outname=test_file )
+
+    hdu = pyfits.open( test_file, mode='update' )
+    hdu[1].data['dq'][:] = 8
+
+    good_index = extract_index( hdu, 0, 16384, 0, 1024, -1, 10000, 8)
+    assert len( good_index ) == 0, 'Should be no good data: {}'.format( len(good_index) )
+   
+    good_index = extract_index( hdu, 0, 16384, 0, 1024, -1, 10000, 8376)
+    assert len( good_index ) == 0, 'Still should be no good data: {}'.format( len(good_index) )
+
+

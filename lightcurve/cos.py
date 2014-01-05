@@ -5,6 +5,8 @@ Holder of Cosmic Origins Spectrograph (COS) classes and utilities
 
 from __future__ import print_function
 
+__all__ = ['extract_index']
+
 from astropy.io import fits as pyfits
 import os
 import numpy as np
@@ -36,7 +38,6 @@ class CosCurve( LightCurve ):
 
         else:
             pass
-
 
 
     def __str__(self):
@@ -84,12 +85,13 @@ class CosCurve( LightCurve ):
         for segment, hdu in self.hdu_dict.iteritems():
 
             ### Source Calculation
-            
+            #print('Source fluxcal')
             if not ylim:
                 ystart, yend = self._get_extraction_region( hdu, segment, 'spectrum' )
             else:
                 ystart, yend = ylim[0], ylim[1]
-
+            #print(segment, ystart, yend)
+            #print(xlim, ystart, yend, wlim, hdu[1].header['sdqflags'])
             index = extract_index(hdu,
                                   xlim[0], xlim[1], 
                                   ystart, yend, 
@@ -106,7 +108,7 @@ class CosCurve( LightCurve ):
 
 
             ### Background calculation
-
+            #print('Background fluxcal')
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
             index = extract_index(hdu,
                                   xlim[0], xlim[1], 
@@ -289,22 +291,30 @@ class CosCurve( LightCurve ):
 
 
         flux_hdu = pyfits.open( fluxfile )
-        flux_index = np.where( (flux_hdu[1].data['SEGMENT'] == hdu[0].header['segment']) &
+        setting_index = np.where( (flux_hdu[1].data['SEGMENT'] == hdu[0].header['segment']) &
                                (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
                                (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']) &
                                (flux_hdu[1].data['APERTURE'] == hdu[0].header['aperture']) )[0]
 
-
-        interp_func = interp1d( flux_hdu[1].data[flux_index]['WAVELENGTH'].flatten(), 
-                                flux_hdu[1].data[flux_index]['SENSITIVITY'].flatten() )
-
-        if not hdu['events'].data['wavelength'][index].max() < flux_hdu[1].data[flux_index]['wavelength'].flatten().max():
-            raise ValueError( "Data wavelengths are above the response curve values" )
-
-        if not hdu['events'].data['wavelength'][index].min() < flux_hdu[1].data[flux_index]['wavelength'].flatten().min():
-            raise ValueError( "Data wavelengths are below the response curve values" )
+        if not len( setting_index ) == 1:
+            raise ValueError('Too many rows found: {}'.format( len(setting_index) ) )
 
 
+        resp_wave = flux_hdu[1].data[setting_index]['WAVELENGTH'].flatten()
+        response = flux_hdu[1].data[setting_index]['SENSITIVITY'].flatten()
+
+        data_max = hdu['events'].data['wavelength'][index].max()
+        data_min = hdu['events'].data['wavelength'][index].min()
+
+        if data_max > resp_wave.max():
+            print( "Expanding minumum response curve by {}".format( data_max - resp_wave.max() ) )
+            resp_wave[ np.argmax( resp_wave ) ] = data_max
+
+        if data_min < resp_wave.min():
+            print( "Expanding minimum response curve by {}".format( data_min - resp_wave.min() ) )
+            resp_wave[ np.argmin( rep_wave ) ] = data_min
+
+        interp_func = interp1d( resp_wave, response )
         all_resp = interp_func( hdu[ 'events' ].data['wavelength'][index] )
 
         return all_resp

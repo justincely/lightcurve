@@ -17,7 +17,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Software Development :: Libraries :: Python Modules'],
     packages = ['lightcurve'],
-    requires = ['numpy','pyfits','astropy'],
+    requires = ['numpy','scipy','astropy'],
     scripts =  ['scripts/lightcurve']
     )
 
