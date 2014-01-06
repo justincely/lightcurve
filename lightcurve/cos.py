@@ -295,10 +295,12 @@ class CosCurve( LightCurve ):
                                (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
                                (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']) &
                                (flux_hdu[1].data['APERTURE'] == hdu[0].header['aperture']) )[0]
-
-        if not len( setting_index ) == 1:
+        if len( setting_index ) == 0:
+            print('No row in fluxtab found for this dataset, no FLUXCAL performed')
+            return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        elif len( setting_index ) > 1:
             raise ValueError('Too many rows found: {}'.format( len(setting_index) ) )
-
+        
 
         resp_wave = flux_hdu[1].data[setting_index]['WAVELENGTH'].flatten()
         response = flux_hdu[1].data[setting_index]['SENSITIVITY'].flatten()
@@ -312,7 +314,7 @@ class CosCurve( LightCurve ):
 
         if data_min < resp_wave.min():
             print( "Expanding minimum response curve by {}".format( data_min - resp_wave.min() ) )
-            resp_wave[ np.argmin( rep_wave ) ] = data_min
+            resp_wave[ np.argmin( resp_wave ) ] = data_min
 
         interp_func = interp1d( resp_wave, response )
         all_resp = interp_func( hdu[ 'events' ].data['wavelength'][index] )
