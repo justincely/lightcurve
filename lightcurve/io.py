@@ -49,15 +49,15 @@ def check_filetype(filename):
                           'DQ',
                           'PHA'] )
 
-    lightcurve_names = set( ['times',
-                             'mjd',
-                             'gross',
-                             'counts',
-                             'net',
-                             'flux',
-                             'flux_error',
-                             'background',
-                             'error'] )
+    lightcurve_names = set( ['TIMES',
+                             'MJD',
+                             'GROSS',
+                             'COUNTS',
+                             'NET',
+                             'FLUX',
+                             'FLUX_ERROR',
+                             'BACKGROUND',
+                             'ERROR'] )
 
     hdu = pyfits.open( filename )
     input_names = set( [item.upper() for 
