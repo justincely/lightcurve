@@ -241,6 +241,13 @@ class CosCurve( LightCurve ):
                                (tds_data['APERTURE'] == hdu[0].header['aperture'] ) &
                                (tds_data['SEGMENT'] == hdu[0].header['segment'] ) )[0]
 
+
+        if len( mode_index ) == 0:
+            print('No row in tdstab found for this dataset, no TDSCORR performed')
+            return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        elif len( mode_index ) > 1:
+            raise ValueError('Too many rows found: {}'.format( len(mode_index) ) )
+
         mode_line = tds_data[ mode_index ]
 
         tds_nt = mode_line['NT'][0]
