@@ -55,8 +55,7 @@ class LightCurve(object):
 
 
     def __add__( self, other ):
-        """ Overload the '+' operator.  If other is a float or int, the entire
-        the value is added to the gross and background arrays.  If other is
+        """ Overload the '+' operator. If other is
         another LightCurve object, the arrays are concatenated and re-sorted
         in order of the MJD array.
         
@@ -80,49 +79,27 @@ class LightCurve(object):
             out_obj.times = out_obj.times[ sorted_index ]
 
         else:
-            out_obj.gross = self.gross + other
-            out_obj.background = self.background + other
-            out_obj.times = self.times
-            out_obj.mjd = self.mjd
+            raise NotImplementedError("I'm not yet sure how to do this")
         
         return out_obj
 
+    def __sub__(self, other):
+        """ Overload the - operator """
 
-    def __mul__( self, other ):
+        raise NotImplementedError("I'm not yet sure how to do this")
+    
+
+    def __mul__(self, other):
         """ Overload the * operator """
         
-        out_obj = LightCurve()
+        raise NotImplementedError("I'm not yet sure how to do this")
 
-        out_obj.gross = self.gross * other
-        out_obj.flux = self.flux * other
-        out_obj.background = self.background * other
-        out_obj.times = self.times
-        out_obj.mjd = self.mjd
-
-        return out_obj
-
-
-    def __div__( self, other ):
+    
+    def __div__(self, other):
         """ Overload the / operator """
         
-        out_obj = LightCurve()
-
-        if isinstance( other, LightCurve ):
-            out_obj.gross = self.gross / other.gross
-            out_obj.flux = self.flux / other.gross
-            out_obj.background = self.background / other.background
-            out_obj.times = self.times / other.times
-            out_obj.mjd = self.mjd
-
-        else:
-            out_obj.gross = self.gross / other
-            out_obj.flux = self.flux / other
-            out_obj.background = self.background / other
-            out_obj.times = self.times
-            out_obj.mjd = self.mjd
-
-        return out_obj
-
+        raise NotImplementedError("I'm not yet sure how to do this")
+    
 
     def __str__(self):
         """Prettier representation of object instanct"""
