@@ -73,17 +73,8 @@ def test_operations():
     b.times = np.ones( 3 )
     b.mjd = b.times.copy()
 
-    assert np.array_equal( (a + 2).gross, np.ones( 2 ) * 10 + 2 ), \
-        'Array addition by value not successful'
-
     assert np.array_equal( (a + b).gross, np.array( [10, 10, 20, 20, 20] ) ), \
         'Array concatenation not successful'
-
-    assert np.array_equal( (a * 2).gross, np.ones( 2 ) * 10 * 2 ), \
-        'Array multiplication not successful' 
-
-    assert np.array_equal( (a / 2).gross, np.ones( 2 ) * 10 * .5 ), \
-        'Array division not successful'
 
 #-------------------------------------------------------------------------------
 
