@@ -7,8 +7,14 @@ from __future__ import print_function
 
 __all__ = ['LightCurve']
 
-from astropy.io import fits as pyfits
+import astropy
+import scipy
 import numpy as np
+from datetime import datetime
+
+from .version import version as  __version__
+from astropy.io import fits as pyfits
+
 
 #-------------------------------------------------------------------------------
 
@@ -209,13 +215,19 @@ class LightCurve(object):
 
         """
 
-        if isinstance( outname, str ):
+        if isinstance(outname, str):
             self.outname = outname
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
         try: hdu_out[0].header = self.hdu[0].header
         except AttributeError: pass 
+
+        hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
+        hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
+        hdu_out[0].header['AP_VER'] = (astropy.__version__, 'Astropy version used')
+	hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
+        hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
 
         times_col = pyfits.Column('times', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd) 
@@ -239,8 +251,8 @@ class LightCurve(object):
                                  bkgnd_col,
                                  error_col] )
         hdu_out.append( tab )
-
-        if self.outname.endswith('.gz'):
+            
+        if outname.endswith('.gz'):
             print("Nope, can't write to gzipped files")
             self.outname = self.outname[:-3]
 
