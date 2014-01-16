@@ -18,7 +18,7 @@ from .lightcurve import LightCurve
 
 class CosCurve( LightCurve ):
     """
-    subclass for COS specific routines and abilities
+    Subclass for COS specific routines and abilities
 
     """
       
@@ -35,7 +35,6 @@ class CosCurve( LightCurve ):
         if 'filename' in kwargs:
             self.read_cos( kwargs['filename'] )
             self.extract( step=step, wlim=wlim )
-
         else:
             pass
 
@@ -328,15 +327,48 @@ class CosCurve( LightCurve ):
 
         return all_resp
 
-
 #--------------------------------------------------------------
 
 def extract_index( hdu, x_start, x_end, 
                    y_start, y_end, w_start, w_end, sdqflags=0):
     """
-    Extract counts from given HDU using input parameters.
+    Extract event indeces from given HDU using input parameters.
 
-    Lyman Alpha line counts will be excluded by default.
+    Wavelength regions containing geocoronal airglow emission will be excluded
+    automatically.  These regions include Lyman Alpha between 1214 and 1217
+    Angstroms and Oxygen I from 1300 to 1308.
+
+
+    Parameters
+    ----------
+    hdu : HDUlist
+        Header Data Unit from COS corrtag file
+        
+    x_start : float
+        Lower bound of events in pixel space
+
+    x_end : float
+        Upper bound of events in pixel space
+
+    y_start : float
+        Lower bound of events in pixel space
+
+    y_end : float
+        Upper bound of events in pixel space
+
+    w_start : float
+        Lower bound of events in wavelength space
+
+    w_end : float
+        Upper bound of events in wavelength space
+
+    sdqflags : int
+        Bitwise DQ value of bad events
+
+    Returns
+    -------
+    data_index : np.ndarray
+        Indeces of desired events
 
     """
 

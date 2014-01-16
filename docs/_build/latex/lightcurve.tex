@@ -13,7 +13,7 @@
 
 
 \title{lightcurve Documentation}
-\date{January 13, 2014}
+\date{January 15, 2014}
 \release{0.1.1}
 \author{Justin Ely}
 \newcommand{\sphinxlogo}{}
@@ -31,75 +31,72 @@
     \PYG@it{\PYG@bf{\PYG@ff{#1}}}}}}}
 \def\PYG#1#2{\PYG@reset\PYG@toks#1+\relax+\PYG@do{#2}}
 
-\expandafter\def\csname PYG@tok@gd\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@gu\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
-\expandafter\def\csname PYG@tok@gt\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.25,0.82}{##1}}}
-\expandafter\def\csname PYG@tok@gs\endcsname{\let\PYG@bf=\textbf}
-\expandafter\def\csname PYG@tok@gr\endcsname{\def\PYG@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@cm\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
-\expandafter\def\csname PYG@tok@vg\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@m\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@mh\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@cs\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}\def\PYG@bc##1{\setlength{\fboxsep}{0pt}\colorbox[rgb]{1.00,0.94,0.94}{\strut ##1}}}
-\expandafter\def\csname PYG@tok@ge\endcsname{\let\PYG@it=\textit}
-\expandafter\def\csname PYG@tok@vc\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@il\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@go\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.19,0.19,0.19}{##1}}}
-\expandafter\def\csname PYG@tok@cp\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@gi\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@gh\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
-\expandafter\def\csname PYG@tok@ni\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.84,0.33,0.22}{##1}}}
-\expandafter\def\csname PYG@tok@nl\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.13,0.44}{##1}}}
-\expandafter\def\csname PYG@tok@nn\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
-\expandafter\def\csname PYG@tok@no\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.38,0.68,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@na\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@nb\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@nc\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
-\expandafter\def\csname PYG@tok@nd\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.33,0.33,0.33}{##1}}}
-\expandafter\def\csname PYG@tok@ne\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@nf\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.49}{##1}}}
-\expandafter\def\csname PYG@tok@si\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.44,0.63,0.82}{##1}}}
-\expandafter\def\csname PYG@tok@s2\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@vi\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@nt\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.45}{##1}}}
-\expandafter\def\csname PYG@tok@nv\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@s1\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@gp\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
-\expandafter\def\csname PYG@tok@sh\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@ow\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@sx\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
-\expandafter\def\csname PYG@tok@bp\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@c1\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
-\expandafter\def\csname PYG@tok@kc\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@c\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
-\expandafter\def\csname PYG@tok@mf\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@err\endcsname{\def\PYG@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
-\expandafter\def\csname PYG@tok@kd\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@ss\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.32,0.47,0.09}{##1}}}
-\expandafter\def\csname PYG@tok@sr\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.14,0.33,0.53}{##1}}}
-\expandafter\def\csname PYG@tok@mo\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@mi\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@kn\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@o\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
-\expandafter\def\csname PYG@tok@kr\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@s\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@kp\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@w\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
-\expandafter\def\csname PYG@tok@kt\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.56,0.13,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@sc\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@sb\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@k\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@se\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@sd\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@gd{\def\PYG@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\def\PYG@tok@gu{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\def\PYG@tok@gt{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.25,0.82}{##1}}}
+\def\PYG@tok@gs{\let\PYG@bf=\textbf}
+\def\PYG@tok@gr{\def\PYG@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\def\PYG@tok@cm{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
+\def\PYG@tok@vg{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@m{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@mh{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@cs{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}\def\PYG@bc##1{\colorbox[rgb]{1.00,0.94,0.94}{##1}}}
+\def\PYG@tok@ge{\let\PYG@it=\textit}
+\def\PYG@tok@vc{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@il{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@go{\def\PYG@tc##1{\textcolor[rgb]{0.19,0.19,0.19}{##1}}}
+\def\PYG@tok@cp{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@gi{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\def\PYG@tok@gh{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\def\PYG@tok@ni{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.84,0.33,0.22}{##1}}}
+\def\PYG@tok@nl{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.13,0.44}{##1}}}
+\def\PYG@tok@nn{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
+\def\PYG@tok@no{\def\PYG@tc##1{\textcolor[rgb]{0.38,0.68,0.84}{##1}}}
+\def\PYG@tok@na{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@nb{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@nc{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
+\def\PYG@tok@nd{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.33,0.33,0.33}{##1}}}
+\def\PYG@tok@ne{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@nf{\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.49}{##1}}}
+\def\PYG@tok@si{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.44,0.63,0.82}{##1}}}
+\def\PYG@tok@s2{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@vi{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@nt{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.45}{##1}}}
+\def\PYG@tok@nv{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@s1{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@gp{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
+\def\PYG@tok@sh{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@ow{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@sx{\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
+\def\PYG@tok@bp{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@c1{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
+\def\PYG@tok@kc{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@c{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
+\def\PYG@tok@mf{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@err{\def\PYG@bc##1{\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{##1}}}
+\def\PYG@tok@kd{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@ss{\def\PYG@tc##1{\textcolor[rgb]{0.32,0.47,0.09}{##1}}}
+\def\PYG@tok@sr{\def\PYG@tc##1{\textcolor[rgb]{0.14,0.33,0.53}{##1}}}
+\def\PYG@tok@mo{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@mi{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@kn{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@o{\def\PYG@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\def\PYG@tok@kr{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@s{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@kp{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@w{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\def\PYG@tok@kt{\def\PYG@tc##1{\textcolor[rgb]{0.56,0.13,0.00}{##1}}}
+\def\PYG@tok@sc{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@sb{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@k{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@se{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@sd{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
 
 \def\PYGZbs{\char`\\}
 \def\PYGZus{\char`\_}
 \def\PYGZob{\char`\{}
 \def\PYGZcb{\char`\}}
 \def\PYGZca{\char`\^}
-\def\PYGZam{\char`\&}
-\def\PYGZlt{\char`\<}
-\def\PYGZgt{\char`\>}
 \def\PYGZsh{\char`\#}
 \def\PYGZpc{\char`\%}
 \def\PYGZdl{\char`\$}
@@ -118,6 +115,399 @@
 
 
 Contents:
+\phantomsection\label{index:module-lightcurve.lightcurve}\index{lightcurve.lightcurve (module)}
+Contains the basic LightCurve object which is inherited by the subclasses.
+\index{LightCurve (class in lightcurve.lightcurve)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve}\pysigline{\strong{class }\code{lightcurve.lightcurve.}\bfcode{LightCurve}}~\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{lightcurve object} :
+
+\end{description}\end{quote}
+\paragraph{Methods}
+\index{counts (lightcurve.lightcurve.LightCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve.counts}\pysigline{\bfcode{counts}}
+Calculate counts array
+
+Counts are calculated as the gross - background
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{counts} : np.ndarray
+\begin{quote}
+
+Array containing the calculated counts
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{error (lightcurve.lightcurve.LightCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve.error}\pysigline{\bfcode{error}}
+Calculate error array
+
+Error is calculated as sqrt( gross + background )
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{error} : np.ndarray
+\begin{quote}
+
+Array containing the calculated error
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{flux\_error (lightcurve.lightcurve.LightCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve.flux_error}\pysigline{\bfcode{flux\_error}}
+Estimate the error in the flux array
+
+Flux error is currently estimated as having the same magnitude
+relative to flux as the error has to counts.  Very simple approximation
+for now
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{flux\_error} : np.ndarray
+\begin{quote}
+
+Array containing the calculated error in flux
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{net (lightcurve.lightcurve.LightCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve.net}\pysigline{\bfcode{net}}
+Calculate net array
+
+Net is calculated as counts / time
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{net} : np.ndarray
+\begin{quote}
+
+Array containing calculated net
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{signal\_to\_noise (lightcurve.lightcurve.LightCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve.signal_to_noise}\pysigline{\bfcode{signal\_to\_noise}}
+Quick signal to noise estimate
+
+S/N is calculated as the ratio of gross to error
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{sn\_ratio} : np.ndarray
+\begin{quote}
+
+Array containing calculated signal to noise ratio
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{write() (lightcurve.lightcurve.LightCurve method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.lightcurve.LightCurve.write}\pysiglinewithargsret{\bfcode{write}}{\emph{outname=None}, \emph{clobber=False}}{}
+Write lightcurve out to FITS file
+\begin{quote}\begin{description}
+\item[{Parameters }] \leavevmode
+\textbf{outname} : bool or str
+\begin{quote}
+
+Either True/False, or output name
+\end{quote}
+
+\textbf{clobber} : bool
+\begin{quote}
+
+Allow overwriting of existing file with same name
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\phantomsection\label{index:module-lightcurve.cos}\index{lightcurve.cos (module)}
+Holder of Cosmic Origins Spectrograph (COS) classes and utilities
+\index{extract\_index() (in module lightcurve.cos)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.extract_index}\pysiglinewithargsret{\code{lightcurve.cos.}\bfcode{extract\_index}}{\emph{hdu}, \emph{x\_start}, \emph{x\_end}, \emph{y\_start}, \emph{y\_end}, \emph{w\_start}, \emph{w\_end}, \emph{sdqflags=0}}{}
+Extract event indeces from given HDU using input parameters.
+
+Wavelength regions containing geocoronal airglow emission will be excluded
+automatically.  These regions include Lyman Alpha between 1214 and 1217
+Angstroms and Oxygen I from 1300 to 1308.
+\begin{quote}\begin{description}
+\item[{Parameters }] \leavevmode
+\textbf{hdu} : HDUlist
+\begin{quote}
+
+Header Data Unit from COS corrtag file
+\end{quote}
+
+\textbf{x\_start} : float
+\begin{quote}
+
+Lower bound of events in pixel space
+\end{quote}
+
+\textbf{x\_end} : float
+\begin{quote}
+
+Upper bound of events in pixel space
+\end{quote}
+
+\textbf{y\_start} : float
+\begin{quote}
+
+Lower bound of events in pixel space
+\end{quote}
+
+\textbf{y\_end} : float
+\begin{quote}
+
+Upper bound of events in pixel space
+\end{quote}
+
+\textbf{w\_start} : float
+\begin{quote}
+
+Lower bound of events in wavelength space
+\end{quote}
+
+\textbf{w\_end} : float
+\begin{quote}
+
+Upper bound of events in wavelength space
+\end{quote}
+
+\textbf{sdqflags} : int
+\begin{quote}
+
+Bitwise DQ value of bad events
+\end{quote}
+
+\item[{Returns }] \leavevmode
+\textbf{data\_index} : np.ndarray
+\begin{quote}
+
+Indeces of desired events
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\begin{quote}\begin{description}
+\item[{class}] \leavevmode
+`CosCurve'
+
+\end{description}\end{quote}
+
+
+\bigskip\hrule{}\bigskip
+
+\index{CosCurve (class in lightcurve.cos)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve}\pysiglinewithargsret{\strong{class }\code{lightcurve.cos.}\bfcode{CosCurve}}{\emph{**kwargs}}{}
+Bases: {\hyperref[index:lightcurve.lightcurve.LightCurve]{\code{lightcurve.lightcurve.LightCurve}}}
+
+Subclass for COS specific routines and abilities
+\paragraph{Methods}
+\index{counts (lightcurve.cos.CosCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.counts}\pysigline{\bfcode{counts}}
+Calculate counts array
+
+Counts are calculated as the gross - background
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{counts} : np.ndarray
+\begin{quote}
+
+Array containing the calculated counts
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{error (lightcurve.cos.CosCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.error}\pysigline{\bfcode{error}}
+Calculate error array
+
+Error is calculated as sqrt( gross + background )
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{error} : np.ndarray
+\begin{quote}
+
+Array containing the calculated error
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{extract() (lightcurve.cos.CosCurve method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.extract}\pysiglinewithargsret{\bfcode{extract}}{\emph{step=1}, \emph{xlim=(0}, \emph{16384)}, \emph{wlim=(2}, \emph{10000)}, \emph{ylim=None}}{}
+Loop over HDUs and extract the lightcurve
+
+\end{fulllineitems}
+
+\index{flux\_error (lightcurve.cos.CosCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.flux_error}\pysigline{\bfcode{flux\_error}}
+Estimate the error in the flux array
+
+Flux error is currently estimated as having the same magnitude
+relative to flux as the error has to counts.  Very simple approximation
+for now
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{flux\_error} : np.ndarray
+\begin{quote}
+
+Array containing the calculated error in flux
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{net (lightcurve.cos.CosCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.net}\pysigline{\bfcode{net}}
+Calculate net array
+
+Net is calculated as counts / time
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{net} : np.ndarray
+\begin{quote}
+
+Array containing calculated net
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{read\_cos() (lightcurve.cos.CosCurve method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.read_cos}\pysiglinewithargsret{\bfcode{read\_cos}}{\emph{filename}}{}
+Extract light curve from COS data
+
+\end{fulllineitems}
+
+\index{signal\_to\_noise (lightcurve.cos.CosCurve attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.signal_to_noise}\pysigline{\bfcode{signal\_to\_noise}}
+Quick signal to noise estimate
+
+S/N is calculated as the ratio of gross to error
+\begin{quote}\begin{description}
+\item[{Returns }] \leavevmode
+\textbf{sn\_ratio} : np.ndarray
+\begin{quote}
+
+Array containing calculated signal to noise ratio
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{write() (lightcurve.cos.CosCurve method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.cos.CosCurve.write}\pysiglinewithargsret{\bfcode{write}}{\emph{outname=None}, \emph{clobber=False}}{}
+Write lightcurve out to FITS file
+\begin{quote}\begin{description}
+\item[{Parameters }] \leavevmode
+\textbf{outname} : bool or str
+\begin{quote}
+
+Either True/False, or output name
+\end{quote}
+
+\textbf{clobber} : bool
+\begin{quote}
+
+Allow overwriting of existing file with same name
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\phantomsection\label{index:module-lightcurve.io}\index{lightcurve.io (module)}
+I/O operations to get data into a LightCurve
+\index{open() (in module lightcurve.io)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:lightcurve.io.open}\pysiglinewithargsret{\code{lightcurve.io.}\bfcode{open}}{\emph{**kwargs}}{}
+Open file into lightcurve
+
+filename must be supplied in kwargs
+\begin{quote}\begin{description}
+\item[{Parameters }] \leavevmode
+\textbf{**kwargs :} :
+\begin{quote}
+
+Additional arguements to be passed to lightcurve instantiations
+\end{quote}
+
+\item[{Returns }] \leavevmode
+\textbf{LightCurve or subclass} :
+
+\item[{Raises }] \leavevmode
+\textbf{IOError} :
+\begin{quote}
+
+If filename is not supplied in {\color{red}\bfseries{}**}kwargs
+\end{quote}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
 
 
 \chapter{Indices and tables}
@@ -134,6 +524,14 @@ Contents:
 \end{itemize}
 
 
+\renewcommand{\indexname}{Python Module Index}
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+\bigletter{l}
+\item {\texttt{lightcurve.cos}}, \pageref{index:module-lightcurve.cos}
+\item {\texttt{lightcurve.io}}, \pageref{index:module-lightcurve.io}
+\item {\texttt{lightcurve.lightcurve}}, \pageref{index:module-lightcurve.lightcurve}
+\end{theindex}
 
 \renewcommand{\indexname}{Index}
 \printindex

@@ -1,5 +1,5 @@
 """
-Class and tools for extracting lightcurve data from time-tag event lists
+Contains the basic LightCurve object which is inherited by the subclasses.
 
 """
 
@@ -14,35 +14,23 @@ import numpy as np
 
 class LightCurve(object):
     """
-    Turn an event list (*_rawtag_*.fits, *_corrtag_*.fits) into a lightcurve.
-    
-    Parameters
-    ----------
-    filename : string
-        Name of fits file
-
     Returns
     -------
     lightcurve object
 
-    Examples
-    --------
-    >>> obj = LightCurve( filename='ipppssoot_corrtag.fits' )
-    obj.gross
-    obj.background
-    obj.error
-
     """
 
     def __init__(self):
-        """ Initialize and extract lightcurve from input corrtag
+        """ Instantiate an empty LightCurve object.
 
-        lightcurves must contain:
+        LightCurves must contain:
             gross
             times (timestep)
             mjd
             background
             flux
+
+        All values are currently set to empty arrays.
 
         """
 
@@ -55,9 +43,10 @@ class LightCurve(object):
 
 
     def __add__( self, other ):
-        """ Overload the '+' operator. If other is
-        another LightCurve object, the arrays are concatenated and re-sorted
-        in order of the MJD array.
+        """ Overload the '+' operator. 
+
+        If other is another LightCurve object, the arrays are 
+        concatenated and re-sorted in order of the MJD array.
         
         """
 
@@ -109,7 +98,17 @@ class LightCurve(object):
 
     @property
     def counts(self):
-        """ Calculate counts array """
+        """ Calculate counts array 
+
+        Counts are calculated as the gross - background
+
+
+        Returns
+        -------
+        counts : np.ndarray
+            Array containing the calculated counts
+
+        """
         
         if not len( self.gross ):
             return self.gross.copy()
@@ -119,7 +118,16 @@ class LightCurve(object):
 
     @property
     def error(self):
-        """ Calculate error array """
+        """ Calculate error array 
+
+        Error is calculated as sqrt( gross + background )
+
+        Returns
+        -------
+        error : np.ndarray
+            Array containing the calculated error
+
+        """
 
         if not len(self.gross):
             return self.gross.copy()
@@ -135,6 +143,11 @@ class LightCurve(object):
         relative to flux as the error has to counts.  Very simple approximation
         for now
 
+        Returns
+        -------
+        flux_error : np.ndarray
+            Array containing the calculated error in flux
+
         """
 
         if not len(self.gross):
@@ -145,7 +158,18 @@ class LightCurve(object):
 
     @property
     def net(self):
-        """ Calculate net array """
+        """ Calculate net array 
+
+        Net is calculated as counts / time
+
+        Returns
+        -------
+        net : np.ndarray
+            Array containing calculated net
+        
+        """
+
+
 
         if not len(self.counts):
             return self.counts.copy()
@@ -156,6 +180,14 @@ class LightCurve(object):
     @property
     def signal_to_noise(self):
         """ Quick signal to noise estimate
+
+        S/N is calculated as the ratio of gross to error
+
+        Returns
+        -------
+        sn_ratio : np.ndarray
+            Array containing calculated signal to noise ratio
+
         """
 
         if not len(self.gross):
@@ -164,14 +196,17 @@ class LightCurve(object):
             return self.gross / self.error
 
 
-    def normalize(self):
-        """ Normalize arrays around mean"""
-        self.gross = self.gross / self.gross.mean()
-        self.background = self.background / self.background.mean()
-
-
     def write(self, outname=None, clobber=False):
-        """ Write out to FITS file
+        """ Write lightcurve out to FITS file
+
+        Parameters
+        ----------
+        outname : bool or str
+            Either True/False, or output name
+
+        clobber : bool
+            Allow overwriting of existing file with same name
+
         """
 
         if isinstance( outname, str ):

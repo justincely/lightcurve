@@ -1,5 +1,5 @@
 """
-simplify IO
+I/O operations to get data into a LightCurve
 
 """
 
@@ -14,7 +14,23 @@ __all__ = ['open']
 
 def open( **kwargs ):
     """ Open file into lightcurve
-    
+
+    filename must be supplied in kwargs
+
+    Parameters
+    ----------
+    **kwargs : 
+        Additional arguements to be passed to lightcurve instantiations
+
+    Returns
+    -------
+    LightCurve or subclass
+
+    Raises
+    ------
+    IOError
+        If filename is not supplied in **kwargs
+
     """
 
     if not 'filename' in kwargs:
@@ -76,16 +92,28 @@ def check_filetype(filename):
 #--------------------------------------------------------------
 
 def open_lightcurve(filename):    
-    """ Read lightcurve from fits file back into base object"""
+    """ Read lightcurve from fits file back into base object
 
-    out_obj = LightCurve()
+    Parameters
+    ----------
+    filename : str
+        Filename of FITS lightcurve to open
+
+    Returns
+    -------
+    out_lc : LightCurve
+        LightCurve instantiation containing data from file
+
+    """
+
+    out_lc = LightCurve()
 
     hdu = pyfits.open( filename)
 
-    out_obj.times = hdu[1].data['times']
-    out_obj.gross = hdu[1].data['gross']
-    out_obj.mjd = hdu[1].data['mjd']
-    out_obj.flux = hdu[1].data['flux']
-    out_obj.background = hdu[1].data['background']
+    out_lc.times = hdu[1].data['times']
+    out_lc.gross = hdu[1].data['gross']
+    out_lc.mjd = hdu[1].data['mjd']
+    out_lc.flux = hdu[1].data['flux']
+    out_lc.background = hdu[1].data['background']
 
     return out_obj
