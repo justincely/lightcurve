@@ -59,9 +59,9 @@ on the right side of the page.
 <h3>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
 
-<pre><code>&gt;&gt;&gt; from lightcurve import LightCurve 
+<pre><code>&gt;&gt;&gt; from lightcurve import io 
 &gt;&gt;&gt; # Read the lightcurve into memory
-&gt;&gt;&gt; data = LightCurve( filename='rootname_corrtag_a.fits' )
+&gt;&gt;&gt; data = io.open( filename='rootname_corrtag_a.fits' )
 
 &gt;&gt;&gt; #Now just access the data
 &gt;&gt;&gt; data.mjd, data.gross, data.error #etc
