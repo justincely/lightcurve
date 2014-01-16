@@ -5,7 +5,7 @@ import glob
 setup(
     name = 'lightcurve',
     url = 'http://justincely.github.io/lightcurve/',
-    version = '0.1.1', 
+    version = '0.2.0', 
     description = 'Create lightcurves from HST/COS data',
     author = 'Justin Ely',
     author_email = 'ely@stsci.edu',
