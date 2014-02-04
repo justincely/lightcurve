@@ -96,11 +96,17 @@ class CosCurve( LightCurve ):
                                   ystart, yend, 
                                   wlim[0], wlim[1],
                                   hdu[1].header['sdqflags'] )
-            if not len(index): continue
+            #print(segment)
+            #print(index)
+            #if not len(index): continue
             
-            max_xpix = int(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
-            min_xpix = int(max(hdu['events'].data['XCORR'][index].min(), xlim[0]))
-            n_pixels = max_xpix - min_xpix
+            try:
+                max_xpix = round(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
+                min_xpix = round(max(hdu['events'].data['XCORR'][index].min(), xlim[0]))
+                n_pixels = (max_xpix - min_xpix) + 1
+            except ValueError:
+                n_pixels = 1
+
             #print(n_pixels)
 
             gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
@@ -138,8 +144,7 @@ class CosCurve( LightCurve ):
             weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array
             background_flux +=  (b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights )[0]) / n_pixels
 
-
-        self.gross = gross
+        self.gross = gross 
         self.flux = flux - background_flux
         self.background = background
         self.mjd = self.hdu[1].header[ 'EXPSTART' ] + np.array( all_steps[:-1] ) * SECOND_PER_MJD
@@ -236,6 +241,9 @@ class CosCurve( LightCurve ):
             
         tdsfile = expand_refname( tdstab )
 
+        if not len(index):
+            return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+
         if (not tdsfile) or (not os.path.exists( tdsfile ) ):
             print(' WARNING: tdsfile not available %s,' % tdsfile )
             print(' using unity TDS correction instead.' )
@@ -296,6 +304,9 @@ class CosCurve( LightCurve ):
 
 
         fluxfile = expand_refname( fluxtab )
+
+        if not len(index):
+            return np.ones( hdu[ 'events' ].data['time'].shape )[index]
 
         if (not fluxfile) or (not os.path.exists( fluxfile ) ):
             print(' WARNING: Fluxfile not available %s,' % fluxfile )
