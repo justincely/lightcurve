@@ -96,6 +96,13 @@ class CosCurve( LightCurve ):
                                   ystart, yend, 
                                   wlim[0], wlim[1],
                                   hdu[1].header['sdqflags'] )
+            if not len(index): continue
+            
+            max_xpix = int(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
+            min_xpix = int(max(hdu['events'].data['XCORR'][index].min(), xlim[0]))
+            n_pixels = max_xpix - min_xpix
+            #print(n_pixels)
+
             gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
                                    weights=hdu[ 'events' ].data['epsilon'][index] )[0]
 
@@ -103,7 +110,7 @@ class CosCurve( LightCurve ):
             tds_corr = self._get_tds( hdu, index )
 
             weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array 
-            flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights)[0]
+            flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights)[0] / n_pixels
 
 
             ### Background calculation
@@ -129,7 +136,7 @@ class CosCurve( LightCurve ):
             response_array = self._get_fluxes( hdu, index )
             tds_corr = self._get_tds( hdu, index )
             weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array
-            background_flux +=  b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights )[0] 
+            background_flux +=  (b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights )[0]) / n_pixels
 
 
         self.gross = gross
