@@ -1,0 +1,3 @@
+Quick usage guide
+=================
+...wouldn't you like to know...

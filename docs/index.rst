@@ -11,6 +11,13 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   intro.rst
+   install.rst
+   usage.rst
+
+A bit of the code
+=================
+
 .. automodule:: lightcurve.lightcurve
    :members:
 
