@@ -1,5 +1,5 @@
 """
-I/O operations to get data into a LightCurve
+Library of I/O routines to get data into a LightCurve object.
 
 """
 
@@ -19,7 +19,7 @@ def open( **kwargs ):
 
     Parameters
     ----------
-    **kwargs : 
+    **kwargs : dict
         Additional arguements to be passed to lightcurve instantiations
 
     Returns
@@ -49,6 +49,16 @@ def check_filetype(filename):
     """Determine the type of data being input.
 
     File type is determined by the culumns in the first data extension.
+
+    Parameters
+    ----------
+    filename : str
+        name of the input file
+
+    Returns
+    -------
+    filetype : str
+        determined type of file
 
     """
 

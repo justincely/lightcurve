@@ -57,6 +57,9 @@ class CosCurve( LightCurve ):
     def extract(self, step=1, xlim=(0, 16384), wlim=(2, 10000), ylim=None ):
         """ Loop over HDUs and extract the lightcurve
 
+        This is the main driver of the lightcuve extracion, and definitely
+        needs some better documentation.
+
         """
 
         SECOND_PER_MJD = 1.15741e-5

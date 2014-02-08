@@ -175,8 +175,6 @@ class LightCurve(object):
         
         """
 
-
-
         if not len(self.counts):
             return self.counts.copy()
         else:
