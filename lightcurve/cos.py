@@ -393,6 +393,10 @@ def extract_index( hdu, x_start, x_end,
 
     """
 
+    if hdu[0].['OPT_ELEM'] == 'G140L':
+           lyman = (1212, 1219)
+           oxygen = (1298, 1310) 
+
     lyman = (1214, 1217)
     oxygen = (1300, 1308)
 
