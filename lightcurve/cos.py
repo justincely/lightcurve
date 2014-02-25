@@ -393,9 +393,8 @@ def extract_index( hdu, x_start, x_end,
 
     """
 
-    #if hdu[0].header['OPT_ELEM'] == 'G140L':
-    #    w_start = max( 920, wstart )
-    #    w_end = min( 1800, wend )
+    lyman = (1214, 1217)
+    oxygen = (1300, 1308)
 
     data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
                            ( hdu[1].data['XCORR'] < x_end ) &
@@ -408,10 +407,10 @@ def extract_index( hdu, x_start, x_end,
                            ( (hdu[1].data['WAVELENGTH'] > w_start) & 
                              (hdu[1].data['WAVELENGTH'] < w_end) ) &
 
-                           ( (hdu[1].data['WAVELENGTH'] > 1217) | 
-                             (hdu[1].data['WAVELENGTH'] < 1214) ) &
-                           ( (hdu[1].data['WAVELENGTH'] > 1308) | 
-                             (hdu[1].data['WAVELENGTH'] < 1300) ) 
+                           ( (hdu[1].data['WAVELENGTH'] > lyman[1]) | 
+                             (hdu[1].data['WAVELENGTH'] < lyman[0]) ) &
+                           ( (hdu[1].data['WAVELENGTH'] > oxygen[1]) | 
+                             (hdu[1].data['WAVELENGTH'] < oxygen[0]) ) 
                            ) [0]
 
     return data_index
