@@ -21,6 +21,9 @@ def parse_args():
     parser.add_argument('--alt', dest='alt', type=float, default=None,
                         help='Maximum allowable altitude for the sun above the horizon')
 
+    parser.add_argument('--filter', dest='filter', action='store_false', default=True,
+                        help='Filter out airglow?')
+
     parser.add_argument('--step', dest='step', type=float, default=1,
                         help='timestep for lightcurve in seconds')
 
@@ -51,7 +54,11 @@ if __name__ == "__main__":
         out_lc = LightCurve()
 
         for dataset in all_datasets:
-            new_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax), alt=args.alt )
+            new_lc = io.open( filename=dataset, 
+                              step=args.step, 
+                              wlim=(args.wmin, args.wmax), 
+                              alt=args.alt, 
+                              filter=args.filter)
 
             out_lc += new_lc
 
@@ -60,7 +67,11 @@ if __name__ == "__main__":
 
     else:
         for dataset in all_datasets:
-            out_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax), alt=args.alt )
+            out_lc = io.open( filename=dataset, 
+                              step=args.step, 
+                              wlim=(args.wmin, args.wmax), 
+                              alt=args.alt,
+                              filter=args.filter)
             curvename = os.path.split( dataset )[1].replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
             out_lc.write( args.outname or curvename )
 

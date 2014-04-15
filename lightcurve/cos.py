@@ -35,9 +35,12 @@ class CosCurve( LightCurve ):
         if 'alt' in kwargs: alt = kwargs['alt']
         else: alt = None
 
+        if 'filter' in kwargs: filter_airglow = kwargs['filter']
+        else: filter_airglow = True
+
         if 'filename' in kwargs:
             self.read_cos( kwargs['filename'] )
-            self.extract( step=step, wlim=wlim )
+            self.extract( step=step, wlim=wlim, filter_airglow=filter_airglow)
 
             if alt:
                 seg = self.hdu_dict.keys()[0]
@@ -87,7 +90,8 @@ class CosCurve( LightCurve ):
         print('Extracting from: {}'.format(self.input_list))
 
 
-    def extract(self, step=1, xlim=(0, 16384), wlim=(2, 10000), ylim=None ):
+    def extract(self, step=1, xlim=(0, 16384), wlim=(2, 10000), ylim=None,
+                filter_airglow=True):
         """ Loop over HDUs and extract the lightcurve
 
         This is the main driver of the lightcuve extracion, and definitely
@@ -130,7 +134,8 @@ class CosCurve( LightCurve ):
                                   xlim[0], xlim[1], 
                                   ystart, yend, 
                                   wlim[0], wlim[1],
-                                  hdu[1].header['sdqflags'] )
+                                  hdu[1].header['sdqflags'],
+                                  filter_airglow=filter_airglow)
             #print(segment)
             #print(index)
             #if not len(index): continue
@@ -161,14 +166,16 @@ class CosCurve( LightCurve ):
                                   xlim[0], xlim[1], 
                                   bstart, bend, 
                                   wlim[0], wlim[1],
-                                  hdu[1].header['sdqflags'] )
+                                  hdu[1].header['sdqflags'],
+                                  filter_airglow=filter_airglow)
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background2' )
             index = np.hstack( (index, extract_index(hdu,
                                                      xlim[0], xlim[1], 
                                                      bstart, bend, 
                                                      wlim[0], wlim[1],
-                                                     hdu[1].header['sdqflags']) ) )
+                                                     hdu[1].header['sdqflags'],
+                                                     filter_airglow=filter_airglow) ) )
             
             b_corr = ( (bend - bstart) / (yend -ystart) ) / 2.
             background += b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
@@ -385,7 +392,8 @@ class CosCurve( LightCurve ):
 #--------------------------------------------------------------
 
 def extract_index( hdu, x_start, x_end, 
-                   y_start, y_end, w_start, w_end, sdqflags=0):
+                   y_start, y_end, w_start, w_end, sdqflags=0,
+                   filter_airglow=True):
     """
     Extract event indeces from given HDU using input parameters.
 
@@ -427,8 +435,12 @@ def extract_index( hdu, x_start, x_end,
 
     """
 
-    lyman = (1214, 1217)
-    oxygen = (1300, 1308)
+    if filter_airglow:
+        lyman = (1214, 1217)
+        oxygen = (1300, 1308)
+    else:
+        lyman = (w_end, w_start)
+        oxygen = (w_end, w_start)
 
     data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
                            ( hdu[1].data['XCORR'] < x_end ) &
