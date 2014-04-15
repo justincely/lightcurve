@@ -69,12 +69,9 @@ class LightCurve(object):
             out_obj.bins = np.concatenate( [self.bins, other.bins] )
 
             sorted_index = np.argsort( out_obj.mjd )
-            print(sorted_index)
-            print(out_obj.gross)
-            print(out_obj.times)
-            print(out_obj.bins)
 
             out_obj.gross = out_obj.gross[ sorted_index ]
+            out_obj.flux = out_obj.flux[sorted_index]
             out_obj.background = out_obj.background[ sorted_index ]
             out_obj.mjd = out_obj.mjd[ sorted_index ]
             out_obj.times = out_obj.times[ sorted_index ]
@@ -205,6 +202,26 @@ class LightCurve(object):
             return self.gross.copy()
         else:
             return self.gross / self.error
+
+
+    def filter(self, indices):
+        """ Keep only a section of the whole lightcurve
+
+        Modifies the LC in place
+
+        Parameters
+        ----------
+        indices : np.ndarray
+            Array of indexes to keep
+
+        """
+
+        self.gross = self.gross[indices]
+        self.flux = self.flux[indices]
+        self.background = self.background[indices]
+        self.mjd = self.mjd[indices]
+        self.times = self.times[indices]
+        self.bins = self.bins[indices]
 
 
     def write(self, outname=None, clobber=False):

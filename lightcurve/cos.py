@@ -32,9 +32,41 @@ class CosCurve( LightCurve ):
         if 'wlim' in kwargs: wlim = kwargs['wlim']
         else: wlim = (1, 10000)
 
+        if 'alt' in kwargs: alt = kwargs['alt']
+        else: alt = None
+
         if 'filename' in kwargs:
             self.read_cos( kwargs['filename'] )
             self.extract( step=step, wlim=wlim )
+
+            if alt:
+                seg = self.hdu_dict.keys()[0]
+                print('Filtering out times of SUN_ALT < {}'.format(alt))
+                print('--Total time in exposure: {}'.format(
+                        self.hdu_dict[seg][1].header['EXPTIME']))
+                try:
+                    timeline = self.hdu_dict[seg]['TIMELINE'].data
+                    day_index = np.where(timeline['SUN_ALT'] > alt)
+
+                    if len(day_index[0]): 
+                        bad_min = timeline['TIME'][day_index].min()
+                        bad_max = timeline['TIME'][day_index].max()
+
+                        print('--Removing times from {} to {} seconds'.format(bad_min, bad_max))
+                        lc_index = np.where( (self.times < bad_min) |
+                                             (self.times > bad_max) )
+
+                        self.filter(lc_index)
+
+                    else:
+                        print('--No times matching criteria, no filtering performed')
+
+                except KeyError:
+                    print('Warning: No TIMELINE extension found, make sure this dataset')
+                    print('         was calibrated with the *_spt.fits file present')
+                    
+
+                                          
         else:
             pass
 

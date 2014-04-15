@@ -18,6 +18,9 @@ def parse_args():
     parser.add_argument('input', type=str, nargs='*',
                         help='filename of COS corrtag dataset' )
 
+    parser.add_argument('--alt', dest='alt', type=float, default=None,
+                        help='Maximum allowable altitude for the sun above the horizon')
+
     parser.add_argument('--step', dest='step', type=float, default=1,
                         help='timestep for lightcurve in seconds')
 
@@ -48,7 +51,7 @@ if __name__ == "__main__":
         out_lc = LightCurve()
 
         for dataset in all_datasets:
-            new_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
+            new_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax), alt=args.alt )
 
             out_lc += new_lc
 
@@ -57,7 +60,7 @@ if __name__ == "__main__":
 
     else:
         for dataset in all_datasets:
-            out_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax) )
+            out_lc = io.open( filename=dataset, step=args.step, wlim=(args.wmin, args.wmax), alt=args.alt )
             curvename = os.path.split( dataset )[1].replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
             out_lc.write( args.outname or curvename )
 
