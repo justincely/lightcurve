@@ -44,7 +44,7 @@ class CosCurve( LightCurve ):
 
             if alt:
                 seg = self.hdu_dict.keys()[0]
-                print('Filtering out times of SUN_ALT < {}'.format(alt))
+                print('Filtering out times of SUN_ALT > {}'.format(alt))
                 print('--Total time in exposure: {}'.format(
                         self.hdu_dict[seg][1].header['EXPTIME']))
                 try:
