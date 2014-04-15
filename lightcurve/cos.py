@@ -65,7 +65,6 @@ class CosCurve( LightCurve ):
 
         SECOND_PER_MJD = 1.15741e-5
 
-
         if not len( self.hdu[1].data['time'] ): 
             end = 0
         else:
@@ -152,13 +151,15 @@ class CosCurve( LightCurve ):
         self.flux = flux - background_flux
         self.background = background
         self.mjd = self.hdu[1].header[ 'EXPSTART' ] + np.array( all_steps[:-1] ) * SECOND_PER_MJD
-        self.times = np.ones( len( gross ) ) * step
+        self.bins = np.ones( len( gross ) ) * step
+        self.times = all_steps[:-1]
 
         if truncate:
             self.gross = self.gross[:-1]
             self.flux = self.flux[:-1]
             self.background = self.background[:-1]
             self.mjd = self.mjd[:-1]
+            self.bins = self.bins[:-1]
             self.times = self.times[:-1]
 
 

@@ -31,7 +31,8 @@ class LightCurve(object):
 
         LightCurves must contain:
             gross
-            times (timestep)
+            bins (timestep)
+            times 
             mjd
             background
             flux
@@ -41,7 +42,7 @@ class LightCurve(object):
         """
 
         self.gross = np.array( [] )
-        self.times = np.array( [] )
+        self.bins = np.array( [] )
         self.mjd = np.array( [] )
         self.background = np.array( [] )
         self.flux = np.array( [] )
@@ -65,13 +66,19 @@ class LightCurve(object):
                                                   other.background] )
             out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
             out_obj.times = np.concatenate( [self.times, other.times] )
+            out_obj.bins = np.concatenate( [self.bins, other.bins] )
 
             sorted_index = np.argsort( out_obj.mjd )
+            print(sorted_index)
+            print(out_obj.gross)
+            print(out_obj.times)
+            print(out_obj.bins)
 
             out_obj.gross = out_obj.gross[ sorted_index ]
             out_obj.background = out_obj.background[ sorted_index ]
             out_obj.mjd = out_obj.mjd[ sorted_index ]
             out_obj.times = out_obj.times[ sorted_index ]
+            out_obj.bins = out_obj.bins[ sorted_index ]
 
         else:
             raise NotImplementedError("I'm not yet sure how to do this")
@@ -178,7 +185,7 @@ class LightCurve(object):
         if not len(self.counts):
             return self.counts.copy()
         else:
-            return self.counts / self.times.astype( np.float64 )
+            return self.counts / self.bins.astype( np.float64 )
 
         
     @property
@@ -227,6 +234,7 @@ class LightCurve(object):
 	hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
         hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
 
+        bins_col = pyfits.Column('bins', 'D', 'second', array=self.bins)
         times_col = pyfits.Column('times', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd) 
         gross_col = pyfits.Column('gross', 'D', 'counts', array=self.gross)    
@@ -239,7 +247,8 @@ class LightCurve(object):
                                   array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
         
-        tab = pyfits.new_table( [times_col,
+        tab = pyfits.new_table( [bins_col,
+                                 times_col,
                                  mjd_col,
                                  gross_col,
                                  counts_col,

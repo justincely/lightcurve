@@ -35,7 +35,7 @@ def test_net():
     obj = LightCurve()
     obj.gross = np.ones( 10 ) * 5
     obj.background = np.zeros( 10 )
-    obj.times = np.ones( 10 ) * 2
+    obj.bins = np.ones( 10 ) * 2
 
     assert np.array_equal( obj.net, np.ones( 10 ) * 2.5), \
         'Net not calculated right'
@@ -62,16 +62,18 @@ def test_operations():
     """ test *, +, / """
 
     a = LightCurve()
-    a.gross = np.ones( 2 ) * 10
-    a.background = np.zeros( 2 )
-    a.times = np.ones( 2 )
-    a.mjd = a.times.copy()
+    a.gross = np.ones(2) * 10
+    a.background = np.zeros(2)
+    a.bins = np.ones(2)
+    a.times = np.arange(2)
+    a.mjd = a.bins.copy()
 
     b = LightCurve()
-    b.gross = np.ones( 3 ) * 20 
-    b.background = np.zeros( 3 )
-    b.times = np.ones( 3 )
-    b.mjd = b.times.copy()
+    b.gross = np.ones(3) * 20 
+    b.background = np.zeros(3)
+    b.bins = np.ones(3)
+    b.times = np.arange(3)
+    b.mjd = b.bins.copy()
 
     assert np.array_equal( (a + b).gross, np.array( [10, 10, 20, 20, 20] ) ), \
         'Array concatenation not successful'
