@@ -52,6 +52,7 @@ class CosCurve( LightCurve ):
         self.input_filename = filename
 
         self._get_hdus()
+        print('Extracting from: {}'.format(self.input_list))
 
 
     def extract(self, step=1, xlim=(0, 16384), wlim=(2, 10000), ylim=None ):
