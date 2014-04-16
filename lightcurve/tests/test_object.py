@@ -63,13 +63,15 @@ def test_operations():
 
     a = LightCurve()
     a.gross = np.ones(2) * 10
+    a.flux = np.ones(2)
     a.background = np.zeros(2)
     a.bins = np.ones(2)
     a.times = np.arange(2)
     a.mjd = a.bins.copy()
 
     b = LightCurve()
-    b.gross = np.ones(3) * 20 
+    b.gross = np.ones(3) * 20
+    b.flux = np.ones(3) 
     b.background = np.zeros(3)
     b.bins = np.ones(3)
     b.times = np.arange(3)
