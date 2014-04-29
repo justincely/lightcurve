@@ -50,36 +50,24 @@ class LightCurve(object):
 
 
     def __add__( self, other ):
-        """ Overload the '+' operator. 
-
-        If other is another LightCurve object, the arrays are 
-        concatenated and re-sorted in order of the MJD array.
-        
+        """ Overload the '+' operator.         
         """
 
         out_obj = LightCurve()
 
-        if isinstance( other, LightCurve ):
-            out_obj.gross = np.concatenate( [self.gross, other.gross] )
-            out_obj.flux = np.concatenate( [self.flux, other.flux] )
-            out_obj.background = np.concatenate( [self.background, 
-                                                  other.background] )
-            out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
-            out_obj.times = np.concatenate( [self.times, other.times] )
-            out_obj.bins = np.concatenate( [self.bins, other.bins] )
-
-            sorted_index = np.argsort( out_obj.mjd )
-
-            out_obj.gross = out_obj.gross[ sorted_index ]
-            out_obj.flux = out_obj.flux[sorted_index]
-            out_obj.background = out_obj.background[ sorted_index ]
-            out_obj.mjd = out_obj.mjd[ sorted_index ]
-            out_obj.times = out_obj.times[ sorted_index ]
-            out_obj.bins = out_obj.bins[ sorted_index ]
-
-        else:
+        if not isinstance( other, LightCurve ):
             raise NotImplementedError("I'm not yet sure how to do this")
-        
+
+        if not (len(self.gross) == len(other.gross)):
+            raise ValueError("Other LightCurve needs the same number of elements")
+
+        out_obj.gross = self.gross + other.gross
+        out_obj.flux = self.flux + other.flux
+        out_obj.background = self.background + other.background
+        out_obj.mjd = self.mjd
+        out_obj.times = self.times  ### Probably do something else
+        out_obj.bins = self.bins  ### Probably do something else
+
         return out_obj
 
     def __sub__(self, other):
@@ -105,6 +93,35 @@ class LightCurve(object):
         
         return "Lightcurve Object"
  
+
+    def concatenate(self, other):
+        """ Concatenate two lightcurves 
+
+        The arrays are 
+        concatenated and re-sorted in order of the MJD array.
+        
+        """
+
+        out_obj = LightCurve()
+
+        out_obj.gross = np.concatenate( [self.gross, other.gross] )
+        out_obj.flux = np.concatenate( [self.flux, other.flux] )
+        out_obj.background = np.concatenate( [self.background, 
+                                              other.background] )
+        out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
+        out_obj.times = np.concatenate( [self.times, other.times] )
+        out_obj.bins = np.concatenate( [self.bins, other.bins] )
+        
+        sorted_index = np.argsort( out_obj.mjd )
+        
+        out_obj.gross = out_obj.gross[ sorted_index ]
+        out_obj.flux = out_obj.flux[sorted_index]
+        out_obj.background = out_obj.background[ sorted_index ]
+        out_obj.mjd = out_obj.mjd[ sorted_index ]
+        out_obj.times = out_obj.times[ sorted_index ]
+        out_obj.bins = out_obj.bins[ sorted_index ]
+
+        return out_obj
 
     @property
     def counts(self):
