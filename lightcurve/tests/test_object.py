@@ -63,20 +63,27 @@ def test_operations():
 
     a = LightCurve()
     a.gross = np.ones(2) * 10
+    a.flux = np.ones(2) 
     a.background = np.zeros(2)
     a.bins = np.ones(2)
     a.times = np.arange(2)
     a.mjd = a.bins.copy()
 
     b = LightCurve()
-    b.gross = np.ones(3) * 20 
+    b.gross = np.ones(3) * 20
+    b.flux = np.ones(3) 
     b.background = np.zeros(3)
     b.bins = np.ones(3)
     b.times = np.arange(3)
     b.mjd = b.bins.copy()
 
-    assert np.array_equal( (a + b).gross, np.array( [10, 10, 20, 20, 20] ) ), \
+    c = a.concatenate(b)
+    assert np.array_equal( c.gross, np.array( [10, 10, 20, 20, 20] ) ), \
         'Array concatenation not successful'
+
+    d = a + a
+    assert np.array_equal( d.gross, np.array([20, 20]) ), \
+        'Array addition not successful'
 
 #-------------------------------------------------------------------------------
 
