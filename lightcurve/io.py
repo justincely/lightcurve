@@ -7,6 +7,7 @@ from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
 from .cos import CosCurve
+from .stis import StisCurve
 
 __all__ = ['open']
 
@@ -34,14 +35,18 @@ def open( **kwargs ):
     """
 
     if not 'filename' in kwargs:
-        raise IOError( 'filename must be supplied' )
+        raise IOError('filename must be supplied')
 
-    filetype = check_filetype( kwargs['filename'] )
+    filetype = check_filetype(kwargs['filename'])
 
     if filetype == 'corrtag':
-        return CosCurve( **kwargs )
+        return CosCurve(**kwargs)
+    elif filetype == 'tag':
+        return StisCurve(**kwargs)
     elif filetype == 'lightcurve':
-        return open_lightcurve( kwargs['filename'] )
+        return open_lightcurve(kwargs['filename'])
+    else:
+        raise IOError("Filetype not recognized: {}".format(filetype))
 
 #--------------------------------------------------------------
 
@@ -85,6 +90,11 @@ def check_filetype(filename):
                              'BACKGROUND',
                              'ERROR'] )
 
+    tag_names = set(['TIME',
+                     'AXIS1', 
+                     'AXIS2', 
+                     'DETAXIS1'])
+
     hdu = pyfits.open( filename )
     input_names = set( [item.upper() for 
                        item in hdu[1].data.names ] )
@@ -94,6 +104,8 @@ def check_filetype(filename):
         filetype = 'corrtag'
     elif input_names == lightcurve_names:
         filetype = 'lightcurve'
+    elif input_names == tag_names:
+        filetype = 'tag'
     else:
         filetype = None
 

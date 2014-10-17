@@ -265,7 +265,7 @@ class LightCurve(object):
         hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
         hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
         hdu_out[0].header['AP_VER'] = (astropy.__version__, 'Astropy version used')
-	hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
+        hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
         hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
 
         bins_col = pyfits.Column('bins', 'D', 'second', array=self.bins)
