@@ -5,8 +5,6 @@ Holder of Cosmic Origins Spectrograph (COS) classes and utilities
 
 from __future__ import print_function
 
-__all__ = ['extract_index']
-
 from astropy.io import fits as pyfits
 import os
 import numpy as np
@@ -14,9 +12,11 @@ from scipy.interpolate import interp1d
 
 from .lightcurve import LightCurve
 
+__all__ = ['extract_index']
+
 #-------------------------------------------------------------------------------
 
-class CosCurve( LightCurve ):
+class CosCurve(LightCurve):
     """
     Subclass for COS specific routines and abilities
 
@@ -101,15 +101,18 @@ class CosCurve( LightCurve ):
 
         SECOND_PER_MJD = 1.15741e-5
 
-        if not len( self.hdu[1].data['time'] ): 
+        time = self.hdu[1].data['time']
+        #time = np.array([round(val, 3) for val in self.hdu[1].data['time']]).astype(np.float64)
+  
+        if not len(time): 
             end = 0
         else:
-            end = min( self.hdu['events'].data[ 'time' ].max(), 
-                       self.hdu[1].header['EXPTIME'] )
+            end = min(time.max(), 
+                      self.hdu[1].header['EXPTIME'] )
 
 
         all_steps = np.arange(0, end+step, step)
-
+     
         if all_steps[-1] > end:
             truncate = True
         else:
@@ -149,14 +152,16 @@ class CosCurve( LightCurve ):
 
             #print(n_pixels)
 
-            gross += np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                   weights=hdu[ 'events' ].data['epsilon'][index] )[0]
+            gross += np.histogram(time[index], 
+                                  all_steps, 
+                                  weights=hdu['events'].data['epsilon'][index])[0]
 
-            response_array = self._get_fluxes( hdu, index )
-            tds_corr = self._get_tds( hdu, index )
+            response_array = self._get_fluxes(hdu, index)
+            response_array = response_array.mean()
+            tds_corr = self._get_tds(hdu, index)
 
-            weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array 
-            flux +=  np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights)[0] / n_pixels
+            weights = hdu['events'].data['epsilon'][index] / step / tds_corr / response_array 
+            flux +=  np.histogram(time[index], all_steps, weights=weights)[0] / n_pixels
 
 
             ### Background calculation
@@ -177,20 +182,24 @@ class CosCurve( LightCurve ):
                                                      hdu[1].header['sdqflags'],
                                                      filter_airglow=filter_airglow) ) )
             
-            b_corr = ( (bend - bstart) / (yend -ystart) ) / 2.
-            background += b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, 
-                                                 weights=hdu[ 'events' ].data['epsilon'][index]  )[0]
+            b_corr = ( (bend - bstart) / (yend - ystart) ) / 2.
+            background += b_corr * np.histogram(time[index], 
+                                                all_steps, 
+                                                weights=hdu['events'].data['epsilon'][index] )[0]
             
-            response_array = self._get_fluxes( hdu, index )
-            tds_corr = self._get_tds( hdu, index )
-            weights = hdu[ 'events' ].data['epsilon'][index] / step / tds_corr / response_array
-            background_flux +=  (b_corr * np.histogram( hdu[ 'events' ].data['time'][index], all_steps, weights=weights )[0]) / n_pixels
+            response_array = self._get_fluxes(hdu, index)
+            tds_corr = self._get_tds(hdu, index)
+            weights = hdu['events'].data['epsilon'][index] / step / tds_corr / response_array
+            background_flux +=  (b_corr * np.histogram(time[index], 
+                                                       all_steps,
+                                                       weights=weights)[0]) / n_pixels
+
 
         self.gross = gross 
         self.flux = flux - background_flux
         self.background = background
-        self.mjd = self.hdu[1].header[ 'EXPSTART' ] + np.array( all_steps[:-1] ) * SECOND_PER_MJD
-        self.bins = np.ones( len( gross ) ) * step
+        self.mjd = self.hdu[1].header['EXPSTART'] + np.array(all_steps[:-1]) * SECOND_PER_MJD
+        self.bins = np.ones(len(gross)) * step
         self.times = all_steps[:-1]
 
         if truncate:
