@@ -21,7 +21,7 @@ class CosCurve(LightCurve):
     Subclass for COS specific routines and abilities
 
     """
-      
+
     def __init__(self, **kwargs):
         """ Initialize and extract lightcurve from input corrtag
         """
@@ -51,13 +51,13 @@ class CosCurve(LightCurve):
                     timeline = self.hdu_dict[seg]['TIMELINE'].data
                     day_index = np.where(timeline['SUN_ALT'] > alt)
 
-                    if len(day_index[0]): 
+                    if len(day_index[0]):
                         bad_min = timeline['TIME'][day_index].min()
                         bad_max = timeline['TIME'][day_index].max()
 
                         print('--Removing times from {} to {} seconds'.format(bad_min, bad_max))
-                        lc_index = np.where( (self.times < bad_min) |
-                                             (self.times > bad_max) )
+                        lc_index = np.where((self.times < bad_min) |
+                                            (self.times > bad_max))
 
                         self.filter(lc_index)
 
@@ -67,9 +67,9 @@ class CosCurve(LightCurve):
                 except KeyError:
                     print('Warning: No TIMELINE extension found, make sure this dataset')
                     print('         was calibrated with the *_spt.fits file present')
-                    
 
-                                          
+
+
         else:
             pass
 
@@ -77,7 +77,7 @@ class CosCurve(LightCurve):
     def __str__(self):
         """Prettier representation of object instanct"""
 
-        return "Lightcurve Object of %s" % ( ','.join( self.input_list ) ) 
+        return "Lightcurve Object of %s" % ( ','.join( self.input_list ) )
 
 
     def read_cos(self, filename ):
@@ -101,18 +101,17 @@ class CosCurve(LightCurve):
 
         SECOND_PER_MJD = 1.15741e-5
 
-        time = self.hdu[1].data['time']
         #time = np.array([round(val, 3) for val in self.hdu[1].data['time']]).astype(np.float64)
-  
-        if not len(time): 
-            end = 0
-        else:
-            end = min(time.max(), 
-                      self.hdu[1].header['EXPTIME'] )
+
+        end = 0
+        for segment, hdu in self.hdu_dict.iteritems():
+            data_max = hdu[1].data['TIME'].max()
+            if data_max > end:
+                end = data_max
 
 
         all_steps = np.arange(0, end+step, step)
-     
+
         if all_steps[-1] > end:
             truncate = True
         else:
@@ -134,15 +133,15 @@ class CosCurve(LightCurve):
             #print(segment, ystart, yend)
             #print(xlim, ystart, yend, wlim, hdu[1].header['sdqflags'])
             index = extract_index(hdu,
-                                  xlim[0], xlim[1], 
-                                  ystart, yend, 
+                                  xlim[0], xlim[1],
+                                  ystart, yend,
                                   wlim[0], wlim[1],
                                   hdu[1].header['sdqflags'],
                                   filter_airglow=filter_airglow)
             #print(segment)
             #print(index)
             #if not len(index): continue
-            
+
             try:
                 max_xpix = round(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
                 min_xpix = round(max(hdu['events'].data['XCORR'][index].min(), xlim[0]))
@@ -152,50 +151,50 @@ class CosCurve(LightCurve):
 
             #print(n_pixels)
 
-            gross += np.histogram(time[index], 
-                                  all_steps, 
+            gross += np.histogram(hdu['events'].data['time'][index],
+                                  all_steps,
                                   weights=hdu['events'].data['epsilon'][index])[0]
 
             response_array = self._get_fluxes(hdu, index)
             response_array = response_array.mean()
             tds_corr = self._get_tds(hdu, index)
 
-            weights = hdu['events'].data['epsilon'][index] / step / tds_corr / response_array 
-            flux +=  np.histogram(time[index], all_steps, weights=weights)[0] / n_pixels
+            weights = hdu['events'].data['epsilon'][index] / step / tds_corr / response_array
+            flux +=  np.histogram(hdu['events'].data['time'][index], all_steps, weights=weights)[0] / n_pixels
 
 
             ### Background calculation
             #print('Background fluxcal')
             bstart, bend = self._get_extraction_region( hdu, segment, 'background1' )
             index = extract_index(hdu,
-                                  xlim[0], xlim[1], 
-                                  bstart, bend, 
+                                  xlim[0], xlim[1],
+                                  bstart, bend,
                                   wlim[0], wlim[1],
                                   hdu[1].header['sdqflags'],
                                   filter_airglow=filter_airglow)
 
             bstart, bend = self._get_extraction_region( hdu, segment, 'background2' )
             index = np.hstack( (index, extract_index(hdu,
-                                                     xlim[0], xlim[1], 
-                                                     bstart, bend, 
+                                                     xlim[0], xlim[1],
+                                                     bstart, bend,
                                                      wlim[0], wlim[1],
                                                      hdu[1].header['sdqflags'],
                                                      filter_airglow=filter_airglow) ) )
-            
+
             b_corr = ( (bend - bstart) / (yend - ystart) ) / 2.
-            background += b_corr * np.histogram(time[index], 
-                                                all_steps, 
+            background += b_corr * np.histogram(hdu['events'].data['time'][index],
+                                                all_steps,
                                                 weights=hdu['events'].data['epsilon'][index] )[0]
-            
+
             response_array = self._get_fluxes(hdu, index)
             tds_corr = self._get_tds(hdu, index)
             weights = hdu['events'].data['epsilon'][index] / step / tds_corr / response_array
-            background_flux +=  (b_corr * np.histogram(time[index], 
+            background_flux +=  (b_corr * np.histogram(hdu['events'].data['time'][index],
                                                        all_steps,
                                                        weights=weights)[0]) / n_pixels
 
 
-        self.gross = gross 
+        self.gross = gross
         self.flux = flux - background_flux
         self.background = background
         self.mjd = self.hdu[1].header['EXPSTART'] + np.array(all_steps[:-1]) * SECOND_PER_MJD
@@ -241,7 +240,7 @@ class CosCurve(LightCurve):
     def _get_both_filenames(self, filename ):
         """ Get a list of both filenames for FUV data
 
-        Regardless if rootname_corrtag_a.fits or rootname_corrtag_b.fits 
+        Regardless if rootname_corrtag_a.fits or rootname_corrtag_b.fits
         is passed in, both will be returned in a list.
 
         """
@@ -270,11 +269,11 @@ class CosCurve(LightCurve):
 
         elif mode == 'background1':
             height =  hdu[1].header['B_HGT1_%s' % (segment)]
-            location = hdu[1].header['B_BKG1_%s' % (segment)] 
+            location = hdu[1].header['B_BKG1_%s' % (segment)]
 
         elif mode == 'background2':
             height =  hdu[1].header['B_HGT2_%s' % (segment)]
-            location = hdu[1].header['B_BKG2_%s' % (segment)] 
+            location = hdu[1].header['B_BKG2_%s' % (segment)]
 
         y_start = location - height/2
         y_end = location + height/2
@@ -291,7 +290,7 @@ class CosCurve(LightCurve):
         except KeyError:
             tdstab = ''
 
-            
+
         tdsfile = expand_refname( tdstab )
 
         if not len(index):
@@ -301,7 +300,7 @@ class CosCurve(LightCurve):
             print(' WARNING: tdsfile not available %s,' % tdsfile )
             print(' using unity TDS correction instead.' )
             return np.ones( hdu[ 'events' ].data['time'].shape )[index]
-        
+
         tds_data = pyfits.getdata( tdsfile, ext=1 )
         REF_TIME = pyfits.getval( tdsfile, 'REF_TIME', ext=1)
         mode_index = np.where( (tds_data['OPT_ELEM'] == hdu[0].header['opt_elem'] ) &
@@ -330,9 +329,9 @@ class CosCurve(LightCurve):
 
         correction_array = np.zeros( len(tds_wavelength) )
         for i, wave in enumerate( tds_wavelength ):
-            correction = calculate_drop( hdu[1].header['EXPSTART'], 
-                                         REF_TIME, 
-                                         tds_slope[time_index,i], 
+            correction = calculate_drop( hdu[1].header['EXPSTART'],
+                                         REF_TIME,
+                                         tds_slope[time_index,i],
                                          tds_intercept[time_index,i] )
             correction_array[i] = correction
 
@@ -377,7 +376,7 @@ class CosCurve(LightCurve):
             return np.ones( hdu[ 'events' ].data['time'].shape )[index]
         elif len( setting_index ) > 1:
             raise ValueError('Too many rows found: {}'.format( len(setting_index) ) )
-        
+
 
         resp_wave = flux_hdu[1].data[setting_index]['WAVELENGTH'].flatten()
         response = flux_hdu[1].data[setting_index]['SENSITIVITY'].flatten()
@@ -400,7 +399,7 @@ class CosCurve(LightCurve):
 
 #--------------------------------------------------------------
 
-def extract_index( hdu, x_start, x_end, 
+def extract_index( hdu, x_start, x_end,
                    y_start, y_end, w_start, w_end, sdqflags=0,
                    filter_airglow=True):
     """
@@ -415,7 +414,7 @@ def extract_index( hdu, x_start, x_end,
     ----------
     hdu : HDUlist
         Header Data Unit from COS corrtag file
-        
+
     x_start : float
         Lower bound of events in pixel space
 
@@ -451,21 +450,21 @@ def extract_index( hdu, x_start, x_end,
         lyman = (w_end, w_start)
         oxygen = (w_end, w_start)
 
-    data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) & 
+    data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) &
                            ( hdu[1].data['XCORR'] < x_end ) &
 
-                           ( hdu[1].data['YCORR'] >= y_start ) & 
+                           ( hdu[1].data['YCORR'] >= y_start ) &
                            ( hdu[1].data['YCORR'] < y_end ) &
 
                            np.logical_not( hdu[1].data['DQ'] & sdqflags ) &
 
-                           ( (hdu[1].data['WAVELENGTH'] > w_start) & 
+                           ( (hdu[1].data['WAVELENGTH'] > w_start) &
                              (hdu[1].data['WAVELENGTH'] < w_end) ) &
 
-                           ( (hdu[1].data['WAVELENGTH'] > lyman[1]) | 
+                           ( (hdu[1].data['WAVELENGTH'] > lyman[1]) |
                              (hdu[1].data['WAVELENGTH'] < lyman[0]) ) &
-                           ( (hdu[1].data['WAVELENGTH'] > oxygen[1]) | 
-                             (hdu[1].data['WAVELENGTH'] < oxygen[0]) ) 
+                           ( (hdu[1].data['WAVELENGTH'] > oxygen[1]) |
+                             (hdu[1].data['WAVELENGTH'] < oxygen[0]) )
                            ) [0]
 
     return data_index
@@ -480,7 +479,7 @@ def expand_refname( refname ):
 
     if '$' in refname:
         refpath, reffile = refname.split( '$' )
-        
+
         try:
             reffile = os.path.join( os.environ[refpath], reffile )
         except KeyError:
@@ -491,4 +490,3 @@ def expand_refname( refname ):
         reffile = refname
 
     return reffile
-
