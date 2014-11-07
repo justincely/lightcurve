@@ -1,5 +1,4 @@
-"""
-Library of I/O routines to get data into a LightCurve object.
+"""Library of I/O routines to get data into a LightCurve object.
 
 """
 
@@ -11,9 +10,9 @@ from .stis import StisCurve
 
 __all__ = ['open']
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-def open( **kwargs ):
+def open(**kwargs):
     """ Open file into lightcurve
 
     filename must be supplied in kwargs
@@ -48,7 +47,7 @@ def open( **kwargs ):
     else:
         raise IOError("Filetype not recognized: {}".format(filetype))
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 def check_filetype(filename):
     """Determine the type of data being input.
@@ -67,8 +66,8 @@ def check_filetype(filename):
 
     """
 
-    corrtag_names = set( ['TIME', 
-                          'RAWX', 
+    corrtag_names = set( ['TIME',
+                          'RAWX',
                           'RAWY',
                           'XCORR',
                           'YCORR',
@@ -91,14 +90,13 @@ def check_filetype(filename):
                              'ERROR'] )
 
     tag_names = set(['TIME',
-                     'AXIS1', 
-                     'AXIS2', 
+                     'AXIS1',
+                     'AXIS2',
                      'DETAXIS1'])
 
-    hdu = pyfits.open( filename )
-    input_names = set( [item.upper() for 
-                       item in hdu[1].data.names ] )
-    hdu.close()
+    with pyfits.open(filename) as hdu:
+        input_names = set([item.upper() for
+                           item in hdu[1].data.names])
 
     if input_names == corrtag_names:
         filetype = 'corrtag'
@@ -111,9 +109,9 @@ def check_filetype(filename):
 
     return filetype
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-def open_lightcurve(filename):    
+def open_lightcurve(filename):
     """ Read lightcurve from fits file back into base object
 
     Parameters
@@ -130,7 +128,7 @@ def open_lightcurve(filename):
 
     out_lc = LightCurve()
 
-    hdu = pyfits.open( filename)
+    hdu = pyfits.open(filename)
 
     out_lc.times = hdu[1].data['times']
     out_lc.gross = hdu[1].data['gross']

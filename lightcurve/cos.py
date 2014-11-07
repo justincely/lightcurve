@@ -11,6 +11,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from .lightcurve import LightCurve
+from .utils import expand_refname
 
 __all__ = ['extract_index']
 
@@ -470,23 +471,3 @@ def extract_index( hdu, x_start, x_end,
     return data_index
 
 #--------------------------------------------------------------
-
-def expand_refname( refname ):
-    '''  Expand header reference file name to full path if $ is
-    present.
-
-    '''
-
-    if '$' in refname:
-        refpath, reffile = refname.split( '$' )
-
-        try:
-            reffile = os.path.join( os.environ[refpath], reffile )
-        except KeyError:
-            pass
-
-    else:
-        refpath = './'
-        reffile = refname
-
-    return reffile
