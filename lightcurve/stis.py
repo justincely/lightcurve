@@ -85,3 +85,49 @@ class StisCurve(LightCurve):
             self.times = self.times[:-1]
 
 #-------------------------------------------------------------------------------
+
+def stis_corrtag(tagfile):
+    """Create a COS-like corrtag file for STIS data
+
+    Parameters
+    ----------
+    tagfile, str
+        input STIS time-tag data file
+
+    """
+
+    eps_column = epsilon(tagfile)
+
+#-------------------------------------------------------------------------------
+
+def epsilon(tagfile):
+    """Compute the total epsilon factor for each event
+
+    Parameters
+    ----------
+    tagfile, str
+        input STIS time-tag data file
+
+    Returns
+    -------
+    epsilon, np.ndarray
+        array of epsilons
+    """
+
+    print("Calculating Epsilon")
+
+    with pyfits.open(tagfile) as hdu:
+
+        epsilon = np.ones(hdu[1].data['time'].shape)
+
+        for ref_flat in ['PFLTFILE']:#, 'LFLTFILE']:
+            reffile = expand_refname(hdu[0].header[ref_flat])
+
+            with pyfits.open(reffile) as image:
+                for i, (x, y) in enumerate(zip(hdu[1].data['AXIS1'],
+                                               hdu[1].data['AXIS2'])):
+                    #--indexing is 1 off
+                    epsilon[i] *= image[1].data[x-1, y-1]
+
+
+    return epsilon
