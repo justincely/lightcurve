@@ -2,6 +2,11 @@
 
 """
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+#-- Don't render plots to screen
+mpl.use('Agg')
+
 from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
@@ -137,3 +142,26 @@ def open_lightcurve(filename):
     out_lc.background = hdu[1].data['background']
 
     return out_obj
+
+#-------------------------------------------------------------------------------
+
+def quicklook(filename):
+    """ Quick plotting function for extracted lightcurves
+    """
+
+
+    hdu = pyfits.open(filename)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.plot(hdu[1].data['times'], hdu[1].data['gross'], 'o')
+    
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Gross Counts')
+
+    fig.suptitle(filename)
+    fig.savefig(filename.replace('.fits', '.pdf'))
+
+#-------------------------------------------------------------------------------
+
