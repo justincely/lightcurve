@@ -3,10 +3,9 @@
 """
 
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 #-- Don't render plots to screen
 mpl.use('Agg')
-
+import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
@@ -156,7 +155,7 @@ def quicklook(filename):
     ax = fig.add_subplot(1, 1, 1)
 
     ax.plot(hdu[1].data['times'], hdu[1].data['gross'], 'o')
-    
+
     ax.set_xlabel('Time (s)')
     ax.set_ylabel('Gross Counts')
 
@@ -164,4 +163,3 @@ def quicklook(filename):
     fig.savefig(filename.replace('.fits', '.pdf'))
 
 #-------------------------------------------------------------------------------
-
