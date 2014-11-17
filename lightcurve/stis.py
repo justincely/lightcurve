@@ -14,7 +14,7 @@ import astropy
 from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
-from .utils import expand_refname
+from .utils import expand_refname, enlarge
 from .stis_cal import calculate_epsilon
 from .version import version as  __version__
 
@@ -136,9 +136,9 @@ def stis_corrtag(tagfile):
     rawy_col = pyfits.Column('rawy', 'D', 'pixel', array=rawy_data)
     xcorr_col = pyfits.Column('xcorr', 'D', 'pixel', array=xcorr_data)
     ycorr_col = pyfits.Column('ycorr', 'D', 'pixel', array=ycorr_data)
-    epsilon_col = pyfits.Column('epsilon', 'D', '', array=eps_data)
-    wave_col = pyfits.Column('wavelength', 'D', 'MJD', array=wave_data)
-    dq_col = pyfits.Column('dq', 'D', 'MJD', array=dq_data)
+    epsilon_col = pyfits.Column('epsilon', 'D', 'factor', array=eps_data)
+    wave_col = pyfits.Column('wavelength', 'D', 'angstrom', array=wave_data)
+    dq_col = pyfits.Column('dq', 'D', 'DQ', array=dq_data)
 
     tab = pyfits.new_table([time_col,
                             rawx_col,
@@ -159,6 +159,9 @@ def stis_corrtag(tagfile):
 def epsilon(tagfile):
     """Compute the total epsilon factor for each event
 
+    Compute the flatfield correction from the P-flat and L-flat reference files
+    (PFLTFILE and LFLTFILE respectively).
+
     Parameters
     ----------
     tagfile, str
@@ -168,21 +171,33 @@ def epsilon(tagfile):
     -------
     epsilon, np.ndarray
         array of epsilons
+
     """
 
     print("Calculating Epsilon")
 
     with pyfits.open(tagfile) as hdu:
 
-        epsilon = np.ones(hdu[1].data['time'].shape)
+        epsilon_out = np.ones(hdu[1].data['time'].shape)
 
-        for ref_flat in ['PFLTFILE']:#, 'LFLTFILE']:
+        #-- Flatfield correction
+        for ref_flat in ['PFLTFILE', 'LFLTFILE']:
             reffile = expand_refname(hdu[0].header[ref_flat])
+            print('FLATFIELD CORRECTION {}: {}'.format(ref_flat, reffile))
 
-            with pyfits.open(reffile) as image:
+            with pyfits.open(reffile) as image_hdu:
+                image = image_hdu[1].data
+
+                if not image.shape == (2048, 2048):
+                    x_factor = 2048 / image.shape[1]
+                    y_factor = 2048 / image.shape[0]
+
+                    print('Enlarging by {},{}'.format(x_factor, y_factor))
+                    image = enlarge(image, x_factor, y_factor)
+
                 #--indexing is 1 off
-                epsilon *= calculate_epsilon(image[1].data,
-                                             hdu[1].data['AXIS1'] - 1,
-                                             hdu[1].data['AXIS2'] - 1)
+                epsilon_out *= calculate_epsilon(image,
+                                                 hdu[1].data['AXIS1'] - 1,
+                                                 hdu[1].data['AXIS2'] - 1)
 
-    return epsilon
+    return epsilon_out

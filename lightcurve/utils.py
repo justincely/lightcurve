@@ -32,3 +32,22 @@ def expand_refname(refname):
     return reffile
 
 #-------------------------------------------------------------------------------
+
+def enlarge(a, x=2, y=None):
+    """Enlarges 2D image array a using simple pixel repetition in both dimensions.
+    Enlarges by factor x horizontally and factor y vertically.
+    If y is left as None, uses factor x for both dimensions."""
+
+    import numpy as np
+    
+    assert a.ndim == 2
+    if y == None:
+        y = x
+
+    for factor in (x, y):
+        assert factor.__class__ == int
+        assert factor > 0
+
+    return a.repeat(y, axis=0).repeat(x, axis=1)
+
+#-------------------------------------------------------------------------------
