@@ -1,18 +1,22 @@
-"""
-Library of I/O routines to get data into a LightCurve object.
+"""Library of I/O routines to get data into a LightCurve object.
 
 """
 
+import matplotlib as mpl
+#-- Don't render plots to screen
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
 from .cos import CosCurve
+from .stis import StisCurve
 
 __all__ = ['open']
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-def open( **kwargs ):
+def open(**kwargs):
     """ Open file into lightcurve
 
     filename must be supplied in kwargs
@@ -34,16 +38,20 @@ def open( **kwargs ):
     """
 
     if not 'filename' in kwargs:
-        raise IOError( 'filename must be supplied' )
+        raise IOError('filename must be supplied')
 
-    filetype = check_filetype( kwargs['filename'] )
+    filetype = check_filetype(kwargs['filename'])
 
     if filetype == 'corrtag':
-        return CosCurve( **kwargs )
+        return CosCurve(**kwargs)
+    elif filetype == 'tag':
+        return StisCurve(**kwargs)
     elif filetype == 'lightcurve':
-        return open_lightcurve( kwargs['filename'] )
+        return open_lightcurve(kwargs['filename'])
+    else:
+        raise IOError("Filetype not recognized: {}".format(filetype))
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 def check_filetype(filename):
     """Determine the type of data being input.
@@ -62,8 +70,8 @@ def check_filetype(filename):
 
     """
 
-    corrtag_names = set( ['TIME', 
-                          'RAWX', 
+    corrtag_names = set( ['TIME',
+                          'RAWX',
                           'RAWY',
                           'XCORR',
                           'YCORR',
@@ -85,23 +93,29 @@ def check_filetype(filename):
                              'BACKGROUND',
                              'ERROR'] )
 
-    hdu = pyfits.open( filename )
-    input_names = set( [item.upper() for 
-                       item in hdu[1].data.names ] )
-    hdu.close()
+    tag_names = set(['TIME',
+                     'AXIS1',
+                     'AXIS2',
+                     'DETAXIS1'])
+
+    with pyfits.open(filename) as hdu:
+        input_names = set([item.upper() for
+                           item in hdu[1].data.names])
 
     if input_names == corrtag_names:
         filetype = 'corrtag'
     elif input_names == lightcurve_names:
         filetype = 'lightcurve'
+    elif input_names == tag_names:
+        filetype = 'tag'
     else:
         filetype = None
 
     return filetype
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-def open_lightcurve(filename):    
+def open_lightcurve(filename):
     """ Read lightcurve from fits file back into base object
 
     Parameters
@@ -118,7 +132,7 @@ def open_lightcurve(filename):
 
     out_lc = LightCurve()
 
-    hdu = pyfits.open( filename)
+    hdu = pyfits.open(filename)
 
     out_lc.times = hdu[1].data['times']
     out_lc.gross = hdu[1].data['gross']
@@ -127,3 +141,25 @@ def open_lightcurve(filename):
     out_lc.background = hdu[1].data['background']
 
     return out_obj
+
+#-------------------------------------------------------------------------------
+
+def quicklook(filename):
+    """ Quick plotting function for extracted lightcurves
+    """
+
+
+    hdu = pyfits.open(filename)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.plot(hdu[1].data['times'], hdu[1].data['gross'], 'o')
+
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Gross Counts')
+
+    fig.suptitle(filename)
+    fig.savefig(filename.replace('.fits', '.pdf'))
+
+#-------------------------------------------------------------------------------

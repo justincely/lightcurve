@@ -72,6 +72,10 @@ if __name__ == "__main__":
                               wlim=(args.wmin, args.wmax), 
                               alt=args.alt,
                               filter=args.filter)
-            curvename = os.path.split( dataset )[1].replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
+            if '_corrtag' in dataset:
+                curvename = os.path.split( dataset )[1].replace( re.search('corrtag.*.fits', dataset).group(), 'curve.fits' )
+            elif '_tag' in dataset:
+                curvename = os.path.split( dataset )[1].replace( re.search('_tag.*.fits', dataset).group(), 'curve.fits' )
+  
             out_lc.write( args.outname or curvename )
 
