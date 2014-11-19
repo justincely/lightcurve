@@ -16,6 +16,7 @@ before_install:
 install:
     - yes w | pip install -q numpy
     - "pip install -r requirements.txt"
+    - - python setup.py build_ext --inplace
 
 # command to run tests
 script: nosetests
