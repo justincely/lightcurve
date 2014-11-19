@@ -11,9 +11,9 @@ import astropy
 import scipy
 import numpy as np
 from datetime import datetime
+from astropy.io import fits as pyfits
 
 from .version import version as  __version__
-from astropy.io import fits as pyfits
 
 
 #-------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ class LightCurve(object):
         LightCurves must contain:
             gross
             bins (timestep)
-            times 
+            times
             mjd
             background
             flux
@@ -50,7 +50,7 @@ class LightCurve(object):
 
 
     def __add__( self, other ):
-        """ Overload the '+' operator.         
+        """ Overload the '+' operator.
         """
 
         out_obj = LightCurve()
@@ -74,46 +74,46 @@ class LightCurve(object):
         """ Overload the - operator """
 
         raise NotImplementedError("I'm not yet sure how to do this")
-    
+
 
     def __mul__(self, other):
         """ Overload the * operator """
-        
+
         raise NotImplementedError("I'm not yet sure how to do this")
 
-    
+
     def __div__(self, other):
         """ Overload the / operator """
-        
+
         raise NotImplementedError("I'm not yet sure how to do this")
-    
+
 
     def __str__(self):
         """Prettier representation of object instanct"""
-        
+
         return "Lightcurve Object"
- 
+
 
     def concatenate(self, other):
-        """ Concatenate two lightcurves 
+        """ Concatenate two lightcurves
 
-        The arrays are 
+        The arrays are
         concatenated and re-sorted in order of the MJD array.
-        
+
         """
 
         out_obj = LightCurve()
 
         out_obj.gross = np.concatenate( [self.gross, other.gross] )
         out_obj.flux = np.concatenate( [self.flux, other.flux] )
-        out_obj.background = np.concatenate( [self.background, 
+        out_obj.background = np.concatenate( [self.background,
                                               other.background] )
         out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
         out_obj.times = np.concatenate( [self.times, other.times] )
         out_obj.bins = np.concatenate( [self.bins, other.bins] )
-        
+
         sorted_index = np.argsort( out_obj.mjd )
-        
+
         out_obj.gross = out_obj.gross[ sorted_index ]
         out_obj.flux = out_obj.flux[sorted_index]
         out_obj.background = out_obj.background[ sorted_index ]
@@ -125,7 +125,7 @@ class LightCurve(object):
 
     @property
     def counts(self):
-        """ Calculate counts array 
+        """ Calculate counts array
 
         Counts are calculated as the gross - background
 
@@ -136,7 +136,7 @@ class LightCurve(object):
             Array containing the calculated counts
 
         """
-        
+
         if not len( self.gross ):
             return self.gross.copy()
         else:
@@ -145,7 +145,7 @@ class LightCurve(object):
 
     @property
     def error(self):
-        """ Calculate error array 
+        """ Calculate error array
 
         Error is calculated as sqrt( gross + background )
 
@@ -164,8 +164,8 @@ class LightCurve(object):
 
     @property
     def flux_error(self):
-        """ Estimate the error in the flux array 
-        
+        """ Estimate the error in the flux array
+
         Flux error is currently estimated as having the same magnitude
         relative to flux as the error has to counts.  Very simple approximation
         for now
@@ -185,7 +185,7 @@ class LightCurve(object):
 
     @property
     def net(self):
-        """ Calculate net array 
+        """ Calculate net array
 
         Net is calculated as counts / time
 
@@ -193,7 +193,7 @@ class LightCurve(object):
         -------
         net : np.ndarray
             Array containing calculated net
-        
+
         """
 
         if not len(self.counts):
@@ -201,7 +201,7 @@ class LightCurve(object):
         else:
             return self.counts / self.bins.astype( np.float64 )
 
-        
+
     @property
     def signal_to_noise(self):
         """ Quick signal to noise estimate
@@ -260,7 +260,7 @@ class LightCurve(object):
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
         try: hdu_out[0].header = self.hdu[0].header
-        except AttributeError: pass 
+        except AttributeError: pass
 
         hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
         hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
@@ -270,17 +270,17 @@ class LightCurve(object):
 
         bins_col = pyfits.Column('bins', 'D', 'second', array=self.bins)
         times_col = pyfits.Column('times', 'D', 'second', array=self.times)
-        mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd) 
-        gross_col = pyfits.Column('gross', 'D', 'counts', array=self.gross)    
+        mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)
+        gross_col = pyfits.Column('gross', 'D', 'counts', array=self.gross)
         counts_col = pyfits.Column('counts', 'D', 'counts', array=self.counts)
         net_col = pyfits.Column('net', 'D', 'counts/s', array=self.net)
         flux_col = pyfits.Column('flux', 'D', 'ergs/s', array=self.flux)
-        flux_error_col = pyfits.Column('flux_error', 'D', 'ergs/s', 
+        flux_error_col = pyfits.Column('flux_error', 'D', 'ergs/s',
                                        array=self.flux_error)
-        bkgnd_col = pyfits.Column('background', 'D', 'cnts', 
+        bkgnd_col = pyfits.Column('background', 'D', 'cnts',
                                   array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
-        
+
         tab = pyfits.new_table( [bins_col,
                                  times_col,
                                  mjd_col,
@@ -292,10 +292,9 @@ class LightCurve(object):
                                  bkgnd_col,
                                  error_col] )
         hdu_out.append( tab )
-            
+
         if outname.endswith('.gz'):
             print("Nope, can't write to gzipped files")
             self.outname = self.outname[:-3]
 
-        hdu_out.writeto( self.outname, clobber=clobber)  
-
+        hdu_out.writeto( self.outname, clobber=clobber)

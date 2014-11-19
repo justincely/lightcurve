@@ -5,13 +5,18 @@ Holder of Space Telescope Imaging Spectrograph (STIS) classes and utilities
 
 from __future__ import print_function
 
-from astropy.io import fits as pyfits
 import os
 import numpy as np
+import scipy
 from scipy.interpolate import interp1d
+from datetime import datetime
+import astropy
+from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
-from .utils import expand_refname
+from .utils import expand_refname, enlarge
+from .stis_cal import calculate_epsilon
+from .version import version as  __version__
 
 #-------------------------------------------------------------------------------
 
@@ -96,12 +101,66 @@ def stis_corrtag(tagfile):
 
     """
 
-    eps_column = epsilon(tagfile)
+    with pyfits.open(tagfile, 'readonly') as hdu:
+        n_events = len(hdu[1].data['TIME'])
+
+        time_data = hdu[1].data['TIME']
+
+        #-- Y data is same in raw and corrected coordinates
+        rawx_data = hdu[1].data['DETAXIS1']
+        rawy_data = hdu[1].data['AXIS2']
+        xcorr_data = hdu[1].data['AXIS1']
+        ycorr_data = hdu[1].data['AXIS2']
+
+        #-- copy over the primary
+        header0 = hdu[0].header.copy()
+        header1 = hdu[1].header.copy()
+
+    eps_data = epsilon(tagfile)
+    wave_data = np.ones(n_events)
+    dq_data = np.ones(n_events)
+
+    #-- Writeout corrtag file
+    hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
+
+    #hdu_out[0].header = header0
+
+    hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
+    hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
+    hdu_out[0].header['AP_VER'] = (astropy.__version__, 'Astropy version used')
+    hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
+    hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
+
+    time_col = pyfits.Column('time', 'D', 'second', array=time_data)
+    rawx_col = pyfits.Column('rawx', 'D', 'pixel', array=rawx_data)
+    rawy_col = pyfits.Column('rawy', 'D', 'pixel', array=rawy_data)
+    xcorr_col = pyfits.Column('xcorr', 'D', 'pixel', array=xcorr_data)
+    ycorr_col = pyfits.Column('ycorr', 'D', 'pixel', array=ycorr_data)
+    epsilon_col = pyfits.Column('epsilon', 'D', 'factor', array=eps_data)
+    wave_col = pyfits.Column('wavelength', 'D', 'angstrom', array=wave_data)
+    dq_col = pyfits.Column('dq', 'D', 'DQ', array=dq_data)
+
+    tab = pyfits.new_table([time_col,
+                            rawx_col,
+                            rawy_col,
+                            xcorr_col,
+                            ycorr_col,
+                            epsilon_col,
+                            wave_col,
+                            dq_col])
+    hdu_out.append(tab)
+
+    #hdu_out[1].header = header1
+
+    hdu_out.writeto(tagfile.replace('_tag.fits', '_corrtag.fits'), clobber=True)
 
 #-------------------------------------------------------------------------------
 
 def epsilon(tagfile):
     """Compute the total epsilon factor for each event
+
+    Compute the flatfield correction from the P-flat and L-flat reference files
+    (PFLTFILE and LFLTFILE respectively).
 
     Parameters
     ----------
@@ -112,22 +171,33 @@ def epsilon(tagfile):
     -------
     epsilon, np.ndarray
         array of epsilons
+
     """
 
     print("Calculating Epsilon")
 
     with pyfits.open(tagfile) as hdu:
 
-        epsilon = np.ones(hdu[1].data['time'].shape)
+        epsilon_out = np.ones(hdu[1].data['time'].shape)
 
-        for ref_flat in ['PFLTFILE']:#, 'LFLTFILE']:
+        #-- Flatfield correction
+        for ref_flat in ['PFLTFILE', 'LFLTFILE']:
             reffile = expand_refname(hdu[0].header[ref_flat])
+            print('FLATFIELD CORRECTION {}: {}'.format(ref_flat, reffile))
 
-            with pyfits.open(reffile) as image:
-                for i, (x, y) in enumerate(zip(hdu[1].data['AXIS1'],
-                                               hdu[1].data['AXIS2'])):
-                    #--indexing is 1 off
-                    epsilon[i] *= image[1].data[x-1, y-1]
+            with pyfits.open(reffile) as image_hdu:
+                image = image_hdu[1].data
 
+                if not image.shape == (2048, 2048):
+                    x_factor = 2048 / image.shape[1]
+                    y_factor = 2048 / image.shape[0]
 
-    return epsilon
+                    print('Enlarging by {},{}'.format(x_factor, y_factor))
+                    image = enlarge(image, x_factor, y_factor)
+
+                #--indexing is 1 off
+                epsilon_out *= calculate_epsilon(image,
+                                                 hdu[1].data['AXIS1'] - 1,
+                                                 hdu[1].data['AXIS2'] - 1)
+
+    return epsilon_out
