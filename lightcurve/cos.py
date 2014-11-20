@@ -225,7 +225,7 @@ class CosCurve(LightCurve):
                 hdu_dict = {'A':self.hdu, 'B':self.hdu, 'C':self.hdu}
 
         elif self.hdu[0].header['detector'] == 'FUV':
-            file_a, file_b = self._get_both_filenames( self.input_filename )
+            file_a, file_b = get_both_filenames( self.input_filename )
 
             hdu_dict = dict()
             all_filenames = []
@@ -236,28 +236,6 @@ class CosCurve(LightCurve):
 
         self.hdu_dict = hdu_dict
         self.input_list = all_filenames
-
-
-    def _get_both_filenames(self, filename ):
-        """ Get a list of both filenames for FUV data
-
-        Regardless if rootname_corrtag_a.fits or rootname_corrtag_b.fits
-        is passed in, both will be returned in a list.
-
-        """
-
-        assert pyfits.getval( filename, 'DETECTOR' ) == 'FUV', 'This only works for FUV data'
-
-        if pyfits.getval(filename, 'SEGMENT') == 'FUVA':
-            other_filename = filename.replace('_a.fits', '_b.fits')
-        elif pyfits.getval(filename, 'SEGMENT') == 'FUVB':
-            other_filename = filename.replace('_b.fits', '_a.fits')
-
-        filename_list = [filename, other_filename]
-        filename_list.sort()
-
-        return ( filename_list[0], filename_list[1] )
-
 
     def _get_extraction_region(self, hdu, segment, mode='spectrum' ):
         """Get y_start,y_end for given extraction
@@ -398,11 +376,11 @@ class CosCurve(LightCurve):
 
         return all_resp
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-def extract_index( hdu, x_start, x_end,
-                   y_start, y_end, w_start, w_end, sdqflags=0,
-                   filter_airglow=True):
+def extract_index(hdu, x_start, x_end,
+                  y_start, y_end, w_start, w_end, sdqflags=0,
+                  filter_airglow=True):
     """
     Extract event indeces from given HDU using input parameters.
 
@@ -470,4 +448,36 @@ def extract_index( hdu, x_start, x_end,
 
     return data_index
 
-#--------------------------------------------------------------
+#-------------------------------------------------------------------------------
+
+def get_both_filenames(filename):
+    """ Get a list of both filenames for FUV data
+
+    Regardless if rootname_corrtag_a.fits or rootname_corrtag_b.fits
+    is passed in, both will be returned in a list.
+
+    Parameters
+    ----------
+    filename : str
+        full path to COS file
+
+    Returns
+    -------
+    files : tuple
+        rootname_corrtag_a.fits, rotname_corrtag_b.fits
+
+    """
+
+    if '_a.fits' in filename:
+        other_filename = filename.replace('_a.fits', '_b.fits')
+    elif '_b.fits' in filename:
+        other_filename = filename.replace('_b.fits', '_a.fits')
+    else:
+        raise ValueError("filename doesn't match FUV convention".format(filename))
+
+    filename_list = [filename, other_filename]
+    filename_list.sort()
+
+    return (filename_list[0], filename_list[1])
+
+#-------------------------------------------------------------------------------
