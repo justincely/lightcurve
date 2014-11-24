@@ -1,13 +1,11 @@
 from distutils.core import setup, Extension
 import os
 import glob
+import numpy as np
 
 stis_cal_module = Extension('lightcurve/stis_cal',
-                            sources = ['lightcurve/stis_cal.cc'],
-                            extra_link_args=[ '-pthread',
-                                             '-shared',
-                                             '-lm']
-                             )
+                            sources=['lightcurve/stis_cal.cc'],
+                            include_dirs=[np.get_include()])
 
 setup(
     name = 'lightcurve',
