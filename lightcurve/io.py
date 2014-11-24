@@ -148,18 +148,17 @@ def quicklook(filename):
     """ Quick plotting function for extracted lightcurves
     """
 
+    with pyfits.open(filename) as hdu:
 
-    hdu = pyfits.open(filename)
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+        ax.plot(hdu[1].data['times'], hdu[1].data['gross'], 'o')
 
-    ax.plot(hdu[1].data['times'], hdu[1].data['gross'], 'o')
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Gross Counts')
 
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel('Gross Counts')
-
-    fig.suptitle(filename)
-    fig.savefig(filename.replace('.fits', '.pdf'))
+        fig.suptitle(filename)
+        fig.savefig(filename.replace('.fits', '.png'))
 
 #-------------------------------------------------------------------------------
