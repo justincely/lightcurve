@@ -160,5 +160,6 @@ def quicklook(filename):
 
         fig.suptitle(filename)
         fig.savefig(filename.replace('.fits', '.png'))
+        plt.close(fig)
 
 #-------------------------------------------------------------------------------
