@@ -60,7 +60,7 @@ if __name__ == "__main__":
                               alt=args.alt, 
                               filter=args.filter)
 
-            out_lc += new_lc
+            out_lc.concatenate(new_lc)
 
         out_lc.write( args.outname or 'composite_curve.fits' )
 
