@@ -15,7 +15,7 @@ from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
 from .utils import expand_refname, enlarge
-from .stis_cal import calculate_epsilon
+from .stis_cal import calculate_epsilon, map_dq_image
 from .version import version as  __version__
 
 #-------------------------------------------------------------------------------
@@ -117,8 +117,8 @@ def stis_corrtag(tagfile):
         header1 = hdu[1].header.copy()
 
     eps_data = epsilon(tagfile)
-    wave_data = np.ones(n_events)
-    dq_data = np.ones(n_events)
+    wave_data = np.ones(n_events)  ### Placeholder
+    dq_data = dqinit(tagfile)
 
     #-- Writeout corrtag file
     hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
@@ -138,7 +138,7 @@ def stis_corrtag(tagfile):
     ycorr_col = pyfits.Column('ycorr', 'D', 'pixel', array=ycorr_data)
     epsilon_col = pyfits.Column('epsilon', 'D', 'factor', array=eps_data)
     wave_col = pyfits.Column('wavelength', 'D', 'angstrom', array=wave_data)
-    dq_col = pyfits.Column('dq', 'D', 'DQ', array=dq_data)
+    dq_col = pyfits.Column('dq', 'I', 'DQ', array=dq_data)
 
     tab = pyfits.new_table([time_col,
                             rawx_col,
@@ -201,3 +201,58 @@ def epsilon(tagfile):
                                                  hdu[1].data['AXIS2'] - 1)
 
     return epsilon_out
+
+#-------------------------------------------------------------------------------
+
+def dqinit(tagfile):
+    """Compute the data quality information for each pixel from the BPIXTAB.
+
+    Parameters
+    ----------
+    tagfile, str
+        input STIS time-tag data file
+
+    Returns
+    -------
+    dq, np.ndarray
+        array of bitwise dq flags
+
+    """
+
+    print("Calculating DQ")
+
+    with pyfits.open(tagfile) as hdu:
+
+        reffile = expand_refname(hdu[0].header['BPIXTAB'])
+        print('BPIXTAB used {}'.format(reffile))
+
+        with pyfits.open(reffile) as bpix:
+            #-- Mama bpix regions are in lo-res pixels
+            dq_im = np.zeros((1024, 1024)).astype(np.int32)
+
+            #-- indexing is 1 off
+            for line in bpix[1].data:
+                lx = line['PIX1'] - 1
+                ly = line['PIX2'] - 1
+                dpix = line['LENGTH']
+                axis = line['AXIS']
+                flag = line['VALUE']
+
+                if axis == 1:
+                    #-- Along X
+                    dq_im[ly, lx:lx + dpix] |= flag
+                elif axis == 2:
+                    #-- Along Y
+                    dq_im[ly:ly+dpix, lx] |= flag
+
+            #-- Needs to be expanded into Hi-res
+            dq_im = enlarge(dq_im, 2, 2)
+
+
+        #-- Map to the events
+        #-- indexing is 1 off
+        dq_out = map_dq_image(dq_im,
+                              hdu[1].data['AXIS1'] - 1,
+                              hdu[1].data['AXIS2'] - 1)
+
+    return dq_out

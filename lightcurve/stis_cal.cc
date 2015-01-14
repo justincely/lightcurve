@@ -18,7 +18,6 @@ static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
 	    return NULL;
 	}
 
-
 	x_coords = (PyArrayObject *)PyArray_FROM_OTF(in_x, NPY_INT32, NPY_IN_ARRAY);
 	y_coords = (PyArrayObject *)PyArray_FROM_OTF(in_y, NPY_INT32, NPY_IN_ARRAY);
 	im = (PyArrayObject *)PyArray_FROM_OTF(in_im, NPY_FLOAT, NPY_IN_ARRAY);
@@ -36,9 +35,12 @@ static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
   for (int i=0; i<n_rows_in; i++){
     x = *(npy_int32 *) PyArray_GETPTR1(x_coords, i);
     y = *(npy_int32 *) PyArray_GETPTR1(y_coords, i);
-
-    npy_float image_value = *(npy_float*) PyArray_GETPTR2(im, x, y);
-    *(npy_float*) PyArray_GETPTR1(out_array, i) = *(npy_float *) PyArray_GETPTR2(im, x, y);
+    if ((x >= 2048) || (x <= 0) || (y >= 2048) || (y <= 0)){
+      *(npy_float*) PyArray_GETPTR1(out_array, i) = 0.0;
+    }
+    else{
+      *(npy_float*) PyArray_GETPTR1(out_array, i) = *(npy_float *) PyArray_GETPTR2(im, x, y);
+    }
   }
 
   return Py_BuildValue("N", out_array);
@@ -46,10 +48,54 @@ static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
 
 
 
-static PyMethodDef stis_cal_methods[] = {
-	{"calculate_epsilon", calculate_epsilon, METH_VARARGS,
-	"Calculate epsilon column"},
+static PyObject *map_dq_image(PyObject *self, PyObject *args) {
 
+  /* local variables */
+  int i=0, NX=0;
+  int x=0, y=0;
+
+  PyObject *in_im, *in_x, *in_y;
+  PyArrayObject *im, *x_coords, *y_coords;
+
+  if (!PyArg_ParseTuple(args, "OOO",
+    &in_im, &in_x, &in_y)) {
+      PyErr_SetString(PyExc_RuntimeError, "can't read arguments");
+      return NULL;
+    }
+
+    x_coords = (PyArrayObject *)PyArray_FROM_OTF(in_x, NPY_INT32, NPY_IN_ARRAY);
+    y_coords = (PyArrayObject *)PyArray_FROM_OTF(in_y, NPY_INT32, NPY_IN_ARRAY);
+    im = (PyArrayObject *)PyArray_FROM_OTF(in_im, NPY_INT32, NPY_IN_ARRAY);
+
+    if (x_coords == NULL || y_coords == NULL || im == NULL)
+      return NULL;
+
+      int n_rows_in = PyArray_DIM(x_coords, 0);
+      npy_intp nrows[1] = {n_rows_in};
+
+      PyArrayObject *out_array;
+      out_array = (PyArrayObject *) PyArray_SimpleNew(1, nrows, NPY_INT32);
+
+      NX = PyArray_DIM(im, 0);
+      for (int i=0; i<n_rows_in; i++){
+        x = *(npy_int32 *) PyArray_GETPTR1(x_coords, i);
+        y = *(npy_int32 *) PyArray_GETPTR1(y_coords, i);
+        if ((x >= 2048) || (x <= 0) || (y >= 2048) || (y <= 0)){
+          *(npy_int*) PyArray_GETPTR1(out_array, i) = 0;
+        }
+        else{
+          *(npy_int*) PyArray_GETPTR1(out_array, i) = *(npy_int *) PyArray_GETPTR2(im, x, y);
+        }
+      }
+
+      return Py_BuildValue("N", out_array);
+    }
+
+
+
+static PyMethodDef stis_cal_methods[] = {
+	{"calculate_epsilon", calculate_epsilon, METH_VARARGS, "Calculate epsilon column"},
+  {"map_dq_image", map_dq_image, METH_VARARGS, "Calculate DQ column"},
 	{NULL, NULL, 0, NULL}
 };
 
