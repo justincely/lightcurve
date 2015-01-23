@@ -54,6 +54,7 @@ class StisCurve(LightCurve):
         SECOND_PER_MJD = 1.15741e-5
 
         hdu = pyfits.open(filename)
+        self.hdu = hdu
 
         time = hdu[1].data['time']
         #time = np.array([round(val, 3) for val in self.hdu[1].data['time']]).astype(np.float64)
@@ -123,7 +124,6 @@ def stis_corrtag(tagfile):
     #-- Writeout corrtag file
     hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
-    #hdu_out[0].header = header0
 
     hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
     hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')

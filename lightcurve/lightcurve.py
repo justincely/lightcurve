@@ -259,15 +259,31 @@ class LightCurve(object):
 
         hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
-        try: hdu_out[0].header = self.hdu[0].header
-        except AttributeError: pass
-
+        #-- Primary header
         hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
         hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
         hdu_out[0].header['AP_VER'] = (astropy.__version__, 'Astropy version used')
         hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
         hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
+        hdu_out[0].header.add_blank('', before='GEN_DATE')
+        hdu_out[0].header.add_blank('{0:{fill}{align}67}'.format(' Lightcurve extraction keywords ',
+                                                                 fill='-',
+                                                                 align='^'), before='GEN_DATE')
+        hdu_out[0].header.add_blank('', before='GEN_DATE')
 
+
+
+
+        hdu_out[0].header.add_blank('', after='SP_VER')
+        hdu_out[0].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
+                                                                 fill='-',
+                                                                 align='^'), after='SP_VER')
+        hdu_out[0].header.add_blank('', after='SP_VER')
+        hdu_out[0].header.extend(self.hdu[0].header, end=True)
+
+
+
+        #-- Ext 1 table data
         bins_col = pyfits.Column('bins', 'D', 'second', array=self.bins)
         times_col = pyfits.Column('times', 'D', 'second', array=self.times)
         mjd_col = pyfits.Column('mjd', 'D', 'MJD', array=self.mjd)
@@ -281,20 +297,39 @@ class LightCurve(object):
                                   array=self.background)
         error_col = pyfits.Column('error', 'D', 'counts', array=self.error)
 
-        tab = pyfits.new_table( [bins_col,
-                                 times_col,
-                                 mjd_col,
-                                 gross_col,
-                                 counts_col,
-                                 net_col,
-                                 flux_col,
-                                 flux_error_col,
-                                 bkgnd_col,
-                                 error_col] )
-        hdu_out.append( tab )
+        tab = pyfits.new_table([bins_col,
+                                times_col,
+                                mjd_col,
+                                gross_col,
+                                counts_col,
+                                net_col,
+                                flux_col,
+                                flux_error_col,
+                                bkgnd_col,
+                                error_col])
+        hdu_out.append(tab)
+
+
+
+        #-- Ext 1 header
+        hdu_out[1].header.add_blank('')
+        hdu_out[1].header.add_blank('{0:{fill}{align}67}'.format(' Lightcurve extraction keywords ',
+                                                                 fill='-',
+                                                                 align='^'))
+        hdu_out[1].header.add_blank('')
+
+
+        hdu_out[1].header.add_blank('')
+        hdu_out[1].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
+                                                                 fill='-',
+                                                                 align='^'))
+        hdu_out[1].header.add_blank('')
+        hdu_out[1].header.extend(self.hdu[1].header, end=True)
+
+
 
         if outname.endswith('.gz'):
             print("Nope, can't write to gzipped files")
             self.outname = self.outname[:-3]
 
-        hdu_out.writeto( self.outname, clobber=clobber)
+        hdu_out.writeto(self.outname, clobber=clobber)
