@@ -279,8 +279,11 @@ class LightCurve(object):
                                                                  fill='-',
                                                                  align='^'), after='SP_VER')
         hdu_out[0].header.add_blank('', after='SP_VER')
-        hdu_out[0].header.extend(self.hdu[0].header, end=True)
 
+        try:
+            hdu_out[0].header.extend(self.hdu[0].header, end=True)
+        except AttributeError:
+            pass
 
 
         #-- Ext 1 table data
@@ -324,8 +327,11 @@ class LightCurve(object):
                                                                  fill='-',
                                                                  align='^'))
         hdu_out[1].header.add_blank('')
-        hdu_out[1].header.extend(self.hdu[1].header, end=True)
 
+        try:
+            hdu_out[1].header.extend(self.hdu[1].header, end=True)
+        except AttributeError:
+            pass
 
 
         if outname.endswith('.gz'):

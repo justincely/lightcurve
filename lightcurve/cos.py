@@ -118,6 +118,10 @@ class CosCurve(LightCurve):
         else:
             truncate = False
 
+
+        print("Using wlim: {}".format(wlim))
+        print("      step: {}".format(step))
+
         gross = 0
         flux = 0
         background = 0
@@ -139,7 +143,7 @@ class CosCurve(LightCurve):
                                   wlim[0], wlim[1],
                                   hdu[1].header['sdqflags'],
                                   filter_airglow=filter_airglow)
-            #print(segment)
+            print("{} #{} events".format(segment, len(index)))
             #print(index)
             #if not len(index): continue
 
