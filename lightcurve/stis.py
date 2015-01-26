@@ -124,12 +124,13 @@ def stis_corrtag(tagfile):
     #-- Writeout corrtag file
     hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
 
-
     hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
     hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
     hdu_out[0].header['AP_VER'] = (astropy.__version__, 'Astropy version used')
     hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
     hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
+
+    hdu_out[0].header.extend(header0, end=True)
 
     time_col = pyfits.Column('time', 'D', 'second', array=time_data)
     rawx_col = pyfits.Column('rawx', 'D', 'pixel', array=rawx_data)
@@ -150,7 +151,7 @@ def stis_corrtag(tagfile):
                             dq_col])
     hdu_out.append(tab)
 
-    #hdu_out[1].header = header1
+    hdu_out[1].header.extend(header1, end=True)
 
     hdu_out.writeto(tagfile.replace('_tag.fits', '_corrtag.fits'), clobber=True)
 
