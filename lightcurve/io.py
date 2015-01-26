@@ -44,7 +44,7 @@ def open(**kwargs):
 
     if filetype == 'corrtag':
         return CosCurve(**kwargs)
-    elif filetype == 'tag':
+    elif filetype == 'tag' or filetype == 'stis_corrtag':
         return StisCurve(**kwargs)
     elif filetype == 'lightcurve':
         return open_lightcurve(kwargs['filename'])
@@ -98,6 +98,15 @@ def check_filetype(filename):
                      'AXIS2',
                      'DETAXIS1'])
 
+    stis_corrtag_names = set(['TIME',
+                              'RAWX',
+                              'RAWY',
+                              'XCORR',
+                              'YCORR',
+                              'WAVELENGTH',
+                              'EPSILON',
+                              'DQ'])
+
     with pyfits.open(filename) as hdu:
         input_names = set([item.upper() for
                            item in hdu[1].data.names])
@@ -108,6 +117,8 @@ def check_filetype(filename):
         filetype = 'lightcurve'
     elif input_names == tag_names:
         filetype = 'tag'
+    elif input_names == stis_corrtag_names:
+        filetype = 'stis_corrtag'
     else:
         filetype = None
 
