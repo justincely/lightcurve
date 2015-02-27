@@ -102,6 +102,10 @@ def stis_corrtag(tagfile):
 
     """
 
+    x1d_filename = tagfile.replace('_tag.fits', '_x1d.fits')
+    if not os.path.exists(x1d_filename):
+        raise IOError("Could not find associated extracted spectrum {}".format(x1d_filename))
+
     with pyfits.open(tagfile, 'readonly') as hdu:
         n_events = len(hdu[1].data['TIME'])
 
@@ -118,8 +122,20 @@ def stis_corrtag(tagfile):
         header1 = hdu[1].header.copy()
 
     eps_data = epsilon(tagfile)
-    wave_data = np.ones(n_events)  ### Placeholder
     dq_data = dqinit(tagfile)
+    if header0['OPT_ELEM'].startswith('E'):
+        #-- Put in average wavelength for now
+        with pyfits.open(x1d_filename) as x1d:
+            wave_data = np.ones(n_events) * x1d[1].data['wavelength'].mean()
+    else:
+        #-- Grab wavelengths from the x1d file
+        int_pix = np.array(map(int, map(round, xcorr_data))).astype(np.int32)
+        int_pix = np.where(int_pix < 0, 0, int_pix)
+        int_pix = np.where(int_pix > 1023, 1023, int_pix)
+        print(int_pix)
+        with pyfits.open(x1d_filename) as x1d:
+            wave_data = x1d[1].data['wavelength'][0][int_pix]
+            print(wave_data.mean())
 
     #-- Writeout corrtag file
     hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
