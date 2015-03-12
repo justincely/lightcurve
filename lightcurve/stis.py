@@ -92,7 +92,7 @@ class StisCurve(LightCurve):
 
 #-------------------------------------------------------------------------------
 
-def stis_corrtag(tagfile):
+def stis_corrtag(tagfile, clean=True):
     """Create a COS-like corrtag file for STIS data
 
     Parameters
@@ -101,10 +101,8 @@ def stis_corrtag(tagfile):
         input STIS time-tag data file
 
     """
-
+    print("Creating STIS corrtag for {}".format(tagfile))
     x1d_filename = tagfile.replace('_tag.fits', '_x1d.fits')
-    if not os.path.exists(x1d_filename):
-        raise IOError("Could not find associated extracted spectrum {}".format(x1d_filename))
 
     with pyfits.open(tagfile, 'readonly') as hdu:
         n_events = len(hdu[1].data['TIME'])
@@ -123,7 +121,10 @@ def stis_corrtag(tagfile):
 
     eps_data = epsilon(tagfile)
     dq_data = dqinit(tagfile)
-    if header0['OPT_ELEM'].startswith('E'):
+    if not os.path.exists(x1d_filename):
+        print("Could not find associated extracted spectrum {}".format(x1d_filename))
+        wave_data = np.ones(n_events) * hdu[0].header['CENTRWV']
+    elif header0['OPT_ELEM'].startswith('E'):
         #-- Put in average wavelength for now
         with pyfits.open(x1d_filename) as x1d:
             wave_data = np.ones(n_events) * x1d[1].data['wavelength'].mean()
@@ -170,7 +171,10 @@ def stis_corrtag(tagfile):
     hdu_out[1].header.extend(header1, end=True)
 
     hdu_out.writeto(tagfile.replace('_tag.fits', '_corrtag.fits'), clobber=True)
-
+    if clean:
+        print("Removing input tagfile")
+        os.remove(tagfile)
+    
 #-------------------------------------------------------------------------------
 
 def epsilon(tagfile):

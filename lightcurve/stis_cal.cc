@@ -42,7 +42,9 @@ static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
       *(npy_float*) PyArray_GETPTR1(out_array, i) = *(npy_float *) PyArray_GETPTR2(im, x, y);
     }
   }
-
+  Py_DECREF(x_coords);
+  Py_DECREF(y_coords);
+  Py_DECREF(im);
   return Py_BuildValue("N", out_array);
 }
 
@@ -87,8 +89,10 @@ static PyObject *map_dq_image(PyObject *self, PyObject *args) {
           *(npy_int*) PyArray_GETPTR1(out_array, i) = *(npy_int *) PyArray_GETPTR2(im, x, y);
         }
       }
-
-      return Py_BuildValue("N", out_array);
+    Py_DECREF(x_coords);
+    Py_DECREF(y_coords);
+    Py_DECREF(im);
+    return Py_BuildValue("N", out_array);
     }
 
 
