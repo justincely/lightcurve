@@ -8,10 +8,11 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 import numpy as np
+import os
 
 from .lightcurve import LightCurve
 import io
-from .cos import CosCurve
+from .cos import CosCurve, get_both_filenames
 from .stis import StisCurve
 
 __all__ = ['open']
@@ -30,7 +31,8 @@ def composite(filelist, output):
         The path to the location in which the composite lightcurve is saved.
     """
 
-    print("Creating composite lightcurve")
+    print("Creating composite lightcurve from:")
+    print("\n".join(filelist))
 
     wmin = 700
     wmax = 20000
@@ -44,7 +46,7 @@ def composite(filelist, output):
             sdqflags = hdu[1].header['SDQFLAGS']
 
             if (hdu[0].header['INSTRUME'] == "COS") and (hdu[0].header['DETECTOR'] == 'FUV'):
-                other_file = [item for item in lightcurve.cos.get_both_filenames(filename) if not item == filename][0]
+                other_file = [item for item in get_both_filenames(filename) if not item == filename][0]
                 if os.path.exists(other_file):
                     with pyfits.open(other_file) as hdu_2:
                         dq = np.hstack([dq, hdu_2[1].data['DQ']])
@@ -64,6 +66,7 @@ def composite(filelist, output):
 
             max_wave = wave[index].max()
             min_wave = wave[index].min()
+            print(max_wave, min_wave)
 
             if max_wave < wmax:
                 wmax = max_wave

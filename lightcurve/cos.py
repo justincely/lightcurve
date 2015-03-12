@@ -13,7 +13,7 @@ from scipy.interpolate import interp1d
 from .lightcurve import LightCurve
 from .utils import expand_refname
 
-__all__ = ['extract_index']
+__all__ = ['extract_index', 'get_both_filenames']
 
 #-------------------------------------------------------------------------------
 
