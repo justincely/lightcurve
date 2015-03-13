@@ -15,7 +15,7 @@ from astropy.io import fits as pyfits
 
 from .lightcurve import LightCurve
 from .utils import expand_refname, enlarge
-from .stis_cal import calculate_epsilon, map_dq_image
+from .stis_cal import map_image
 from .version import version as  __version__
 
 #-------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ def stis_corrtag(tagfile, clean=True):
     if clean:
         print("Removing input tagfile")
         os.remove(tagfile)
-    
+
 #-------------------------------------------------------------------------------
 
 def epsilon(tagfile):
@@ -217,9 +217,9 @@ def epsilon(tagfile):
                     image = enlarge(image, x_factor, y_factor)
 
                 #--indexing is 1 off
-                epsilon_out *= calculate_epsilon(image,
-                                                 hdu[1].data['AXIS1'] - 1,
-                                                 hdu[1].data['AXIS2'] - 1)
+                epsilon_out *= map_image(image,
+                                         hdu[1].data['AXIS1'] - 1,
+                                         hdu[1].data['AXIS2'] - 1)
 
     return epsilon_out
 
@@ -272,8 +272,8 @@ def dqinit(tagfile):
 
         #-- Map to the events
         #-- indexing is 1 off
-        dq_out = map_dq_image(dq_im,
-                              hdu[1].data['AXIS1'] - 1,
-                              hdu[1].data['AXIS2'] - 1)
+        dq_out = map_image(dq_im,
+                           hdu[1].data['AXIS1'] - 1,
+                           hdu[1].data['AXIS2'] - 1)
 
     return dq_out

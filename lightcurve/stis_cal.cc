@@ -2,25 +2,22 @@
 # include <numpy/arrayobject.h>
 # include <stdlib.h>
 
-
-static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
+static PyObject *map_image(PyObject *self, PyObject *args) {
 
   /* local variables */
-  int i=0, NX=0;
-  int x=0, y=0;
+  int i=0, x=0, y=0;
 
 	PyObject *in_im, *in_x, *in_y;
 	PyArrayObject *im, *x_coords, *y_coords;
 
-	if (!PyArg_ParseTuple(args, "OOO",
-		&in_im, &in_x, &in_y)) {
+	if (!PyArg_ParseTuple(args, "OOO", &in_im, &in_x, &in_y)) {
 	    PyErr_SetString(PyExc_RuntimeError, "can't read arguments");
 	    return NULL;
 	}
 
 	x_coords = (PyArrayObject *)PyArray_FROM_OTF(in_x, NPY_INT32, NPY_IN_ARRAY);
 	y_coords = (PyArrayObject *)PyArray_FROM_OTF(in_y, NPY_INT32, NPY_IN_ARRAY);
-	im = (PyArrayObject *)PyArray_FROM_OTF(in_im, NPY_FLOAT, NPY_IN_ARRAY);
+	im = (PyArrayObject *)PyArray_FROM_OTF(in_im, PyArray_TYPE(in_im), NPY_IN_ARRAY);
 
 	if (x_coords == NULL || y_coords == NULL || im == NULL)
 	    return NULL;
@@ -29,19 +26,30 @@ static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
   npy_intp nrows[1] = {n_rows_in};
 
   PyArrayObject *out_array;
-  out_array = (PyArrayObject *) PyArray_SimpleNew(1, nrows, NPY_FLOAT);
+  out_array = (PyArrayObject *) PyArray_SimpleNew(1, nrows, PyArray_TYPE(in_im));
 
-  NX = PyArray_DIM(im, 0);
   for (int i=0; i<n_rows_in; i++){
     x = *(npy_int32 *) PyArray_GETPTR1(x_coords, i);
     y = *(npy_int32 *) PyArray_GETPTR1(y_coords, i);
-    if ((x >= 2048) || (x <= 0) || (y >= 2048) || (y <= 0)){
-      *(npy_float*) PyArray_GETPTR1(out_array, i) = 0.0;
+
+    if (PyTypeNum_ISFLOAT(PyArray_TYPE(in_im))){
+      if ((x >= 2048) || (x <= 0) || (y >= 2048) || (y <= 0)){
+        *(npy_float *) PyArray_GETPTR1(out_array, i) = 0.0;
+      }
+      else{
+        *(npy_float *) PyArray_GETPTR1(out_array, i) = *(npy_float *) PyArray_GETPTR2(im, x, y);
+      }
     }
-    else{
-      *(npy_float*) PyArray_GETPTR1(out_array, i) = *(npy_float *) PyArray_GETPTR2(im, x, y);
+    else if (PyTypeNum_ISFLOAT(PyArray_TYPE(in_im))){
+      if ((x >= 2048) || (x <= 0) || (y >= 2048) || (y <= 0)){
+        *(npy_int *) PyArray_GETPTR1(out_array, i) = 0;
+      }
+      else{
+        *(npy_int *) PyArray_GETPTR1(out_array, i) = *(npy_int *) PyArray_GETPTR2(im, x, y);
+      }
     }
   }
+
   Py_DECREF(x_coords);
   Py_DECREF(y_coords);
   Py_DECREF(im);
@@ -49,60 +57,10 @@ static PyObject *calculate_epsilon(PyObject *self, PyObject *args) {
 }
 
 
-
-static PyObject *map_dq_image(PyObject *self, PyObject *args) {
-
-  /* local variables */
-  int i=0, NX=0;
-  int x=0, y=0;
-
-  PyObject *in_im, *in_x, *in_y;
-  PyArrayObject *im, *x_coords, *y_coords;
-
-  if (!PyArg_ParseTuple(args, "OOO",
-    &in_im, &in_x, &in_y)) {
-      PyErr_SetString(PyExc_RuntimeError, "can't read arguments");
-      return NULL;
-    }
-
-    x_coords = (PyArrayObject *)PyArray_FROM_OTF(in_x, NPY_INT32, NPY_IN_ARRAY);
-    y_coords = (PyArrayObject *)PyArray_FROM_OTF(in_y, NPY_INT32, NPY_IN_ARRAY);
-    im = (PyArrayObject *)PyArray_FROM_OTF(in_im, NPY_INT32, NPY_IN_ARRAY);
-
-    if (x_coords == NULL || y_coords == NULL || im == NULL)
-      return NULL;
-
-      int n_rows_in = PyArray_DIM(x_coords, 0);
-      npy_intp nrows[1] = {n_rows_in};
-
-      PyArrayObject *out_array;
-      out_array = (PyArrayObject *) PyArray_SimpleNew(1, nrows, NPY_INT32);
-
-      NX = PyArray_DIM(im, 0);
-      for (int i=0; i<n_rows_in; i++){
-        x = *(npy_int32 *) PyArray_GETPTR1(x_coords, i);
-        y = *(npy_int32 *) PyArray_GETPTR1(y_coords, i);
-        if ((x >= 2048) || (x <= 0) || (y >= 2048) || (y <= 0)){
-          *(npy_int*) PyArray_GETPTR1(out_array, i) = 0;
-        }
-        else{
-          *(npy_int*) PyArray_GETPTR1(out_array, i) = *(npy_int *) PyArray_GETPTR2(im, x, y);
-        }
-      }
-    Py_DECREF(x_coords);
-    Py_DECREF(y_coords);
-    Py_DECREF(im);
-    return Py_BuildValue("N", out_array);
-    }
-
-
-
 static PyMethodDef stis_cal_methods[] = {
-	{"calculate_epsilon", calculate_epsilon, METH_VARARGS, "Calculate epsilon column"},
-  {"map_dq_image", map_dq_image, METH_VARARGS, "Calculate DQ column"},
+  {"map_image", map_image, METH_VARARGS, "Map image through coordinates"},
 	{NULL, NULL, 0, NULL}
 };
-
 
 
 PyMODINIT_FUNC initstis_cal(void) {
