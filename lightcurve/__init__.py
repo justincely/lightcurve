@@ -1,5 +1,5 @@
 from lightcurve import *
-from io import *
+import io
 import cos
 import stis
 #import analysis

@@ -4,6 +4,8 @@ Holder of Space Telescope Imaging Spectrograph (STIS) classes and utilities
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 
 import os
 import numpy as np
@@ -13,82 +15,66 @@ from datetime import datetime
 import astropy
 from astropy.io import fits as pyfits
 
-from .lightcurve import LightCurve
 from .utils import expand_refname, enlarge
 from .stis_cal import map_image
 from .version import version as  __version__
 
 #-------------------------------------------------------------------------------
 
-class StisCurve(LightCurve):
-    """
-    Subclass for STIS specific routines and abilities
+def extract(filename, **kwargs):
+    """ Loop over HDUs and extract the lightcurve
+
+    This is the main driver of the lightcuve extracion, and definitely
+    needs some better documentation.
 
     """
 
-    def __init__(self, **kwargs):
-        """ Initialize and extract lightcurve from input corrtag
-        """
+    step = kwargs.get('step', 1)
 
-        if 'step' in kwargs: step = kwargs['step']
-        else: step = 1
+    SECOND_PER_MJD = 1.15741e-5
 
-        if 'filename' in kwargs:
-            self.extract(kwargs['filename'], step=step)
+    hdu = pyfits.open(filename)
+    hdu = hdu
 
+    time = hdu[1].data['time']
+    #time = np.array([round(val, 3) for val in hdu[1].data['time']]).astype(np.float64)
 
-    def __str__(self):
-        """Prettier representation of object instanct"""
-
-        return "Lightcurve Object of %s" % ( ','.join( self.input_list ) )
-
-
-    def extract(self, filename, step=1):
-        """ Loop over HDUs and extract the lightcurve
-
-        This is the main driver of the lightcuve extracion, and definitely
-        needs some better documentation.
-
-        """
-
-        SECOND_PER_MJD = 1.15741e-5
-
-        hdu = pyfits.open(filename)
-        self.hdu = hdu
-
-        time = hdu[1].data['time']
-        #time = np.array([round(val, 3) for val in self.hdu[1].data['time']]).astype(np.float64)
-
-        if not len(time):
-            end = 0
-        else:
-            end = min(time.max(),
-                      hdu[1].header['EXPTIME'] )
+    if not len(time):
+        end = 0
+    else:
+        end = min(time.max(),
+                  hdu[1].header['EXPTIME'] )
 
 
-        all_steps = np.arange(0, end+step, step)
+    all_steps = np.arange(0, end+step, step)
 
-        if all_steps[-1] > end:
-            truncate = True
-        else:
-            truncate = False
+    if all_steps[-1] > end:
+        truncate = True
+    else:
+        truncate = False
 
-        gross = np.histogram(time, all_steps)[0]
+    gross = np.histogram(time, all_steps)[0]
 
-        self.gross = gross
-        self.flux = np.zeros(gross.shape)
-        self.background = np.zeros(gross.shape)
-        self.mjd = hdu[1].header['EXPSTART'] + np.array(all_steps[:-1]) * SECOND_PER_MJD
-        self.bins = np.ones(len(gross)) * step
-        self.times = all_steps[:-1]
+    gross = gross
+    flux = np.zeros(gross.shape)
+    background = np.zeros(gross.shape)
+    mjd = hdu[1].header['EXPSTART'] + np.array(all_steps[:-1]) * SECOND_PER_MJD
+    bins = np.ones(len(gross)) * step
+    times = all_steps[:-1]
 
-        if truncate:
-            self.gross = self.gross[:-1]
-            self.flux = self.flux[:-1]
-            self.background = self.background[:-1]
-            self.mjd = self.mjd[:-1]
-            self.bins = self.bins[:-1]
-            self.times = self.times[:-1]
+    if truncate:
+        gross = gross[:-1]
+        flux = flux[:-1]
+        background = background[:-1]
+        mjd = mjd[:-1]
+        bins = bins[:-1]
+        times = times[:-1]
+
+    data = [times, mjd, bins, gross, background, flux]
+    columns = ('times', 'mjd' ,'bins', 'gross', 'background', 'flux')
+    meta = {}
+
+    return data, columns, meta
 
 #-------------------------------------------------------------------------------
 
