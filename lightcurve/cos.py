@@ -55,6 +55,8 @@ def extract(filename, **kwargs):
 
     """
 
+    input_files, input_hdus = collect_inputs(filename)
+
     step = kwargs.get('step', 1)
     wlim = kwargs.get('wlim', (2, 10000))
     xlim = kwargs.get('xlim', (0, 16384))
@@ -63,7 +65,14 @@ def extract(filename, **kwargs):
 
     SECOND_PER_MJD = 1.15741e-5
 
-    input_files, input_hdus = collect_inputs(filename)
+    meta = {'source' : filename,
+            'hdus' : input_hdus,
+            'source_files' : input_files,
+            'stepsize' : step,
+            'wlim' : wlim,
+            'xlim' : xlim,
+            'ylim' : ylim}
+
     print('Extracting from: {}'.format(input_files))
     print("Using wlim: {}".format(wlim))
     print("      step: {}".format(step))
@@ -173,8 +182,7 @@ def extract(filename, **kwargs):
 
 
     data = [times, mjd, bins, gross, background, flux]
-    columns = ('times', 'mjd' ,'bins', 'gross', 'background', 'flux')
-    meta = {}
+    columns = ('times', 'mjd', 'bins', 'gross', 'background', 'flux')
 
     return data, columns, meta
 
@@ -346,7 +354,7 @@ def get_fluxes(hdu, index):
         return np.ones( hdu[ 'events' ].data['time'].shape )[index]
 
 
-    flux_hdu = pyfits.open(fluxfile)
+    flux_hdu = fits.open(fluxfile)
     setting_index = np.where( (flux_hdu[1].data['SEGMENT'] == hdu[0].header['segment']) &
                            (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
                            (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']) &
@@ -354,7 +362,7 @@ def get_fluxes(hdu, index):
     if len( setting_index ) == 0:
         print('No row in fluxtab found for this dataset, no FLUXCAL performed')
         return np.ones( hdu[ 'events' ].data['time'].shape )[index]
-    else:
+    elif len(setting_index) > 1:
         raise ValueError('Too many rows found: {}'.format( len(setting_index) ) )
 
 

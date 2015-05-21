@@ -7,18 +7,20 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-__all__ = ['LightCurve']
+__all__ = ['LightCurve', 'composite']
 
 import astropy
 import scipy
 import numpy as np
+import os
 from datetime import datetime
 from astropy.io import fits
-from astropy.table import Table
+from astropy.table import Table, vstack
 
 from .version import version as __version__
 from .io import check_filetype, open_lightcurve
 from .cos import extract as extract_cos
+from .cos import get_both_filenames
 from .stis import extract as extract_stis
 
 #-------------------------------------------------------------------------------
@@ -46,19 +48,26 @@ class LightCurve(Table):
 
         """
 
-        if filename is None:
-            print("Initializing emtpy LightCurve")
-            data = [[], [], [], [], []]
-            columns = ('times',
-                            'mjd',
-                            'bins',
-                            'gross',
-                            'background')
-            meta = {'filename': None}
+        if isinstance(filename, Table):
+            columns = list(filename.columns)
+            data = [filename[item].data for item in columns]
+            meta = filename.meta
+            meta['outname'] = None
+
+        elif filename == None:
+           print("Initializing emtpy LightCurve")
+
+           data = [[], [], [], [], [], []]
+           columns = ('times',
+                      'mjd',
+                      'bins',
+                      'gross',
+                      'background',
+                      'flux')
+           meta = {'filename': None}
 
         else:
             filetype = check_filetype(filename)
-
             if filetype == 'cos_corrtag':
                 data, columns, meta = extract_cos(filename, **kwargs)
             elif filetype == 'stis_tag' or filetype == 'stis_corrtag':
@@ -68,13 +77,15 @@ class LightCurve(Table):
             else:
                 raise IOError("Filetype not recognized: {}".format(filetype))
 
+            meta['outname'] = filename[:9] + '_curve.fits'
+            meta['filetype'] = filetype
 
         super(LightCurve, self).__init__(data,
                                          names=columns,
                                          meta=meta)
 
 
-    def __add__( self, other ):
+    def __add__(self, other):
         """ Overload the '+' operator.
         """
         raise NotImplementedError("I'm not yet sure how to do this")
@@ -101,35 +112,23 @@ class LightCurve(Table):
         return "Lightcurve Object"
 
 
-    def concatenate(self, other):
-        """ Concatenate two lightcurves
-
-        The arrays are
-        concatenated and re-sorted in order of the MJD array.
-
+    def concatenate(self, other, handle_conflicts='warn'):
+        """Concatenate two lightcurve tables.
         """
-        raise NotImplementedError("I'm not yet sure how to do this")
 
-        out_obj = LightCurve()
-        '''
-        out_obj.gross = np.concatenate( [self.gross, other.gross] )
-        out_obj.flux = np.concatenate( [self.flux, other.flux] )
-        out_obj.background = np.concatenate( [self.background,
-                                              other.background] )
-        out_obj.mjd = np.concatenate( [self.mjd, other.mjd] )
-        out_obj.times = np.concatenate( [self.times, other.times] )
-        out_obj.bins = np.concatenate( [self.bins, other.bins] )
+        new_table = vstack([self._to_table(), other._to_table()], metadata_conflicts=handle_conflicts)
+        return LightCurve(new_table)
 
-        sorted_index = np.argsort( out_obj.mjd )
 
-        out_obj.gross = out_obj.gross[ sorted_index ]
-        out_obj.flux = out_obj.flux[sorted_index]
-        out_obj.background = out_obj.background[ sorted_index ]
-        out_obj.mjd = out_obj.mjd[ sorted_index ]
-        out_obj.times = out_obj.times[ sorted_index ]
-        out_obj.bins = out_obj.bins[ sorted_index ]
-        '''
-        return out_obj
+    def _to_table(self):
+        """Strip out all the LightCurve stuff and return Table instance
+        """
+
+        columns = list(self.columns)
+        data = [self[item].data for item in columns]
+        meta = self.meta
+
+        return Table(data, names=columns, meta=meta)
 
     @property
     def counts(self):
@@ -188,7 +187,7 @@ class LightCurve(Table):
         if not len(self['gross']):
             return self['gross'].copy()
         else:
-            return (self['error'] / self['counts']) *  self['flux']
+            return (self.error / self.counts) *  self['flux']
 
 
     @property
@@ -204,10 +203,10 @@ class LightCurve(Table):
 
         """
 
-        if not len(self['counts']):
-            return self['counts'].copy()
+        if not len(self.counts):
+            return self.counts.copy()
         else:
-            return self['counts'] / self['bins'].astype(np.float64)
+            return self.counts / self['bins'].astype(np.float64)
 
 
     @property
@@ -226,7 +225,7 @@ class LightCurve(Table):
         if not len(self['gross']):
             return self['gross'].copy()
         else:
-            return self['gross'] / self['error']
+            return self['gross'] / self.error
 
 
     def filter(self, indices):
@@ -241,12 +240,7 @@ class LightCurve(Table):
 
         """
 
-        self.gross = self.gross[indices]
-        self.flux = self.flux[indices]
-        self.background = self.background[indices]
-        self.mjd = self.mjd[indices]
-        self.times = self.times[indices]
-        self.bins = self.bins[indices]
+        self = self[indices]
 
 
     def write(self, outname=None, clobber=False):
@@ -263,7 +257,7 @@ class LightCurve(Table):
         """
 
         if isinstance(outname, str):
-            self.outname = outname
+            self.meta['outname'] = outname
 
         hdu_out = fits.HDUList(fits.PrimaryHDU())
 
@@ -278,7 +272,7 @@ class LightCurve(Table):
                                                                  fill='-',
                                                                  align='^'), before='GEN_DATE')
         hdu_out[0].header.add_blank('', before='GEN_DATE')
-
+        #hdu_out[0].header['WMIN'] = kwargs
 
 
 
@@ -288,36 +282,74 @@ class LightCurve(Table):
                                                                  align='^'), after='SP_VER')
         hdu_out[0].header.add_blank('', after='SP_VER')
 
-        try:
-            hdu_out[0].header.extend(self.hdu[0].header, end=True)
-        except AttributeError:
-            pass
+        for in_hdu in self.meta['hdus'].itervalues():
+            try:
+                hdu_out[0].header.extend(in_hdu[0].header, end=True)
+            except AttributeError:
+                pass
 
 
         #-- Ext 1 table data
-        bins_col = fits.Column('bins', 'D', 'second', array=self.bins)
-        times_col = fits.Column('times', 'D', 'second', array=self.times)
-        mjd_col = fits.Column('mjd', 'D', 'MJD', array=self.mjd)
-        gross_col = fits.Column('gross', 'D', 'counts', array=self.gross)
-        counts_col = fits.Column('counts', 'D', 'counts', array=self.counts)
-        net_col = fits.Column('net', 'D', 'counts/s', array=self.net)
-        flux_col = fits.Column('flux', 'D', 'ergs/s', array=self.flux)
-        flux_error_col = fits.Column('flux_error', 'D', 'ergs/s',
-                                       array=self.flux_error)
-        bkgnd_col = fits.Column('background', 'D', 'cnts',
-                                  array=self.background)
-        error_col = fits.Column('error', 'D', 'counts', array=self.error)
+        bins_col = fits.Column('bins',
+                               'D',
+                               'second',
+                               array=self['bins'])
+
+        times_col = fits.Column('times',
+                                'D',
+                                'second',
+                                array=self['times'])
+
+        mjd_col = fits.Column('mjd',
+                              'D',
+                              'MJD',
+                              array=self['mjd'])
+
+        gross_col = fits.Column('gross',
+                                'D',
+                                'counts',
+                                array=self['gross'])
+
+        counts_col = fits.Column('counts',
+                                 'D',
+                                 'counts',
+                                 array=self.counts)
+
+        net_col = fits.Column('net',
+                              'D',
+                              'counts/s',
+                               array=self.net)
+
+        flux_col = fits.Column('flux',
+                               'D',
+                               'ergs/s',
+                               array=self['flux'])
+
+        flux_error_col = fits.Column('flux_error',
+                                     'D',
+                                     'ergs/s',
+                                      array=self.flux_error)
+
+        bkgnd_col = fits.Column('background',
+                                'D',
+                                'cnts',
+                                 array=self['background'])
+
+        error_col = fits.Column('error',
+                                'D',
+                                'counts',
+                                array=self.error)
 
         tab = fits.new_table([bins_col,
-                                times_col,
-                                mjd_col,
-                                gross_col,
-                                counts_col,
-                                net_col,
-                                flux_col,
-                                flux_error_col,
-                                bkgnd_col,
-                                error_col])
+                              times_col,
+                              mjd_col,
+                              gross_col,
+                              counts_col,
+                              net_col,
+                              flux_col,
+                              flux_error_col,
+                              bkgnd_col,
+                              error_col])
         hdu_out.append(tab)
 
 
@@ -336,21 +368,21 @@ class LightCurve(Table):
                                                                  align='^'))
         hdu_out[1].header.add_blank('')
 
-        try:
-            hdu_out[1].header.extend(self.hdu[1].header, end=True)
-        except AttributeError:
-            pass
+        for in_hdu in self.meta['hdus'].itervalues():
+            try:
+                hdu_out[1].header.extend(in_hdu[1].header, end=True)
+            except AttributeError:
+                pass
 
-
-        if outname.endswith('.gz'):
+        if self.meta['outname'].endswith('.gz'):
             print("Nope, can't write to gzipped files")
-            self.outname = self.outname[:-3]
+            self.meta['outname'] = self.meta['outname'][:-3]
 
-        hdu_out.writeto(self.outname, clobber=clobber)
+        hdu_out.writeto(self.meta['outname'], clobber=clobber)
 
 #-------------------------------------------------------------------------------
 
-def composite(filelist, output):
+def composite(filelist, output, trim=True, **kwargs):
     """Creates a composite lightcurve from files in filelist and saves
     it to the save_loc.
 
@@ -360,16 +392,18 @@ def composite(filelist, output):
         A list of full paths to the input files.
     output : string
         The path to the location in which the composite lightcurve is saved.
+    trim : bool, opt
+        Trim wavelengths to common ranges for all files
     """
 
     print("Creating composite lightcurve from:")
     print("\n".join(filelist))
 
-    wmin = 700
-    wmax = 20000
+    wmin = 912
+    wmax = 3000
 
     for filename in filelist:
-        with pyfits.open(filename) as hdu:
+        with fits.open(filename) as hdu:
             dq = hdu[1].data['DQ']
             wave = hdu[1].data['wavelength']
             xcorr = hdu[1].data['xcorr']
@@ -379,7 +413,7 @@ def composite(filelist, output):
             if (hdu[0].header['INSTRUME'] == "COS") and (hdu[0].header['DETECTOR'] == 'FUV'):
                 other_file = [item for item in get_both_filenames(filename) if not item == filename][0]
                 if os.path.exists(other_file):
-                    with pyfits.open(other_file) as hdu_2:
+                    with fits.open(other_file) as hdu_2:
                         dq = np.hstack([dq, hdu_2[1].data['DQ']])
                         wave = np.hstack([wave, hdu_2[1].data['wavelength']])
                         xcorr = np.hstack([xcorr, hdu_2[1].data['xcorr']])
@@ -388,34 +422,31 @@ def composite(filelist, output):
 
             index = np.where((np.logical_not(dq & sdqflags)) &
                              (wave > 500) &
-                             (xcorr >=0) &
-                             (ycorr >=0))
+                             (xcorr >= 0) &
+                             (ycorr >= 0))
 
             if not len(index[0]):
                 print('No Valid events')
                 continue
 
-            max_wave = wave[index].max()
-            min_wave = wave[index].min()
-            print(max_wave, min_wave)
-
-            if max_wave < wmax:
-                wmax = max_wave
-            if min_wave > wmin:
-                wmin = min_wave
+            wmax = min(wmax, wave[index].max())
+            wmin = max(wmin, wave[index].min())
+            print(wmin, '-->', wmax)
 
 
-    print('Using wavelength range of: {}-{}'.format(wmin, wmax))
+    if trim:
+        print('Using wavelength range of: {}-{}'.format(wmin, wmax))
+        kwargs['wlim'] = (wmin, wmax)
 
-    out_lc = lightcurve.LightCurve()
+    for i, filename in enumerate(filelist):
+        print(filename)
 
-    for filename in filelist:
-        new_lc = io.open(filename=filename,
-                         step=1,
-                         wlim=(wmin, wmax),
-                         alt=None,
-                         filter=True)
-
-        out_lc = out_lc.concatenate(new_lc)
+        if i == 0:
+            out_lc = LightCurve(filename, **kwargs)
+        else:
+            new_lc = LightCurve(filename, **kwargs)
+            out_lc = out_lc.concatenate(new_lc)
 
     out_lc.write(output, clobber=True)
+
+#-------------------------------------------------------------------------------

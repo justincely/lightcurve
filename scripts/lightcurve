@@ -5,7 +5,7 @@ import re
 import os
 
 from lightcurve import LightCurve
-from lightcurve import io
+from lightcurve import composite
 
 #------------------------------------------------------------
 
@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument('--wmax', dest='wmax', type=float, default=10000,
                         help='Maximum wavelength for extraction')
 
-    parser.add_argument('--outname', dest='outname', type=str, default='',
+    parser.add_argument('--outname', dest='outname', type=str, default='composite_curve.fits',
                         help='Output lightcurve name')
 
     parser.add_argument('--cat', dest='concatenate', action='store_true', default=False,
@@ -51,31 +51,15 @@ if __name__ == "__main__":
 
     if args.concatenate:
         print "Concatenating datasets"
-        out_lc = LightCurve()
-
-        for dataset in all_datasets:
-            new_lc = io.open( filename=dataset, 
-                              step=args.step, 
-                              wlim=(args.wmin, args.wmax), 
-                              alt=args.alt, 
-                              filter=args.filter)
-
-            out_lc.concatenate(new_lc)
-
-        out_lc.write( args.outname or 'composite_curve.fits' )
-
+	composite(args.input, args.outname, trim=False)
 
     else:
         for dataset in all_datasets:
-            out_lc = io.open( filename=dataset, 
-                              step=args.step, 
-                              wlim=(args.wmin, args.wmax), 
-                              alt=args.alt,
-                              filter=args.filter)
-            if '_corrtag' in dataset:
-                curvename = os.path.split( dataset )[1].replace( re.search('_corrtag.*.fits', dataset).group(), '_curve.fits' )
-            elif '_tag' in dataset:
-                curvename = os.path.split( dataset )[1].replace( re.search('_tag.*.fits', dataset).group(), '_curve.fits' )
+            out_lc = LightCurve(filename=dataset, 
+                                step=args.step, 
+                                wlim=(args.wmin, args.wmax), 
+                                alt=args.alt,
+                                filter=args.filter)
   
             out_lc.write( args.outname or curvename )
 
