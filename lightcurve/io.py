@@ -6,9 +6,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-import matplotlib as mpl
-#-- Don't render plots to screen
-mpl.use('Agg')
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 import numpy as np
