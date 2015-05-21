@@ -65,13 +65,13 @@ def extract(filename, **kwargs):
 
     SECOND_PER_MJD = 1.15741e-5
 
-    meta = {'source' : filename,
-            'hdus' : input_hdus,
-            'source_files' : input_files,
-            'stepsize' : step,
-            'wlim' : wlim,
-            'xlim' : xlim,
-            'ylim' : ylim}
+    meta = {'source': filename,
+            'hdus': input_hdus,
+            'source_files': input_files,
+            'stepsize': step,
+            'wlim': wlim,
+            'xlim': xlim,
+            'ylim': ylim}
 
     print('Extracting from: {}'.format(input_files))
     print("Using wlim: {}".format(wlim))

@@ -272,8 +272,6 @@ class LightCurve(Table):
                                                                  fill='-',
                                                                  align='^'), before='GEN_DATE')
         hdu_out[0].header.add_blank('', before='GEN_DATE')
-        #hdu_out[0].header['WMIN'] = kwargs
-
 
 
         hdu_out[0].header.add_blank('', after='SP_VER')

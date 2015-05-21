@@ -13,7 +13,7 @@ import scipy
 from scipy.interpolate import interp1d
 from datetime import datetime
 import astropy
-from astropy.io import fits as pyfits
+from astropy.io import fits as fits
 
 from .utils import expand_refname, enlarge
 from .stis_cal import map_image
@@ -33,7 +33,7 @@ def extract(filename, **kwargs):
 
     SECOND_PER_MJD = 1.15741e-5
 
-    hdu = pyfits.open(filename)
+    hdu = fits.open(filename)
     hdu = hdu
 
     time = hdu[1].data['time']
@@ -90,7 +90,7 @@ def stis_corrtag(tagfile, clean=True):
     print("Creating STIS corrtag for {}".format(tagfile))
     x1d_filename = tagfile.replace('_tag.fits', '_x1d.fits')
 
-    with pyfits.open(tagfile, 'readonly') as hdu:
+    with fits.open(tagfile, 'readonly') as hdu:
         n_events = len(hdu[1].data['TIME'])
 
         time_data = hdu[1].data['TIME']
@@ -112,7 +112,7 @@ def stis_corrtag(tagfile, clean=True):
         wave_data = np.ones(n_events) * hdu[0].header['CENTRWV']
     elif header0['OPT_ELEM'].startswith('E'):
         #-- Put in average wavelength for now
-        with pyfits.open(x1d_filename) as x1d:
+        with fits.open(x1d_filename) as x1d:
             wave_data = np.ones(n_events) * x1d[1].data['wavelength'].mean()
     else:
         #-- Grab wavelengths from the x1d file
@@ -120,12 +120,12 @@ def stis_corrtag(tagfile, clean=True):
         int_pix = np.where(int_pix < 0, 0, int_pix)
         int_pix = np.where(int_pix > 1023, 1023, int_pix)
         print(int_pix)
-        with pyfits.open(x1d_filename) as x1d:
+        with fits.open(x1d_filename) as x1d:
             wave_data = x1d[1].data['wavelength'][0][int_pix]
             print(wave_data.mean())
 
     #-- Writeout corrtag file
-    hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
+    hdu_out = fits.HDUList(fits.PrimaryHDU())
 
     hdu_out[0].header['GEN_DATE'] = (str(datetime.now()), 'Creation Date')
     hdu_out[0].header['LC_VER'] = (__version__, 'lightcurve version used')
@@ -135,16 +135,16 @@ def stis_corrtag(tagfile, clean=True):
 
     hdu_out[0].header.extend(header0, end=True)
 
-    time_col = pyfits.Column('time', 'D', 'second', array=time_data)
-    rawx_col = pyfits.Column('rawx', 'D', 'pixel', array=rawx_data)
-    rawy_col = pyfits.Column('rawy', 'D', 'pixel', array=rawy_data)
-    xcorr_col = pyfits.Column('xcorr', 'D', 'pixel', array=xcorr_data)
-    ycorr_col = pyfits.Column('ycorr', 'D', 'pixel', array=ycorr_data)
-    epsilon_col = pyfits.Column('epsilon', 'D', 'factor', array=eps_data)
-    wave_col = pyfits.Column('wavelength', 'D', 'angstrom', array=wave_data)
-    dq_col = pyfits.Column('dq', 'I', 'DQ', array=dq_data)
+    time_col = fits.Column('time', 'D', 'second', array=time_data)
+    rawx_col = fits.Column('rawx', 'D', 'pixel', array=rawx_data)
+    rawy_col = fits.Column('rawy', 'D', 'pixel', array=rawy_data)
+    xcorr_col = fits.Column('xcorr', 'D', 'pixel', array=xcorr_data)
+    ycorr_col = fits.Column('ycorr', 'D', 'pixel', array=ycorr_data)
+    epsilon_col = fits.Column('epsilon', 'D', 'factor', array=eps_data)
+    wave_col = fits.Column('wavelength', 'D', 'angstrom', array=wave_data)
+    dq_col = fits.Column('dq', 'I', 'DQ', array=dq_data)
 
-    tab = pyfits.new_table([time_col,
+    tab = fits.new_table([time_col,
                             rawx_col,
                             rawy_col,
                             xcorr_col,
@@ -183,7 +183,7 @@ def epsilon(tagfile):
 
     print("Calculating Epsilon")
 
-    with pyfits.open(tagfile) as hdu:
+    with fits.open(tagfile) as hdu:
 
         epsilon_out = np.ones(hdu[1].data['time'].shape)
 
@@ -192,7 +192,7 @@ def epsilon(tagfile):
             reffile = expand_refname(hdu[0].header[ref_flat])
             print('FLATFIELD CORRECTION {}: {}'.format(ref_flat, reffile))
 
-            with pyfits.open(reffile) as image_hdu:
+            with fits.open(reffile) as image_hdu:
                 image = image_hdu[1].data
 
                 if not image.shape == (2048, 2048):
@@ -228,12 +228,12 @@ def dqinit(tagfile):
 
     print("Calculating DQ")
 
-    with pyfits.open(tagfile) as hdu:
+    with fits.open(tagfile) as hdu:
 
         reffile = expand_refname(hdu[0].header['BPIXTAB'])
         print('BPIXTAB used {}'.format(reffile))
 
-        with pyfits.open(reffile) as bpix:
+        with fits.open(reffile) as bpix:
             #-- Mama bpix regions are in lo-res pixels
             dq_im = np.zeros((1024, 1024)).astype(np.int32)
 
