@@ -254,8 +254,8 @@ def extract_index(hdu, x_start, x_end,
     """
 
     if filter_airglow:
-        lyman = (1214, 1217)
-        oxygen = (1300, 1308)
+        lyman = (1208, 1225)
+        oxygen = (1298, 1312)
     else:
         lyman = (w_end, w_start)
         oxygen = (w_end, w_start)
