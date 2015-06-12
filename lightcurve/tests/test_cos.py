@@ -3,7 +3,7 @@ Tests for extraction of COS data.
 
 """
 
-from lightcurve import io
+from lightcurve import LightCurve
 from ..cos import extract_index, get_both_filenames
 
 import numpy as np
@@ -73,17 +73,16 @@ def test_FUV():
 
     test_file = 'test_corrtag_a.fits'
     generate_test_files(outname=test_file)
-    lc = io.open(filename=test_file)
 
     for stepsize in [.1, .5, 1, 2, 5, 10]:
-        lc.extract( step=stepsize )
-        assert lc.gross.sum() == 16384, "Extraction didn't find all the counts, step={}".format(step)
+        lc = LightCurve(filename=test_file, step=stepsize)
+        assert lc['gross'].sum() == 16384, "Extraction didn't find all the counts, step={}".format(step)
 
     ### uneven steps, make sure last bit is truncated.
     ### This should also check that the are above some value too
     for stepsize in [.3, 3]:
-        lc.extract( step=stepsize )
-        assert (lc.gross.sum() < 16384), "Extraction didn't truncate properly, step={}".format(step)
+        lc = LightCurve(filename=test_file, step=stepsize)
+        assert (lc['gross'].sum() < 16384), "Extraction didn't truncate properly, step={}".format(step)
 
     os.remove(test_file)
 
@@ -93,9 +92,9 @@ def test_epsilon():
     test_file = 'epsilon_corrtag_a.fits'
     generate_test_files(outname=test_file, epsilon=1.25)
 
-    lc = io.open( filename=test_file )
+    lc = LightCurve(filename=test_file)
 
-    assert lc.gross.sum() == 16384 * 1.25, 'Espilon not accounted for'
+    assert lc['gross'].sum() == 16384 * 1.25, 'Espilon not accounted for'
 
     os.remove(test_file)
 
