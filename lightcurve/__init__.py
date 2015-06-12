@@ -1,7 +1,7 @@
-from lightcurve import *
-import io
-import cos
-import stis
-#import analysis
+from __future__ import absolute_import
 
-from version import version as __version__
+from .lightcurve import *
+from .cos import *
+from .stis import *
+
+from .version import version as __version__
