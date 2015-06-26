@@ -30,6 +30,7 @@ def extract(filename, **kwargs):
 
     """
 
+    verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
     wlim = kwargs.get('wlim', (2, 10000))
     xlim = kwargs.get('xlim', (0, 2048))
@@ -45,13 +46,21 @@ def extract(filename, **kwargs):
             'xlim': xlim,
             'ylim': ylim}
 
-    print("Using wlim: {}".format(wlim))
-    print("Using xlim: {}".format(xlim))
-    print("Using ylim: {}".format(ylim))
-    print("      step: {}".format(step))
+    if verbosity:
+        print('#-----------------------------------------#')
+        print('Running LightCurve extraction for STIS Data')
+        print('#-----------------------------------------#')
+        print()
+        print('Extracting from: {}'.format(filename))
+        print('With arguments:')
+        print('step : {}'.format(step))
+        print('wlim : {}'.format(wlim))
+        print('xlim : {}'.format(xlim))
+        print('ylim : {}'.format(ylim))
+        print('filter_airglow : {}'.format(filter_airglow))
+        print()
 
     SECOND_PER_MJD = 1.15741e-5
-
 
     time = hdu[1].data['time']
     #time = np.array([round(val, 3) for val in hdu[1].data['time']]).astype(np.float64)
@@ -75,22 +84,28 @@ def extract(filename, **kwargs):
                           xlim[0], xlim[1],
                           ylim[0], ylim[1],
                           wlim[0], wlim[1],
-                          0,
+                          hdu[1].header['SDQFLAGS'],
                           filter_airglow=filter_airglow)
 
-    print("#{} events".format(len(index)))
+    if verbosity:
+        print("#{} events".format(len(index)))
 
     gross = np.histogram(hdu['events'].data['time'][index],
-                          all_steps,
-                          weights=hdu['events'].data['epsilon'][index])[0]
+                         all_steps,
+                         weights=hdu['events'].data['epsilon'][index])[0]
 
+    print("WARNING: The flux is a lie")
     flux = np.zeros(gross.shape)
+    print("WARNING: The background is a lie")
     background = np.zeros(gross.shape)
     mjd = hdu[1].header['EXPSTART'] + np.array(all_steps[:-1]) * SECOND_PER_MJD
     bins = np.ones(len(gross)) * step
     times = all_steps[:-1]
 
     if truncate:
+        if verbosity:
+            print('Truncating the last event bin')
+
         gross = gross[:-1]
         flux = flux[:-1]
         background = background[:-1]
@@ -101,6 +116,10 @@ def extract(filename, **kwargs):
     data = [times, mjd, bins, gross, background, flux]
     columns = ('times', 'mjd' ,'bins', 'gross', 'background', 'flux')
 
+    if verbosity:
+        print('Finished extraction for {}'.format(filename))
+        print()
+        
     return data, columns, meta
 
 #-------------------------------------------------------------------------------

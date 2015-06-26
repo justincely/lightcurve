@@ -59,7 +59,8 @@ if __name__ == "__main__":
                                 step=args.step, 
                                 wlim=(args.wmin, args.wmax), 
                                 alt=args.alt,
-                                filter=args.filter)
+                                filter=args.filter,
+                                verbosity=1)
   
-            out_lc.write( args.outname or curvename )
+            out_lc.write(args.outname or curvename)
 

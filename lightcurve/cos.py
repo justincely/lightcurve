@@ -57,6 +57,7 @@ def extract(filename, **kwargs):
 
     input_files, input_hdus = collect_inputs(filename)
 
+    verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
     wlim = kwargs.get('wlim', (2, 10000))
     xlim = kwargs.get('xlim', (0, 16384))
@@ -73,9 +74,20 @@ def extract(filename, **kwargs):
             'xlim': xlim,
             'ylim': ylim}
 
-    print('Extracting from: {}'.format(input_files))
-    print("Using wlim: {}".format(wlim))
-    print("      step: {}".format(step))
+    if verbosity:
+        print('#----------------------------------------#')
+        print('Running LightCurve extraction for COS Data')
+        print('#----------------------------------------#')
+        print()
+        print('Extracting from: {}'.format(input_files))
+        print('With arguments:')
+        print('With arguments:')
+        print('step : {}'.format(step))
+        print('wlim : {}'.format(wlim))
+        print('xlim : {}'.format(xlim))
+        print('ylim : {}'.format(ylim))
+        print('filter_airglow : {}'.format(filter_airglow))
+        print()
 
     #time = np.array([round(val, 3) for val in hdu[1].data['time']]).astype(np.float64)
 
@@ -107,14 +119,16 @@ def extract(filename, **kwargs):
         else:
             ystart, yend = ylim[0], ylim[1]
 
-        print(xlim, ystart, yend, wlim, hdu[1].header['sdqflags'])
+        if verbosity:
+            print(xlim, ystart, yend, wlim, hdu[1].header['sdqflags'])
         index = extract_index(hdu,
                               xlim[0], xlim[1],
                               ystart, yend,
                               wlim[0], wlim[1],
                               hdu[1].header['sdqflags'],
                               filter_airglow=filter_airglow)
-        print("{} #{} events".format(segment, len(index)))
+        if verbosity:
+            print("{} #{} events".format(segment, len(index)))
 
         try:
             max_xpix = round(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
@@ -136,7 +150,7 @@ def extract(filename, **kwargs):
 
         ### Background calculation
         #print('Background fluxcal')
-        bstart, bend = get_extraction_region( hdu, segment, 'background1' )
+        bstart, bend = get_extraction_region(hdu, segment, 'background1')
         index = extract_index(hdu,
                               xlim[0], xlim[1],
                               bstart, bend,
@@ -144,7 +158,7 @@ def extract(filename, **kwargs):
                               hdu[1].header['sdqflags'],
                               filter_airglow=filter_airglow)
 
-        bstart, bend = get_extraction_region( hdu, segment, 'background2' )
+        bstart, bend = get_extraction_region(hdu, segment, 'background2')
         index = np.hstack( (index, extract_index(hdu,
                                                  xlim[0], xlim[1],
                                                  bstart, bend,
@@ -152,7 +166,7 @@ def extract(filename, **kwargs):
                                                  hdu[1].header['sdqflags'],
                                                  filter_airglow=filter_airglow) ) )
 
-        b_corr = ( (bend - bstart) / (yend - ystart) ) / 2.
+        b_corr = ((bend - bstart) / (yend - ystart)) / 2.
         background += b_corr * np.histogram(hdu['events'].data['time'][index],
                                             all_steps,
                                             weights=hdu['events'].data['epsilon'][index] )[0]
@@ -173,6 +187,9 @@ def extract(filename, **kwargs):
     times = all_steps[:-1]
 
     if truncate:
+        if verbosity:
+            print('Truncating the last event bin')
+
         gross = gross[:-1]
         flux = flux[:-1]
         background = background[:-1]
@@ -184,6 +201,10 @@ def extract(filename, **kwargs):
     data = [times, mjd, bins, gross, background, flux]
     columns = ('times', 'mjd', 'bins', 'gross', 'background', 'flux')
 
+    if verbosity:
+        print('Finished extraction for {}'.format(filename))
+        print()
+        
     return data, columns, meta
 
 #-------------------------------------------------------------------------------
@@ -198,9 +219,9 @@ def collect_inputs(filename):
             all_filenames = [filename]
 
             if hdu[0].header['opt_elem'] == 'G230L':
-                all_hdu = {'A':hdu, 'B':hdu}
+                all_hdu = {'A': hdu, 'B': hdu}
             else:
-                all_hdu = {'A':hdu, 'B':hdu, 'C':hdu}
+                all_hdu = {'A': hdu, 'B': hdu, 'C': hdu}
 
         elif hdu[0].header['detector'] == 'FUV':
             file_a, file_b = get_both_filenames(filename)
@@ -260,22 +281,22 @@ def extract_index(hdu, x_start, x_end,
         lyman = (w_end, w_start)
         oxygen = (w_end, w_start)
 
-    data_index = np.where( ( hdu[1].data['XCORR'] >= x_start ) &
-                           ( hdu[1].data['XCORR'] < x_end ) &
+    data_index = np.where((hdu[1].data['XCORR'] >= x_start) &
+                          (hdu[1].data['XCORR'] < x_end) &
 
-                           ( hdu[1].data['YCORR'] >= y_start ) &
-                           ( hdu[1].data['YCORR'] < y_end ) &
+                          (hdu[1].data['YCORR'] >= y_start) &
+                          (hdu[1].data['YCORR'] < y_end) &
 
-                           np.logical_not( hdu[1].data['DQ'] & sdqflags ) &
+                          np.logical_not(hdu[1].data['DQ'] & sdqflags) &
 
-                           ( (hdu[1].data['WAVELENGTH'] > w_start) &
-                             (hdu[1].data['WAVELENGTH'] < w_end) ) &
+                          ((hdu[1].data['WAVELENGTH'] > w_start) &
+                           (hdu[1].data['WAVELENGTH'] < w_end)) &
 
-                           ( (hdu[1].data['WAVELENGTH'] > lyman[1]) |
-                             (hdu[1].data['WAVELENGTH'] < lyman[0]) ) &
-                           ( (hdu[1].data['WAVELENGTH'] > oxygen[1]) |
-                             (hdu[1].data['WAVELENGTH'] < oxygen[0]) )
-                           ) [0]
+                          ((hdu[1].data['WAVELENGTH'] > lyman[1])|
+                           (hdu[1].data['WAVELENGTH'] < lyman[0])) &
+                          ((hdu[1].data['WAVELENGTH'] > oxygen[1]) |
+                           (hdu[1].data['WAVELENGTH'] < oxygen[0]))
+                          )[0]
 
     return data_index
 
@@ -346,24 +367,24 @@ def get_fluxes(hdu, index):
     fluxfile = expand_refname(fluxtab)
 
     if not len(index):
-        return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        return np.ones(hdu['events'].data['time'].shape)[index]
 
-    if (not fluxfile) or (not os.path.exists( fluxfile ) ):
+    if (not fluxfile) or (not os.path.exists(fluxfile)):
         print(' WARNING: Fluxfile not available %s,' % fluxfile )
-        print(' using unity flux calibration instead.' )
-        return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        print(' using unity flux calibration instead.')
+        return np.ones(hdu['events'].data['time'].shape)[index]
 
 
     flux_hdu = fits.open(fluxfile)
-    setting_index = np.where( (flux_hdu[1].data['SEGMENT'] == hdu[0].header['segment']) &
-                           (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
-                           (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']) &
-                           (flux_hdu[1].data['APERTURE'] == hdu[0].header['aperture']) )[0]
-    if len( setting_index ) == 0:
+    setting_index = np.where((flux_hdu[1].data['SEGMENT'] == hdu[0].header['segment']) &
+                             (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
+                             (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']) &
+                             (flux_hdu[1].data['APERTURE'] == hdu[0].header['aperture']))[0]
+    if len(setting_index) == 0:
         print('No row in fluxtab found for this dataset, no FLUXCAL performed')
-        return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        return np.ones(hdu['events'].data['time'].shape)[index]
     elif len(setting_index) > 1:
-        raise ValueError('Too many rows found: {}'.format( len(setting_index) ) )
+        raise ValueError('Too many rows found: {}'.format(len(setting_index)))
 
 
     resp_wave = flux_hdu[1].data[setting_index]['WAVELENGTH'].flatten()
@@ -373,15 +394,15 @@ def get_fluxes(hdu, index):
     data_min = hdu['events'].data['wavelength'][index].min()
 
     if data_max > resp_wave.max():
-        print( "Expanding minumum response curve by {}".format( data_max - resp_wave.max() ) )
-        resp_wave[ np.argmax( resp_wave ) ] = data_max
+        print("Expanding minumum response curve by {}".format(data_max - resp_wave.max()))
+        resp_wave[np.argmax(resp_wave)] = data_max
 
     if data_min < resp_wave.min():
-        print( "Expanding minimum response curve by {}".format( data_min - resp_wave.min() ) )
-        resp_wave[ np.argmin( resp_wave ) ] = data_min
+        print("Expanding minimum response curve by {}".format(data_min - resp_wave.min()))
+        resp_wave[np.argmin(resp_wave)] = data_min
 
-    interp_func = interp1d( resp_wave, response )
-    all_resp = interp_func( hdu[ 'events' ].data['wavelength'][index] )
+    interp_func = interp1d(resp_wave, response)
+    all_resp = interp_func(hdu['events'].data['wavelength'][index])
 
     return all_resp
 
@@ -397,56 +418,56 @@ def get_tds(hdu, index):
         tdstab = ''
 
 
-    tdsfile = expand_refname( tdstab )
+    tdsfile = expand_refname(tdstab)
 
     if not len(index):
-        return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+        return np.ones(hdu['events'].data['time'].shape)[index]
 
-    if (not tdsfile) or (not os.path.exists( tdsfile ) ):
-        print(' WARNING: tdsfile not available %s,' % tdsfile )
-        print(' using unity TDS correction instead.' )
-        return np.ones( hdu[ 'events' ].data['time'].shape )[index]
+    if (not tdsfile) or (not os.path.exists(tdsfile)):
+        print(' WARNING: tdsfile not available %s,' % tdsfile)
+        print(' using unity TDS correction instead.')
+        return np.ones(hdu[ 'events' ].data['time'].shape)[index]
 
-    tds_data = fits.getdata( tdsfile, ext=1 )
-    REF_TIME = fits.getval( tdsfile, 'REF_TIME', ext=1)
-    mode_index = np.where( (tds_data['OPT_ELEM'] == hdu[0].header['opt_elem'] ) &
-                           (tds_data['APERTURE'] == hdu[0].header['aperture'] ) &
-                           (tds_data['SEGMENT'] == hdu[0].header['segment'] ) )[0]
+    tds_data = fits.getdata(tdsfile, ext=1)
+    REF_TIME = fits.getval(tdsfile, 'REF_TIME', ext=1)
+    mode_index = np.where((tds_data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
+                          (tds_data['APERTURE'] == hdu[0].header['aperture']) &
+                          (tds_data['SEGMENT'] == hdu[0].header['segment']))[0]
 
 
-    if len( mode_index ) == 0:
+    if len(mode_index) == 0:
         print('No row in tdstab found for this dataset, no TDSCORR performed')
-        return np.ones( hdu[ 'events' ].data['time'].shape )[index]
-    elif len( mode_index ) > 1:
-        raise ValueError('Too many rows found: {}'.format( len(mode_index) ) )
+        return np.ones(hdu['events'].data['time'].shape)[index]
+    elif len(mode_index) > 1:
+        raise ValueError('Too many rows found: {}'.format(len(mode_index)))
 
-    mode_line = tds_data[ mode_index ]
+    mode_line = tds_data[mode_index]
 
     tds_nt = mode_line['NT'][0]
     tds_wavelength = mode_line['WAVELENGTH'][0]
-    smaller_index = np.where( mode_line['TIME'][0][:tds_nt] < hdu[1].header['EXPSTART'] )[0]
+    smaller_index = np.where(mode_line['TIME'][0][:tds_nt] < hdu[1].header['EXPSTART'])[0]
     time_index = smaller_index.max()
 
     tds_slope = mode_line['SLOPE'][0]
     tds_intercept = mode_line['INTERCEPT'][0]
 
     calculate_drop = lambda time, ref_time, slope, intercept: \
-        ( (( time - ref_time ) * slope) / (365.25*100) ) + intercept
+        (((time - ref_time) * slope) / (365.25*100)) + intercept
 
-    correction_array = np.zeros( len(tds_wavelength) )
-    for i, wave in enumerate( tds_wavelength ):
-        correction = calculate_drop( hdu[1].header['EXPSTART'],
-                                     REF_TIME,
-                                     tds_slope[time_index,i],
-                                     tds_intercept[time_index,i] )
+    correction_array = np.zeros(len(tds_wavelength))
+    for i, wave in enumerate(tds_wavelength):
+        correction = calculate_drop(hdu[1].header['EXPSTART'],
+                                    REF_TIME,
+                                    tds_slope[time_index,i],
+                                    tds_intercept[time_index,i])
         correction_array[i] = correction
 
     #-------
     # interpolate onto input arrays
     #------
 
-    interp_function = interp1d( tds_wavelength, correction_array, 1 )
-    response_correction = interp_function( hdu[1].data['wavelength'][index] )
+    interp_function = interp1d(tds_wavelength, correction_array, 1)
+    response_correction = interp_function(hdu[1].data['wavelength'][index])
 
     return response_correction
 

@@ -48,26 +48,36 @@ class LightCurve(Table):
 
         """
 
+        verbosity = kwargs.get('verbosity', 0)
+
         if isinstance(filename, Table):
+            if verbosity:
+                print("Initializing LC from Table")
+
             columns = list(filename.columns)
             data = [filename[item].data for item in columns]
             meta = filename.meta
             meta['outname'] = None
 
         elif filename == None:
-           print("Initializing emtpy LightCurve")
 
-           data = [[], [], [], [], [], []]
-           columns = ('times',
-                      'mjd',
-                      'bins',
-                      'gross',
-                      'background',
-                      'flux')
-           meta = {'filename': None}
+            if verbosity:
+                print("Initializing emtpy LightCurve")
+
+            data = [[], [], [], [], [], []]
+            columns = ('times',
+                       'mjd',
+                       'bins',
+                       'gross',
+                       'background',
+                       'flux')
+            meta = {'filename': None}
 
         else:
             filetype = check_filetype(filename)
+            if verbosity:
+                print("Found {} as input filetype:".format(filetype))
+
             if filetype == 'cos_corrtag':
                 data, columns, meta = extract_cos(filename, **kwargs)
             elif filetype == 'stis_tag' or filetype == 'stis_corrtag':
@@ -373,7 +383,7 @@ class LightCurve(Table):
                 pass
 
         if self.meta['outname'].endswith('.gz'):
-            print("Nope, can't write to gzipped files")
+            print("Can't write to gzipped files, modifying output name")
             self.meta['outname'] = self.meta['outname'][:-3]
 
         hdu_out.writeto(self.meta['outname'], clobber=clobber)
