@@ -130,12 +130,8 @@ def extract(filename, **kwargs):
         if verbosity:
             print("{} #{} events".format(segment, len(index)))
 
-        try:
-            max_xpix = round(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
-            min_xpix = round(max(hdu['events'].data['XCORR'][index].min(), xlim[0]))
-            n_pixels = (max_xpix - min_xpix) + 1
-        except ValueError:
-            n_pixels = 1
+
+        n_pixels = calc_npixels(hdu, index, xlim)
 
         gross += np.histogram(hdu['events'].data['time'][index],
                               all_steps,
@@ -204,7 +200,7 @@ def extract(filename, **kwargs):
     if verbosity:
         print('Finished extraction for {}'.format(filename))
         print()
-        
+
     return data, columns, meta
 
 #-------------------------------------------------------------------------------
@@ -234,6 +230,18 @@ def collect_inputs(filename):
                     all_hdu[letter] = fits.open(name, ignore_missing_end=True)
 
     return all_filenames, all_hdu
+
+#-------------------------------------------------------------------------------
+
+def calc_npixels(hdu, index, xlim):
+    try:
+        max_xpix = round(min(hdu['events'].data['XCORR'][index].max(), xlim[1]))
+        min_xpix = round(max(hdu['events'].data['XCORR'][index].min(), xlim[0]))
+        n_pixels = (max_xpix - min_xpix) + 1
+    except ValueError:
+        n_pixels = 1
+
+    return n_pixels
 
 #-------------------------------------------------------------------------------
 

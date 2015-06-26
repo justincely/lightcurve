@@ -17,7 +17,7 @@ from astropy.io import fits as fits
 
 from .utils import expand_refname, enlarge
 from .stis_cal import map_image
-from .cos import extract_index
+from .cos import extract_index, calc_npixels
 from .version import version as  __version__
 
 #-------------------------------------------------------------------------------
@@ -94,8 +94,13 @@ def extract(filename, **kwargs):
                          all_steps,
                          weights=hdu['events'].data['epsilon'][index])[0]
 
+    n_pixels = calc_npixels(hdu, index, xlim)
+
+    response_array = get_fluxes(hdu, index).mean()
+    weights = hdu['events'].data['epsilon'][index] / step / response_array
     print("WARNING: The flux is a lie")
-    flux = np.zeros(gross.shape)
+    flux =  np.histogram(hdu['events'].data['time'][index], all_steps, weights=weights)[0] / n_pixels
+
     print("WARNING: The background is a lie")
     background = np.zeros(gross.shape)
     mjd = hdu[1].header['EXPSTART'] + np.array(all_steps[:-1]) * SECOND_PER_MJD
@@ -119,7 +124,7 @@ def extract(filename, **kwargs):
     if verbosity:
         print('Finished extraction for {}'.format(filename))
         print()
-        
+
     return data, columns, meta
 
 #-------------------------------------------------------------------------------
@@ -381,3 +386,55 @@ def crazy_histogram2d(x, y, bins=(2048, 2048)):
     grid = scipy.sparse.coo_matrix((weights, xyi), shape=(nx, ny)).toarray()
 
     return grid, np.linspace(xmin, xmax, nx), np.linspace(ymin, ymax, ny)
+
+#-------------------------------------------------------------------------------
+
+def get_fluxes(hdu, index):
+    """ Return response curve and wavelength range for specified mode
+    """
+
+    fluxtab = hdu[0].header.get('FLUXTAB', '')
+
+    fluxfile = expand_refname(fluxtab)
+
+    if not len(index):
+        return np.ones(hdu['events'].data['time'].shape)[index]
+
+    if (not fluxfile) or (not os.path.exists(fluxfile)):
+        print(' WARNING: Fluxfile not available %s,' % fluxfile )
+        print(' using unity flux calibration instead.')
+        return np.ones(hdu['events'].data['time'].shape)[index]
+
+
+    flux_hdu = fits.open(fluxfile)
+    setting_index = np.where((flux_hdu[1].data['SPORDER'] == hdu[0].header['segment']) &
+                             (flux_hdu[1].data['OPT_ELEM'] == hdu[0].header['opt_elem']) &
+                             (flux_hdu[1].data['CENWAVE'] == hdu[0].header['cenwave']))[0]
+
+    if len(setting_index) == 0:
+        print('No row in fluxtab found for this dataset, no FLUXCAL performed')
+        return np.ones(hdu['events'].data['time'].shape)[index]
+    elif len(setting_index) > 1:
+        raise ValueError('Too many rows found: {}'.format(len(setting_index)))
+
+
+    resp_wave = flux_hdu[1].data[setting_index]['WAVELENGTH'].flatten()
+    response = flux_hdu[1].data[setting_index]['SENSITIVITY'].flatten()
+
+    data_max = hdu['events'].data['wavelength'][index].max()
+    data_min = hdu['events'].data['wavelength'][index].min()
+
+    if data_max > resp_wave.max():
+        print("Expanding minumum response curve by {}".format(data_max - resp_wave.max()))
+        resp_wave[np.argmax(resp_wave)] = data_max
+
+    if data_min < resp_wave.min():
+        print("Expanding minimum response curve by {}".format(data_min - resp_wave.min()))
+        resp_wave[np.argmin(resp_wave)] = data_min
+
+    interp_func = interp1d(resp_wave, response)
+    all_resp = interp_func(hdu['events'].data['wavelength'][index])
+
+    return all_resp
+
+#-------------------------------------------------------------------------------
