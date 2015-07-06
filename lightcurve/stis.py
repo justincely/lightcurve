@@ -40,6 +40,7 @@ def extract(filename, **kwargs):
     hdu = fits.open(filename)
 
     meta = {'source': filename,
+            'instrument' : 'STIS',
             'hdus': {'A': hdu},
             'stepsize': step,
             'wlim': wlim,
@@ -260,6 +261,10 @@ def epsilon(tagfile):
             reffile = expand_refname(hdu[0].header[ref_flat])
             print('FLATFIELD CORRECTION {}: {}'.format(ref_flat, reffile))
 
+            if not os.path.exists(reffile):
+                print("{} not found, correction not performed".format(reffile))
+                return np.ones(len(hdu[1].data))
+
             with fits.open(reffile) as image_hdu:
                 image = image_hdu[1].data
 
@@ -305,6 +310,10 @@ def dqinit(tagfile):
 
         reffile = expand_refname(hdu[0].header['BPIXTAB'])
         print('BPIXTAB used {}'.format(reffile))
+
+        if not os.path.exists(reffile):
+            print("{} not found, correction not performed".format(reffile))
+            return np.ones(len(hdu[1].data))
 
         with fits.open(reffile) as bpix:
             #-- Mama bpix regions are in lo-res pixels

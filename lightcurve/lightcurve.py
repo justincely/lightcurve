@@ -253,16 +253,17 @@ class LightCurve(Table):
         self = self[indices]
 
 
-    def write(self, outname=None, clobber=False):
+    def write(self, outname=None, clobber=False, keep_headers=True):
         """ Write lightcurve out to FITS file
 
         Parameters
         ----------
         outname : bool or str
             Either True/False, or output name
-
         clobber : bool
             Allow overwriting of existing file with same name
+        keep_header : bool
+            propogate input headers to output file
 
         """
 
@@ -277,6 +278,30 @@ class LightCurve(Table):
         hdu_out[0].header['AP_VER'] = (astropy.__version__, 'Astropy version used')
         hdu_out[0].header['NP_VER'] = (np.__version__, 'Numpy version used')
         hdu_out[0].header['SP_VER'] = (scipy.__version__, 'Scipy version used')
+
+        hdu_out[0].header['WMIN'] = (self.meta['wlim'][0], 'Minimum wavelength extracted')
+        hdu_out[0].header['WMAX'] = (self.meta['wlim'][1], 'Maximum wavelength extracted')
+        hdu_out[0].header['XMIN'] = (self.meta['xlim'][0], 'Minimum x-coordinate extracted')
+        hdu_out[0].header['XMAX'] = (self.meta['xlim'][1], 'Maximum x-coordinate extracted')
+
+        if self.meta['instrument'] == 'COS':
+            if 'ylima' in self.meta:
+                hdu_out[0].header['YMIN_A'] = (self.meta['ylima'][0], 'Minimum y-coordinate extracted from FUVA')
+                hdu_out[0].header['YMAX_A'] = (self.meta['ylima'][1], 'Maximum y-coordinate extracted from FUVA')
+            if 'ylimb' in self.meta:
+                hdu_out[0].header['YMIN_B'] = (self.meta['ylimb'][0], 'Minimum y-coordinate extracted from FUVB')
+                hdu_out[0].header['YMAX_B'] = (self.meta['ylimb'][1], 'Maximum y-coordinate extracted from FUVB')
+        elif self.meta['instrument'] == 'STIS':
+            hdu_out[0].header['YMIN'] = (self.meta['ylim'][0], 'Minimum y-coordinate extracted')
+            hdu_out[0].header['YMAX'] = (self.meta['ylim'][1], 'Maximum y-coordinate extracted')
+        else:
+            raise ValueError("{} not a recognized instrument".format(self.meta['instrument']))
+
+        hdu_out[0].header['TOTSTART'] = self['mjd'].min()
+        hdu_out[0].header['TOTEND'] = self['mjd'].max()
+        hdu_out[0].header['TOTTIME'] = self['bins'].sum()
+        hdu_out[0].header['STEPSIZE'] = (self.meta['stepsize'], 'Bin size (seconds)')
+
         hdu_out[0].header.add_blank('', before='GEN_DATE')
         hdu_out[0].header.add_blank('{0:{fill}{align}67}'.format(' Lightcurve extraction keywords ',
                                                                  fill='-',
@@ -284,17 +309,21 @@ class LightCurve(Table):
         hdu_out[0].header.add_blank('', before='GEN_DATE')
 
 
-        hdu_out[0].header.add_blank('', after='SP_VER')
-        hdu_out[0].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
-                                                                 fill='-',
-                                                                 align='^'), after='SP_VER')
-        hdu_out[0].header.add_blank('', after='SP_VER')
 
-        for in_hdu in self.meta['hdus'].itervalues():
-            try:
-                hdu_out[0].header.extend(in_hdu[0].header, end=True)
-            except AttributeError:
-                pass
+        if keep_headers:
+            hdu_out[0].header.add_blank('', after='STEPSIZE')
+            hdu_out[0].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
+                                                                     fill='-',
+                                                                     align='^'), after='STEPSIZE')
+            hdu_out[0].header.add_blank('', after='STEPSIZE')
+
+            for in_hdu in self.meta['hdus'].itervalues():
+                try:
+                    hdu_out[0].header.extend(in_hdu[0].header, end=True)
+                except AttributeError:
+                    if verbosity:
+                        print("Error propogating primary header to final outputs")
+                    pass
 
 
         #-- Ext 1 table data
@@ -360,27 +389,23 @@ class LightCurve(Table):
                               error_col])
         hdu_out.append(tab)
 
+        if keep_headers:
+            hdu_out[1].header.add_blank('')
+            hdu_out[1].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
+                                                                     fill='-',
+                                                                     align='^'))
+            hdu_out[1].header.add_blank('')
+
+            for in_hdu in self.meta['hdus'].itervalues():
+                try:
+                    hdu_out[1].header.extend(in_hdu[1].header, end=True)
+                except AttributeError:
+                    if verbosity:
+                        print("Error propogating primary header to final outputs")
+                    pass
 
 
-        #-- Ext 1 header
-        hdu_out[1].header.add_blank('')
-        hdu_out[1].header.add_blank('{0:{fill}{align}67}'.format(' Lightcurve extraction keywords ',
-                                                                 fill='-',
-                                                                 align='^'))
-        hdu_out[1].header.add_blank('')
 
-
-        hdu_out[1].header.add_blank('')
-        hdu_out[1].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
-                                                                 fill='-',
-                                                                 align='^'))
-        hdu_out[1].header.add_blank('')
-
-        for in_hdu in self.meta['hdus'].itervalues():
-            try:
-                hdu_out[1].header.extend(in_hdu[1].header, end=True)
-            except AttributeError:
-                pass
 
         if self.meta['outname'].endswith('.gz'):
             print("Can't write to gzipped files, modifying output name")
@@ -455,6 +480,6 @@ def composite(filelist, output, trim=True, **kwargs):
             new_lc = LightCurve(filename, **kwargs)
             out_lc = out_lc.concatenate(new_lc)
 
-    out_lc.write(output, clobber=True)
+    out_lc.write(output, clobber=True, keep_headers=False)
 
 #-------------------------------------------------------------------------------

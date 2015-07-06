@@ -67,6 +67,7 @@ def extract(filename, **kwargs):
     SECOND_PER_MJD = 1.15741e-5
 
     meta = {'source': filename,
+            'instrument' : 'COS',
             'hdus': input_hdus,
             'source_files': input_files,
             'stepsize': step,
@@ -118,6 +119,8 @@ def extract(filename, **kwargs):
             ystart, yend = get_extraction_region(hdu, segment, 'spectrum')
         else:
             ystart, yend = ylim[0], ylim[1]
+
+        meta['ylim{}'.format(segment.lower())] = (ystart, yend)
 
         if verbosity:
             print(xlim, ystart, yend, wlim, hdu[1].header['sdqflags'])
