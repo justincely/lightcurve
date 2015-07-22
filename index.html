@@ -31,13 +31,13 @@
           <h3>
 <a name="lightcurve" class="anchor" href="#lightcurve"><span class="octicon octicon-link"></span></a>Lightcurve.</h3>
 
-<p>Tool for creating lightcurves from time-tag astronomical data data!</p>
+<p>This package contains tools for extracting time-series lightcurves from spectroscopic data taken with
+   the Hubble Space Telescope (HST).  </p>
 
-<p>Instruments that are or will be supported by this code:
+<p>Instruments currently supported by the code:
   <ul>
     <li>COS:  The Cosmic Origins Spectrograph</li>
-    <li>STIS: The Space Telescope Imaging Spectrograph (planned)</li>
-    <li>FUSE: The Far-Ultraviolet Spectroscopic Explorer (planned)</li>
+    <li>STIS: The Space Telescope Imaging Spectrograph</li>
   </ul>
 </p>
 
@@ -53,25 +53,27 @@
 <h3>
 <a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h3>
 <p>You can retrieve the latest release using pip, or clone/download the latest code from the GitHub link or downloads
-on the right side of the page.
+   on the right side of the page.
+
+   <pre><code> $ pip install lightcurve </code></pre>
 </p>
 
 <h3>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
 
-<pre><code>&gt;&gt;&gt; from lightcurve import io 
+<pre><code>&gt;&gt;&gt; from lightcurve import LightCurve
+
 &gt;&gt;&gt; # Read the lightcurve into memory
-&gt;&gt;&gt; data = io.open( filename='rootname_corrtag_a.fits' )
+&gt;&gt;&gt; lc = LightCurve(filename='rootname_corrtag_a.fits')
 
 &gt;&gt;&gt; #Now just access the data
-&gt;&gt;&gt; data.mjd, data.gross, data.error #etc
+&gt;&gt;&gt; lc['mjd'], lc['gross'], lc['flux']
 
-&gt;&gt;&gt; #Re-extract data with a different stepsize and wavelength range
-&gt;&gt;&gt; data.extract(step=5, wlim=(1100,1200) )
-&gt;&gt;&gt; data.mjd, data.gross, data.error #etc
+&gt;&gt;&gt; #To extract data with a different stepsize and wavelength range
+&gt;&gt;&gt; lc = LightCurve(filename='rootname_corrtag_a.fits', step=5, wlim=(1100, 1200))
 
 &gt;&gt;&gt; #Write to a file
-&gt;&gt;&gt; data.write()
+&gt;&gt;&gt; lc.write()
 &gt;&gt;&gt; ls
 rootname_curve.fits
 </code></pre>
