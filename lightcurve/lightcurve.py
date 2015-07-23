@@ -16,6 +16,7 @@ import os
 from datetime import datetime
 from astropy.io import fits
 from astropy.table import Table, vstack
+from astropy.time import Time
 
 from .version import version as __version__
 from .io import check_filetype, open_lightcurve
@@ -390,6 +391,8 @@ class LightCurve(Table):
         hdu_out.append(tab)
 
         if keep_headers:
+            hdu_out[1].header['EXTNAME'] = 'lightcurve'
+            hdu_out[1].header['EXTNO'] = 1
             hdu_out[1].header.add_blank('')
             hdu_out[1].header.add_blank('{0:{fill}{align}67}'.format(' Source Data keywords ',
                                                                      fill='-',
@@ -481,5 +484,77 @@ def composite(filelist, output, trim=True, **kwargs):
             out_lc = out_lc.concatenate(new_lc)
 
     out_lc.write(output, clobber=True, keep_headers=False)
+
+    prepare_header(output, filelist)
+
+#-------------------------------------------------------------------------------
+
+def prepare_header(filename, filelist):
+    """Prepare headers with MAST requirements"""
+    telescop = {}
+    instrume = {}
+    detector = {}
+    filter = {}
+
+
+    for i, exposure in enumerate(filelist):
+        with fits.open(exposure) as hdu:
+            telescop.add(hdu[0].header['TELESCOP'])
+            instrume.add(hdu[0].header['INSTRUME'])
+            detector.add(hdu[0].header['DETECTOR'])
+            filter.add(hdu[0].header['OPT_ELEM'])
+
+            if i == 0:
+                ra_targ = hdu[0].header['ra_targ']
+                dec_targ = hdu[0].header['dec_targ']
+                equinox = hdu[0].header['equinox']
+
+    with fits.open(filename, mode='update') as hdu:
+        #-- HSLP keywords
+        hdu[0].header['PROPOSID'] = 13902
+        hdu[0].header['HLSPLEAD'] = 'Justin C. Ely'
+        hdu[0].header['PR_INV_L'] = 'Ely'
+        hdu[0].header['PR_INV_F'] = 'Justin'
+        hdu[0].header['PR_INV_M'] = 'Charles'
+        hdu[0].header['HLSPNAME'] = 'The Lightcurve Legacy of COS and STIS'
+        hdu[0].header['HLSPACRN'] = 'LLOCS'
+        hdu[0].header['CITATION'] = ''
+
+        uniq, value = is_uniq(telscop)
+        hdu[0].header['telescop'] = value
+
+
+        uniq, value = is_uniq(instrume)
+        hdu[0].header['instrume'] = value
+        if not uniq:
+            for i, val in enumerate(list(instrume)):
+                hdu[0].header['instru{:0>2}'.format(1)] = val
+
+        uniq, value = is_uniq(detector)
+        hdu[0].header['detector'] = value
+        if not uniq:
+            for i, val in enumerate(list(detector)):
+                hdu[0].header['detect{:0>2}'.format(1)] = val
+
+
+        uniq, value = is_uniq(filter)
+        hdu[0].header['filter'] = value
+        if not uniq:
+            for i, val in enumerate(list(filter)):
+                hdu[0].header['filter{:0>2}'.format(1)] = val
+
+        hdu[0].header['DATE-OBS'] = Time(hdu[1].data['MJD'].min(), format='mjd').iso
+        hdu[0].header['EXPSTART'] = hdu[1].data['mjd'].min()
+        hdu[0].header['EXPEND'] = hdu[1].data['mjd'].max()
+        hdu[0].header['EXPTIME'] = hdu[1].data['bins'].sum()
+
+#-------------------------------------------------------------------------------
+
+def is_uniq(values):
+
+    if len(values) > 1:
+        return True, 'MULTI'
+    else:
+        return False, list(values)[0]
 
 #-------------------------------------------------------------------------------
