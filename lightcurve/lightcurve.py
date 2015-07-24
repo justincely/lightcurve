@@ -298,9 +298,9 @@ class LightCurve(Table):
         else:
             raise ValueError("{} not a recognized instrument".format(self.meta['instrument']))
 
-        hdu_out[0].header['TOTSTART'] = self['mjd'].min()
-        hdu_out[0].header['TOTEND'] = self['mjd'].max()
-        hdu_out[0].header['TOTTIME'] = self['bins'].sum()
+        hdu_out[0].header['EXPSTART'] = self['mjd'].min()
+        hdu_out[0].header['EXPEND'] = self['mjd'].max()
+        hdu_out[0].header['EXPTIME'] = self['bins'].sum()
         hdu_out[0].header['STEPSIZE'] = (self.meta['stepsize'], 'Bin size (seconds)')
 
         hdu_out[0].header.add_blank('', before='GEN_DATE')
@@ -491,10 +491,10 @@ def composite(filelist, output, trim=True, **kwargs):
 
 def prepare_header(filename, filelist):
     """Prepare headers with MAST requirements"""
-    telescop = {}
-    instrume = {}
-    detector = {}
-    filter = {}
+    telescop = set()
+    instrume = set()
+    detector = set()
+    filter = set()
 
 
     for i, exposure in enumerate(filelist):
@@ -520,7 +520,11 @@ def prepare_header(filename, filelist):
         hdu[0].header['HLSPACRN'] = 'LLOCS'
         hdu[0].header['CITATION'] = ''
 
-        uniq, value = is_uniq(telscop)
+	hdu[0].header['RA_TARG'] = ra_targ
+	hdu[0].header['DEC_TARG'] = dec_targ
+	hdu[0].header['EQUINOX'] = equinox
+
+        uniq, value = is_uniq(telescop)
         hdu[0].header['telescop'] = value
 
 
@@ -553,8 +557,8 @@ def prepare_header(filename, filelist):
 def is_uniq(values):
 
     if len(values) > 1:
-        return True, 'MULTI'
+        return False, 'MULTI'
     else:
-        return False, list(values)[0]
+        return True, list(values)[0]
 
 #-------------------------------------------------------------------------------
