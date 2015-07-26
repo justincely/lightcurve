@@ -1,133 +1,135 @@
 <!DOCTYPE html>
 
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.9.0.min.css" type="text/css" />
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.9.0.min.js"></script>
+  <!--[if lt IE 9]>
+  <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <!--<link rel="stylesheet" href="stylesheets/bokeh.min.css" type="text/css" />-->
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-0.9.0.min.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.9.2.min.js"></script>
 
-    <script type="text/javascript">
-        Bokeh.$(function() {
-            var modelid = "fbc56e04-ab81-4506-b5c1-4ee3cffb738c";
-            var modeltype = "Plot";
-            var elementid = "43f72813-ac9d-4c71-bbac-a26957d53757";
-            Bokeh.logger.info("Realizing plot:")
-            Bokeh.logger.info(" - modeltype: Plot");
-            Bokeh.logger.info(" - modelid: fbc56e04-ab81-4506-b5c1-4ee3cffb738c");
-            Bokeh.logger.info(" - elementid: 43f72813-ac9d-4c71-bbac-a26957d53757");
-            var all_models = [{"attributes": {"doc": null, "id": "3e17e765-3adc-427b-a955-0c0c839c2db8", "tags": []}, "type": "CategoricalTicker", "id": "3e17e765-3adc-427b-a955-0c0c839c2db8"}, {"attributes": {"doc": null, "id": "e3f6439f-28f7-496c-a55d-863b6f654c24", "tags": []}, "type": "CategoricalTickFormatter", "id": "e3f6439f-28f7-496c-a55d-863b6f654c24"}, {"attributes": {"line_color": {"value": "white"}, "fill_color": {"value": "#f22c40"}, "tags": [], "doc": null, "fill_alpha": {"value": 0.7}, "height": {"units": "data", "field": "0"}, "width": {"units": "data", "field": "width_cat"}, "y": {"field": "mid0"}, "x": {"field": "cat0"}, "id": "4dd434f6-61f2-43d7-a619-45f33c4f1475"}, "type": "Rect", "id": "4dd434f6-61f2-43d7-a619-45f33c4f1475"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "id": "5b259d5f-0a80-4abc-a52d-e74f285b50f1"}, "type": "PreviewSaveTool", "id": "5b259d5f-0a80-4abc-a52d-e74f285b50f1"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "id": "87db6efa-1a32-4b3b-b107-b673a6bfab25"}, "type": "ResizeTool", "id": "87db6efa-1a32-4b3b-b107-b673a6bfab25"}, {"attributes": {"nonselection_glyph": null, "data_source": {"type": "ColumnDataSource", "id": "13907bb0-f1c4-4578-b9b8-a9d12ce252f1"}, "tags": [], "doc": null, "selection_glyph": null, "id": "680471b5-e5c7-4d82-85f0-452bfe4369f0", "glyph": {"type": "Rect", "id": "4dd434f6-61f2-43d7-a619-45f33c4f1475"}}, "type": "GlyphRenderer", "id": "680471b5-e5c7-4d82-85f0-452bfe4369f0"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "id": "f0b1097e-5e4f-461f-9378-8981224688fc"}, "type": "ResetTool", "id": "f0b1097e-5e4f-461f-9378-8981224688fc"}, {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c", "attributes": {"x_range": {"type": "FactorRange", "id": "17c61cbf-2aad-4ec9-9697-4e660c9d1392"}, "right": [], "above": [], "tags": [], "tools": [{"type": "PanTool", "id": "079f3034-bef9-486f-9263-3f8df2b925ed"}, {"type": "WheelZoomTool", "id": "f8b18177-8d75-4be9-a1a8-198eb16b9d27"}, {"type": "BoxZoomTool", "id": "792ea4a5-5e07-4043-9ed5-181128b1ef47"}, {"type": "PreviewSaveTool", "id": "5b259d5f-0a80-4abc-a52d-e74f285b50f1"}, {"type": "ResizeTool", "id": "87db6efa-1a32-4b3b-b107-b673a6bfab25"}, {"type": "ResetTool", "id": "f0b1097e-5e4f-461f-9378-8981224688fc"}, {"type": "HelpTool", "id": "a1962904-27ae-44fa-b92d-bbb58325f444"}], "title": "Cumulative Exptime per Target", "renderers": [{"type": "CategoricalAxis", "id": "ef749877-bb23-4bbc-83f3-8f2f2a425f41"}, {"type": "LinearAxis", "id": "3997f32f-3a06-4bc7-9cb3-00bd9e88b48e"}, {"type": "Grid", "id": "5266867d-e85a-4b0b-90bd-bc60a19f5298"}, {"type": "GlyphRenderer", "id": "680471b5-e5c7-4d82-85f0-452bfe4369f0"}], "plot_width": 400, "extra_y_ranges": {}, "extra_x_ranges": {}, "tool_events": {"type": "ToolEvents", "id": "1dc7d9cf-017d-4fcd-9f3e-6781fca18659"}, "plot_height": 400, "doc": null, "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c", "y_range": {"type": "Range1d", "id": "724c472a-107a-4993-a97b-989c53675fca"}, "below": [{"type": "CategoricalAxis", "id": "ef749877-bb23-4bbc-83f3-8f2f2a425f41"}], "left": [{"type": "LinearAxis", "id": "3997f32f-3a06-4bc7-9cb3-00bd9e88b48e"}]}}, {"attributes": {"factors": ["NGC5548", "4U0115-737", "LBQS0107-0232", "HS1024+1849", "V616MON", "NGC891AGN", "PSRB0656+14", "MARS", "HD284419", "HB89-0232-042", "HD204827", "PG1338+416", "SDSSJ095109.12+330745.8", "V-TW-HYA", "4C57.27", "Q0850+440", "SDSSJ135726.27+043541.4", "LBQS0107-0235", "FIRSTJ020930.7-043826", "Q0439-433", "YZCMI", "PHL1226", "1RXSJ023238.8-371812", "V-ET-CHA", "HD189733", "PG1522+101", "PG1630+377", "IRAS-F04250-5718", "LBQS1435-0134", "AM-HER", "CALLISTO", "Q1641+395", "VENUS-OFFSET-7D", "SDSSJ092554.43+453544.4", "G241-6", "NGC1275-NUCLEUS", "MARK509", "QSO091620+240804", "SDSSJ0818+4908", "SDSSJ0924+4852", "VV2006J130524.3+035731", "QU-CAR", "AX-FOR", "WX-CET", "Q1241+176", "V-DG-TAU", "LDS749B", "HD209458", "PDS-66", "GP0911+1831"], "doc": null, "tags": [], "id": "17c61cbf-2aad-4ec9-9697-4e660c9d1392"}, "type": "FactorRange", "id": "17c61cbf-2aad-4ec9-9697-4e660c9d1392"}, {"attributes": {"tags": [], "doc": null, "mantissas": [2, 5, 10], "id": "6d037d5a-70d6-4197-ac94-191d02aa6ba7"}, "type": "BasicTicker", "id": "6d037d5a-70d6-4197-ac94-191d02aa6ba7"}, {"attributes": {"column_names": ["width_cat", "0", "cat", "cat0", "width", "zero", "stacked0", "mid0"], "tags": [], "doc": null, "selected": {"2d": {"indices": []}, "1d": {"indices": []}, "0d": {"indices": [], "flag": false}}, "callback": null, "data": {"width_cat": [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2], "width": [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8], "cat": ["NGC5548", "4U0115-737", "LBQS0107-0232", "HS1024+1849", "V616MON", "NGC891AGN", "PSRB0656+14", "MARS", "HD284419", "HB89-0232-042", "HD204827", "PG1338+416", "SDSSJ095109.12+330745.8", "V-TW-HYA", "4C57.27", "Q0850+440", "SDSSJ135726.27+043541.4", "LBQS0107-0235", "FIRSTJ020930.7-043826", "Q0439-433", "YZCMI", "PHL1226", "1RXSJ023238.8-371812", "V-ET-CHA", "HD189733", "PG1522+101", "PG1630+377", "IRAS-F04250-5718", "LBQS1435-0134", "AM-HER", "CALLISTO", "Q1641+395", "VENUS-OFFSET-7D", "SDSSJ092554.43+453544.4", "G241-6", "NGC1275-NUCLEUS", "MARK509", "QSO091620+240804", "SDSSJ0818+4908", "SDSSJ0924+4852", "VV2006J130524.3+035731", "QU-CAR", "AX-FOR", "WX-CET", "Q1241+176", "V-DG-TAU", "LDS749B", "HD209458", "PDS-66", "GP0911+1831"], "cat0": ["NGC5548:0.5", "4U0115-737:0.5", "LBQS0107-0232:0.5", "HS1024+1849:0.5", "V616MON:0.5", "NGC891AGN:0.5", "PSRB0656+14:0.5", "MARS:0.5", "HD284419:0.5", "HB89-0232-042:0.5", "HD204827:0.5", "PG1338+416:0.5", "SDSSJ095109.12+330745.8:0.5", "V-TW-HYA:0.5", "4C57.27:0.5", "Q0850+440:0.5", "SDSSJ135726.27+043541.4:0.5", "LBQS0107-0235:0.5", "FIRSTJ020930.7-043826:0.5", "Q0439-433:0.5", "YZCMI:0.5", "PHL1226:0.5", "1RXSJ023238.8-371812:0.5", "V-ET-CHA:0.5", "HD189733:0.5", "PG1522+101:0.5", "PG1630+377:0.5", "IRAS-F04250-5718:0.5", "LBQS1435-0134:0.5", "AM-HER:0.5", "CALLISTO:0.5", "Q1641+395:0.5", "VENUS-OFFSET-7D:0.5", "SDSSJ092554.43+453544.4:0.5", "G241-6:0.5", "NGC1275-NUCLEUS:0.5", "MARK509:0.5", "QSO091620+240804:0.5", "SDSSJ0818+4908:0.5", "SDSSJ0924+4852:0.5", "VV2006J130524.3+035731:0.5", "QU-CAR:0.5", "AX-FOR:0.5", "WX-CET:0.5", "Q1241+176:0.5", "V-DG-TAU:0.5", "LDS749B:0.5", "HD209458:0.5", "PDS-66:0.5", "GP0911+1831:0.5"], "0": [110754.0, 51170.0, 41715.0, 28688.0, 26850.0, 23692.0, 21852.0, 21590.0, 20800.0, 19909.0, 19643.0, 17506.0, 16382.0, 16260.0, 15613.0, 14218.0, 14102.0, 14100.0, 14068.0, 13680.0, 13437.0, 13128.0, 12555.0, 12181.0, 12104.0, 11900.0, 11491.0, 11370.0, 11173.0, 10980.0, 10149.0, 9968.0, 9210.0, 9097.0, 8834.0, 8454.0, 8226.0, 7954.0, 7598.0, 7598.0, 7588.0, 7500.0, 7482.0, 7299.0, 7171.0, 6963.0, 6895.0, 6843.0, 6583.0, 6530.0], "zero": [110754.0, 51170.0, 41715.0, 28688.0, 26850.0, 23692.0, 21852.0, 21590.0, 20800.0, 19909.0, 19643.0, 17506.0, 16382.0, 16260.0, 15613.0, 14218.0, 14102.0, 14100.0, 14068.0, 13680.0, 13437.0, 13128.0, 12555.0, 12181.0, 12104.0, 11900.0, 11491.0, 11370.0, 11173.0, 10980.0, 10149.0, 9968.0, 9210.0, 9097.0, 8834.0, 8454.0, 8226.0, 7954.0, 7598.0, 7598.0, 7588.0, 7500.0, 7482.0, 7299.0, 7171.0, 6963.0, 6895.0, 6843.0, 6583.0, 6530.0], "stacked0": [55377.0, 25585.0, 20857.5, 14344.0, 13425.0, 11846.0, 10926.0, 10795.0, 10400.0, 9954.5, 9821.5, 8753.0, 8191.0, 8130.0, 7806.5, 7109.0, 7051.0, 7050.0, 7034.0, 6840.0, 6718.5, 6564.0, 6277.5, 6090.5, 6052.0, 5950.0, 5745.5, 5685.0, 5586.5, 5490.0, 5074.5, 4984.0, 4605.0, 4548.5, 4417.0, 4227.0, 4113.0, 3977.0, 3799.0, 3799.0, 3794.0, 3750.0, 3741.0, 3649.5, 3585.5, 3481.5, 3447.5, 3421.5, 3291.5, 3265.0], "mid0": [55377.0, 25585.0, 20857.5, 14344.0, 13425.0, 11846.0, 10926.0, 10795.0, 10400.0, 9954.5, 9821.5, 8753.0, 8191.0, 8130.0, 7806.5, 7109.0, 7051.0, 7050.0, 7034.0, 6840.0, 6718.5, 6564.0, 6277.5, 6090.5, 6052.0, 5950.0, 5745.5, 5685.0, 5586.5, 5490.0, 5074.5, 4984.0, 4605.0, 4548.5, 4417.0, 4227.0, 4113.0, 3977.0, 3799.0, 3799.0, 3794.0, 3750.0, 3741.0, 3649.5, 3585.5, 3481.5, 3447.5, 3421.5, 3291.5, 3265.0]}, "id": "13907bb0-f1c4-4578-b9b8-a9d12ce252f1"}, "type": "ColumnDataSource", "id": "13907bb0-f1c4-4578-b9b8-a9d12ce252f1"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "dimensions": ["width", "height"], "tags": [], "doc": null, "id": "079f3034-bef9-486f-9263-3f8df2b925ed"}, "type": "PanTool", "id": "079f3034-bef9-486f-9263-3f8df2b925ed"}, {"attributes": {"doc": null, "id": "045e7891-556b-4a06-bf83-8ce8374ae337", "tags": []}, "type": "BasicTickFormatter", "id": "045e7891-556b-4a06-bf83-8ce8374ae337"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "dimensions": ["width", "height"], "tags": [], "doc": null, "id": "f8b18177-8d75-4be9-a1a8-198eb16b9d27"}, "type": "WheelZoomTool", "id": "f8b18177-8d75-4be9-a1a8-198eb16b9d27"}, {"attributes": {"start": 0, "end": 121829.40000000001, "tags": [], "doc": null, "id": "724c472a-107a-4993-a97b-989c53675fca"}, "type": "Range1d", "id": "724c472a-107a-4993-a97b-989c53675fca"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "dimensions": ["width", "height"], "tags": [], "doc": null, "id": "792ea4a5-5e07-4043-9ed5-181128b1ef47"}, "type": "BoxZoomTool", "id": "792ea4a5-5e07-4043-9ed5-181128b1ef47"}, {"attributes": {"geometries": [], "tags": [], "doc": null, "id": "1dc7d9cf-017d-4fcd-9f3e-6781fca18659"}, "type": "ToolEvents", "id": "1dc7d9cf-017d-4fcd-9f3e-6781fca18659"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "axis_label": "Exptime (s)", "formatter": {"type": "BasicTickFormatter", "id": "045e7891-556b-4a06-bf83-8ce8374ae337"}, "ticker": {"type": "BasicTicker", "id": "6d037d5a-70d6-4197-ac94-191d02aa6ba7"}, "id": "3997f32f-3a06-4bc7-9cb3-00bd9e88b48e"}, "type": "LinearAxis", "id": "3997f32f-3a06-4bc7-9cb3-00bd9e88b48e"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "major_label_orientation": 0.7853981633974483, "axis_label": "Target", "formatter": {"type": "CategoricalTickFormatter", "id": "e3f6439f-28f7-496c-a55d-863b6f654c24"}, "ticker": {"type": "CategoricalTicker", "id": "3e17e765-3adc-427b-a955-0c0c839c2db8"}, "id": "ef749877-bb23-4bbc-83f3-8f2f2a425f41"}, "type": "CategoricalAxis", "id": "ef749877-bb23-4bbc-83f3-8f2f2a425f41"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "dimension": 1, "ticker": {"type": "BasicTicker", "id": "6d037d5a-70d6-4197-ac94-191d02aa6ba7"}, "id": "5266867d-e85a-4b0b-90bd-bc60a19f5298"}, "type": "Grid", "id": "5266867d-e85a-4b0b-90bd-bc60a19f5298"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "fbc56e04-ab81-4506-b5c1-4ee3cffb738c"}, "tags": [], "doc": null, "id": "a1962904-27ae-44fa-b92d-bbb58325f444"}, "type": "HelpTool", "id": "a1962904-27ae-44fa-b92d-bbb58325f444"}];
-            Bokeh.load_models(all_models);
-            var model = Bokeh.Collections(modeltype).get(modelid);
-            var view = new model.default_view({model: model, el: '#43f72813-ac9d-4c71-bbac-a26957d53757'});
-            Bokeh.index[modelid] = view
-        });
-    </script>
+  <script type="text/javascript">
+      Bokeh.$(function() {
+          var all_models = [{"attributes": {"callback": null, "factors": ["NGC5548", "HS1024+1849", "PSRB0656+14", "SDSSJ095109.12+330745.8", "LBQS0107-0235", "FIRSTJ020930.7-043826", "1RXSJ023238.8-371812", "AM-HER", "G241-6", "QSO091620+240804", "Q1241+176", "VV2006J105910.9+051935", "RXSJ09565-0452", "SDSSJ094621.26+471131.3", "SDSSJ131535.06+620728.6", "SDSSJ113137.16+155645.3", "VV2006J130524.3+035731", "IRAS-F04250-5718", "SDSSJ151237.05+012846.", "2MASSJ13250381+2717189", "NOVA-PYX-1890", "V-QU-TEL", "COMET-LEE", "SDSSJ170328.90+614109.0", "1ES1028+511", "HD29647", "RXJ1230.8+0115", "PMNJ1103-2329", "NGC4051", "IC1613-B11", "WD0308-565", "SDSSJ124154.02+572107.3", "UPWIND-INTERPLANETARY-HYDROGEN", "V-V455-AND", "SDSSJ110312.93+414154.9", "GALEX1420+5247", "GJ667C", "SDSSJ111754.31+263416.6", "RBS1892", "CP1-JUP-NORTH-LIMB-A", "LDS749B", "PHL2525", "UKS0242-724", "CAL-F-COPY", "SDSSJ225738.20+134045.4", "4C13.41", "RXSJ16083+6018", "RXJ0439.6-5311", "GJ581B", "PG1001+291"], "doc": null, "tags": [], "id": "109f117e-2898-486d-bebd-6b4a2c5b449d"}, "type": "FactorRange", "id": "109f117e-2898-486d-bebd-6b4a2c5b449d"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "id": "d70d0c0f-8151-4270-ba35-1a4dc6424c6a"}, "type": "ResizeTool", "id": "d70d0c0f-8151-4270-ba35-1a4dc6424c6a"}, {"attributes": {"column_names": ["width_cat", "0", "cat", "cat0", "width", "zero", "stacked0", "mid0"], "tags": [], "doc": null, "selected": {"2d": {"indices": []}, "1d": {"indices": []}, "0d": {"indices": [], "flag": false}}, "callback": null, "data": {"width_cat": [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2], "0": [110277.0, 28688.0, 21852.0, 16382.0, 14100.0, 14068.0, 12555.0, 10980.0, 8834.0, 7954.0, 7171.0, 5912.0, 5896.0, 4030.0, 4020.0, 3900.0, 3898.0, 3750.0, 3690.0, 3647.0, 3488.0, 3423.0, 3300.0, 3121.0, 3085.0, 2971.0, 2950.0, 2889.0, 2771.0, 2729.0, 2700.0, 2614.0, 2524.0, 2459.0, 2424.0, 2400.0, 2396.0, 2364.0, 2228.0, 2220.0, 2205.0, 2146.0, 2109.0, 2078.0, 2071.0, 2070.0, 2037.0, 1973.0, 1931.0, 1890.0], "cat": ["NGC5548", "HS1024+1849", "PSRB0656+14", "SDSSJ095109.12+330745.8", "LBQS0107-0235", "FIRSTJ020930.7-043826", "1RXSJ023238.8-371812", "AM-HER", "G241-6", "QSO091620+240804", "Q1241+176", "VV2006J105910.9+051935", "RXSJ09565-0452", "SDSSJ094621.26+471131.3", "SDSSJ131535.06+620728.6", "SDSSJ113137.16+155645.3", "VV2006J130524.3+035731", "IRAS-F04250-5718", "SDSSJ151237.05+012846.", "2MASSJ13250381+2717189", "NOVA-PYX-1890", "V-QU-TEL", "COMET-LEE", "SDSSJ170328.90+614109.0", "1ES1028+511", "HD29647", "RXJ1230.8+0115", "PMNJ1103-2329", "NGC4051", "IC1613-B11", "WD0308-565", "SDSSJ124154.02+572107.3", "UPWIND-INTERPLANETARY-HYDROGEN", "V-V455-AND", "SDSSJ110312.93+414154.9", "GALEX1420+5247", "GJ667C", "SDSSJ111754.31+263416.6", "RBS1892", "CP1-JUP-NORTH-LIMB-A", "LDS749B", "PHL2525", "UKS0242-724", "CAL-F-COPY", "SDSSJ225738.20+134045.4", "4C13.41", "RXSJ16083+6018", "RXJ0439.6-5311", "GJ581B", "PG1001+291"], "cat0": ["NGC5548:0.5", "HS1024+1849:0.5", "PSRB0656+14:0.5", "SDSSJ095109.12+330745.8:0.5", "LBQS0107-0235:0.5", "FIRSTJ020930.7-043826:0.5", "1RXSJ023238.8-371812:0.5", "AM-HER:0.5", "G241-6:0.5", "QSO091620+240804:0.5", "Q1241+176:0.5", "VV2006J105910.9+051935:0.5", "RXSJ09565-0452:0.5", "SDSSJ094621.26+471131.3:0.5", "SDSSJ131535.06+620728.6:0.5", "SDSSJ113137.16+155645.3:0.5", "VV2006J130524.3+035731:0.5", "IRAS-F04250-5718:0.5", "SDSSJ151237.05+012846.:0.5", "2MASSJ13250381+2717189:0.5", "NOVA-PYX-1890:0.5", "V-QU-TEL:0.5", "COMET-LEE:0.5", "SDSSJ170328.90+614109.0:0.5", "1ES1028+511:0.5", "HD29647:0.5", "RXJ1230.8+0115:0.5", "PMNJ1103-2329:0.5", "NGC4051:0.5", "IC1613-B11:0.5", "WD0308-565:0.5", "SDSSJ124154.02+572107.3:0.5", "UPWIND-INTERPLANETARY-HYDROGEN:0.5", "V-V455-AND:0.5", "SDSSJ110312.93+414154.9:0.5", "GALEX1420+5247:0.5", "GJ667C:0.5", "SDSSJ111754.31+263416.6:0.5", "RBS1892:0.5", "CP1-JUP-NORTH-LIMB-A:0.5", "LDS749B:0.5", "PHL2525:0.5", "UKS0242-724:0.5", "CAL-F-COPY:0.5", "SDSSJ225738.20+134045.4:0.5", "4C13.41:0.5", "RXSJ16083+6018:0.5", "RXJ0439.6-5311:0.5", "GJ581B:0.5", "PG1001+291:0.5"], "width": [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8], "zero": [110277.0, 28688.0, 21852.0, 16382.0, 14100.0, 14068.0, 12555.0, 10980.0, 8834.0, 7954.0, 7171.0, 5912.0, 5896.0, 4030.0, 4020.0, 3900.0, 3898.0, 3750.0, 3690.0, 3647.0, 3488.0, 3423.0, 3300.0, 3121.0, 3085.0, 2971.0, 2950.0, 2889.0, 2771.0, 2729.0, 2700.0, 2614.0, 2524.0, 2459.0, 2424.0, 2400.0, 2396.0, 2364.0, 2228.0, 2220.0, 2205.0, 2146.0, 2109.0, 2078.0, 2071.0, 2070.0, 2037.0, 1973.0, 1931.0, 1890.0], "stacked0": [55138.5, 14344.0, 10926.0, 8191.0, 7050.0, 7034.0, 6277.5, 5490.0, 4417.0, 3977.0, 3585.5, 2956.0, 2948.0, 2015.0, 2010.0, 1950.0, 1949.0, 1875.0, 1845.0, 1823.5, 1744.0, 1711.5, 1650.0, 1560.5, 1542.5, 1485.5, 1475.0, 1444.5, 1385.5, 1364.5, 1350.0, 1307.0, 1262.0, 1229.5, 1212.0, 1200.0, 1198.0, 1182.0, 1114.0, 1110.0, 1102.5, 1073.0, 1054.5, 1039.0, 1035.5, 1035.0, 1018.5, 986.5, 965.5, 945.0], "mid0": [55138.5, 14344.0, 10926.0, 8191.0, 7050.0, 7034.0, 6277.5, 5490.0, 4417.0, 3977.0, 3585.5, 2956.0, 2948.0, 2015.0, 2010.0, 1950.0, 1949.0, 1875.0, 1845.0, 1823.5, 1744.0, 1711.5, 1650.0, 1560.5, 1542.5, 1485.5, 1475.0, 1444.5, 1385.5, 1364.5, 1350.0, 1307.0, 1262.0, 1229.5, 1212.0, 1200.0, 1198.0, 1182.0, 1114.0, 1110.0, 1102.5, 1073.0, 1054.5, 1039.0, 1035.5, 1035.0, 1018.5, 986.5, 965.5, 945.0]}, "id": "9249fa1e-ffba-4575-9cb7-d94d1be68e4c"}, "type": "ColumnDataSource", "id": "9249fa1e-ffba-4575-9cb7-d94d1be68e4c"}, {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08", "attributes": {"x_range": {"type": "FactorRange", "id": "109f117e-2898-486d-bebd-6b4a2c5b449d"}, "right": [], "above": [], "tags": [], "tools": [{"type": "PanTool", "id": "d1620f97-6ff5-42f9-9eee-e74eedf8dfc2"}, {"type": "WheelZoomTool", "id": "799dfc61-b9cc-4d45-b530-754bb55b869a"}, {"type": "BoxZoomTool", "id": "5cded680-74ef-4273-8537-7006c4b88127"}, {"type": "PreviewSaveTool", "id": "90a69eb8-787c-4c99-a1cd-2943d486b720"}, {"type": "ResizeTool", "id": "d70d0c0f-8151-4270-ba35-1a4dc6424c6a"}, {"type": "ResetTool", "id": "20383b63-d6f6-490a-8760-d1c5cfb7db78"}, {"type": "HelpTool", "id": "db38fef0-3033-416e-bb40-99df065b74eb"}], "title": "Cumulative Exptime per Target", "renderers": [{"type": "CategoricalAxis", "id": "33dcd3c5-6442-4122-8e34-c189ae2b0f8c"}, {"type": "LinearAxis", "id": "8b88902e-9183-42fb-86af-301c60aeabf0"}, {"type": "Grid", "id": "1c5a6c46-1577-4ea8-8611-df4edab7c220"}, {"type": "GlyphRenderer", "id": "04d2e703-cbdf-44a3-a9eb-0ee17ce85157"}], "plot_width": 1200, "extra_y_ranges": {}, "extra_x_ranges": {}, "tool_events": {"type": "ToolEvents", "id": "88da7f0f-0a65-45ab-b0e9-453d0030444e"}, "plot_height": 600, "doc": null, "id": "6dc030c0-8307-426e-9247-8d8320c2fc08", "y_range": {"type": "Range1d", "id": "beee76d2-7a99-4eba-bc00-8983cd59a81d"}, "below": [{"type": "CategoricalAxis", "id": "33dcd3c5-6442-4122-8e34-c189ae2b0f8c"}], "left": [{"type": "LinearAxis", "id": "8b88902e-9183-42fb-86af-301c60aeabf0"}]}}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "axis_label": "Exptime (s)", "formatter": {"type": "BasicTickFormatter", "id": "20b5e9d3-9675-44a7-8f1f-6de60a9a1341"}, "ticker": {"type": "BasicTicker", "id": "2ecd4fcf-fb1b-4325-a2a8-06bf294c6fc8"}, "id": "8b88902e-9183-42fb-86af-301c60aeabf0"}, "type": "LinearAxis", "id": "8b88902e-9183-42fb-86af-301c60aeabf0"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "id": "20383b63-d6f6-490a-8760-d1c5cfb7db78"}, "type": "ResetTool", "id": "20383b63-d6f6-490a-8760-d1c5cfb7db78"}, {"attributes": {"end": 121304.70000000001, "callback": null, "doc": null, "tags": [], "start": 0, "id": "beee76d2-7a99-4eba-bc00-8983cd59a81d"}, "type": "Range1d", "id": "beee76d2-7a99-4eba-bc00-8983cd59a81d"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "dimensions": ["width", "height"], "tags": [], "doc": null, "id": "799dfc61-b9cc-4d45-b530-754bb55b869a"}, "type": "WheelZoomTool", "id": "799dfc61-b9cc-4d45-b530-754bb55b869a"}, {"attributes": {"nonselection_glyph": null, "data_source": {"type": "ColumnDataSource", "id": "9249fa1e-ffba-4575-9cb7-d94d1be68e4c"}, "tags": [], "doc": null, "selection_glyph": null, "id": "04d2e703-cbdf-44a3-a9eb-0ee17ce85157", "glyph": {"type": "Rect", "id": "16c30357-96b3-4d75-9a25-5f44cac1a7c6"}}, "type": "GlyphRenderer", "id": "04d2e703-cbdf-44a3-a9eb-0ee17ce85157"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "id": "db38fef0-3033-416e-bb40-99df065b74eb"}, "type": "HelpTool", "id": "db38fef0-3033-416e-bb40-99df065b74eb"}, {"attributes": {"tags": [], "doc": null, "mantissas": [2, 5, 10], "id": "2ecd4fcf-fb1b-4325-a2a8-06bf294c6fc8"}, "type": "BasicTicker", "id": "2ecd4fcf-fb1b-4325-a2a8-06bf294c6fc8"}, {"attributes": {"doc": null, "id": "08c220f7-c49d-4222-a3f5-16b909ea6e95", "tags": []}, "type": "CategoricalTickFormatter", "id": "08c220f7-c49d-4222-a3f5-16b909ea6e95"}, {"attributes": {"line_color": {"value": "white"}, "fill_color": {"value": "#f22c40"}, "tags": [], "doc": null, "fill_alpha": {"value": 0.7}, "height": {"units": "data", "field": "0"}, "width": {"units": "data", "field": "width_cat"}, "y": {"field": "mid0"}, "x": {"field": "cat0"}, "id": "16c30357-96b3-4d75-9a25-5f44cac1a7c6"}, "type": "Rect", "id": "16c30357-96b3-4d75-9a25-5f44cac1a7c6"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "id": "90a69eb8-787c-4c99-a1cd-2943d486b720"}, "type": "PreviewSaveTool", "id": "90a69eb8-787c-4c99-a1cd-2943d486b720"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "major_label_orientation": 0.7853981633974483, "axis_label": "Target", "formatter": {"type": "CategoricalTickFormatter", "id": "08c220f7-c49d-4222-a3f5-16b909ea6e95"}, "ticker": {"type": "CategoricalTicker", "id": "aab5a4e9-862d-4281-9ee0-0b5ed8b81a46"}, "id": "33dcd3c5-6442-4122-8e34-c189ae2b0f8c"}, "type": "CategoricalAxis", "id": "33dcd3c5-6442-4122-8e34-c189ae2b0f8c"}, {"attributes": {"doc": null, "id": "20b5e9d3-9675-44a7-8f1f-6de60a9a1341", "tags": []}, "type": "BasicTickFormatter", "id": "20b5e9d3-9675-44a7-8f1f-6de60a9a1341"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "dimensions": ["width", "height"], "tags": [], "doc": null, "id": "5cded680-74ef-4273-8537-7006c4b88127"}, "type": "BoxZoomTool", "id": "5cded680-74ef-4273-8537-7006c4b88127"}, {"attributes": {"geometries": [], "tags": [], "doc": null, "id": "88da7f0f-0a65-45ab-b0e9-453d0030444e"}, "type": "ToolEvents", "id": "88da7f0f-0a65-45ab-b0e9-453d0030444e"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "dimensions": ["width", "height"], "tags": [], "doc": null, "id": "d1620f97-6ff5-42f9-9eee-e74eedf8dfc2"}, "type": "PanTool", "id": "d1620f97-6ff5-42f9-9eee-e74eedf8dfc2"}, {"attributes": {"plot": {"subtype": "Chart", "type": "Plot", "id": "6dc030c0-8307-426e-9247-8d8320c2fc08"}, "tags": [], "doc": null, "dimension": 1, "ticker": {"type": "BasicTicker", "id": "2ecd4fcf-fb1b-4325-a2a8-06bf294c6fc8"}, "id": "1c5a6c46-1577-4ea8-8611-df4edab7c220"}, "type": "Grid", "id": "1c5a6c46-1577-4ea8-8611-df4edab7c220"}, {"attributes": {"doc": null, "id": "aab5a4e9-862d-4281-9ee0-0b5ed8b81a46", "tags": []}, "type": "CategoricalTicker", "id": "aab5a4e9-862d-4281-9ee0-0b5ed8b81a46"}];
+          Bokeh.load_models(all_models);
+          var plots = [{'modeltype': 'Plot', 'elementid': '#4687d4c1-5aa1-4ed3-8f14-6be9497bad4a', 'modelid': '6dc030c0-8307-426e-9247-8d8320c2fc08'}];
+          for (idx in plots) {
+          	var plot = plots[idx];
+          	var model = Bokeh.Collections(plot.modeltype).get(plot.modelid);
+          	Bokeh.logger.info('Realizing plot:')
+          	Bokeh.logger.info(' - modeltype: ' + plot.modeltype);
+          	Bokeh.logger.info(' - modelid: ' + plot.modelid);
+          	Bokeh.logger.info(' - elementid: ' + plot.elementid);
+          	var view = new model.default_view({
+          		model: model,
+          		el: plot.elementid
+          	});
+          	Bokeh.index[plot.modelid] = view;
+          }
+      });
+  </script>
 
-    <title>Lightcurve by justincely</title>
-  </head>
+  <title>Lightcurve by justincely</title>
+</head>
 
-  <body>
-    <header>
-      <div class="inner">
-        <h1>Lightcurve</h1>
-        <h2></h2>
-        <a href="https://github.com/justincely/lightcurve" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
-
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h3>
-<a name="lightcurve" class="anchor" href="#lightcurve"><span class="octicon octicon-link"></span></a>Lightcurve.</h3>
-
-<p>This package contains tools for extracting time-series lightcurves from spectroscopic data taken with
-   the Hubble Space Telescope (HST).  </p>
-
-<p>Instruments currently supported by the code:
-  <ul>
-    <li>COS:  The Cosmic Origins Spectrograph</li>
-    <li>STIS: The Space Telescope Imaging Spectrograph</li>
-  </ul>
-</p>
-
-
-<h3>
-<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h3>
-<p>The LightCurve tool uses event list datasets to create lightcurves instead of extracted spectra.  Because of this,
-  the end data quality is heavily dependent on the quality of the initial pipeline to produce these event lists.  For
-  more information on the pipelines for each instrument, please go to their respective instrument teams and or science
-  institutions.
-</p>
-
-<h3>
-<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h3>
-<p>You can retrieve the latest release using pip, or clone/download the latest code from the GitHub link or downloads
-   on the right side of the page.
-
-   <pre><code> $ pip install lightcurve </code></pre>
-</p>
-
-<h3>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
-
-<pre><code>&gt;&gt;&gt; from lightcurve import LightCurve
-
-&gt;&gt;&gt; # Read the lightcurve into memory
-&gt;&gt;&gt; lc = LightCurve(filename='rootname_corrtag_a.fits')
-
-&gt;&gt;&gt; #Now just access the data
-&gt;&gt;&gt; lc['mjd'], lc['gross'], lc['flux']
-
-&gt;&gt;&gt; #To extract data with a different stepsize and wavelength range
-&gt;&gt;&gt; lc = LightCurve(filename='rootname_corrtag_a.fits', step=5, wlim=(1100, 1200))
-
-&gt;&gt;&gt; #Write to a file
-&gt;&gt;&gt; lc.write()
-&gt;&gt;&gt; ls
-rootname_curve.fits
-</code></pre>
-
-
-<h3><a name="data" class="anchor" href="#data"><span class="octicon octicon-link"></span></a>Data Preview</h3>
-<p>
-
-</p>
-
-<h3><a name="archive" class="anchor" href="#archive"><span class="octicon octicon-link"></span></a>Archive Content</h3>
-<p>
-  <div class="plotdiv" id="43f72813-ac9d-4c71-bbac-a26957d53757"></div>
-</p>
-
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/justincely/lightcurve/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/justincely/lightcurve/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/justincely/lightcurve"></a> is maintained by <a href="https://github.com/justincely">justincely</a>.</p>
-
-          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+<body>
+  <header>
+    <div class="inner">
+      <h1>Lightcurve</h1>
+      <h2></h2>
+      <a href="https://github.com/justincely/lightcurve" class="button"><small>View project on</small>GitHub</a>
     </div>
+  </header>
+
+  <div id="content-wrapper">
+    <div class="inner clearfix">
+      <section id="main-content">
+        <h3><a name="lightcurve" class="anchor" href="#lightcurve"><span class="octicon octicon-link"></span></a>Lightcurve.</h3>
+
+        <p>This package contains tools for extracting time-series lightcurves from spectroscopic data taken with
+          the Hubble Space Telescope (HST).  </p>
+
+          <p>Instruments currently supported by the code:
+            <ul>
+              <li>COS:  The Cosmic Origins Spectrograph</li>
+              <li>STIS: The Space Telescope Imaging Spectrograph</li>
+            </ul>
+          </p>
 
 
-  </body>
-</html>
+          <h3>
+            <a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h3>
+            <p>The LightCurve tool uses event list datasets to create lightcurves instead of extracted spectra.  Because of this,
+              the end data quality is heavily dependent on the quality of the initial pipeline to produce these event lists.  For
+              more information on the pipelines for each instrument, please go to their respective instrument teams and or science
+              institutions.
+            </p>
+
+            <h3>
+              <a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h3>
+              <p>You can retrieve the latest release using pip, or clone/download the latest code from the GitHub link or downloads
+                on the right side of the page.
+
+                <pre><code> $ pip install lightcurve </code></pre>
+              </p>
+
+              <h3>
+                <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
+
+                <pre><code>&gt;&gt;&gt; from lightcurve import LightCurve
+
+                  &gt;&gt;&gt; # Read the lightcurve into memory
+                  &gt;&gt;&gt; lc = LightCurve(filename='rootname_corrtag_a.fits')
+
+                  &gt;&gt;&gt; #Now just access the data
+                  &gt;&gt;&gt; lc['mjd'], lc['gross'], lc['flux']
+
+                  &gt;&gt;&gt; #To extract data with a different stepsize and wavelength range
+                  &gt;&gt;&gt; lc = LightCurve(filename='rootname_corrtag_a.fits', step=5, wlim=(1100, 1200))
+
+                  &gt;&gt;&gt; #Write to a file
+                  &gt;&gt;&gt; lc.write()
+                  &gt;&gt;&gt; ls
+                  rootname_curve.fits
+                </code></pre>
+
+
+                <h3><a name="data" class="anchor" href="#data"><span class="octicon octicon-link"></span></a>Data Preview</h3>
+                <p>
+
+                </p>
+
+                <h3><a name="archive" class="anchor" href="#archive"><span class="octicon octicon-link"></span></a>Archive Content</h3>
+                <p>
+                  <div class="plotdiv" id="4687d4c1-5aa1-4ed3-8f14-6be9497bad4a"></div>
+                </p>
+
+              </section>
+
+              <aside id="sidebar">
+                <a href="https://github.com/justincely/lightcurve/zipball/master" class="button">
+                  <small>Download</small>
+                  .zip file
+                </a>
+                <a href="https://github.com/justincely/lightcurve/tarball/master" class="button">
+                  <small>Download</small>
+                  .tar.gz file
+                </a>
+
+                <p class="repo-owner"><a href="https://github.com/justincely/lightcurve"></a> is maintained by <a href="https://github.com/justincely">justincely</a>.</p>
+
+                <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+              </aside>
+            </div>
+          </div>
+
+        </body>
+        </html>
