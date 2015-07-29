@@ -496,7 +496,6 @@ def prepare_header(filename, filelist):
     detector = set()
     filter = set()
 
-
     for i, exposure in enumerate(filelist):
         with fits.open(exposure) as hdu:
             telescop.add(hdu[0].header['TELESCOP'])
@@ -508,6 +507,8 @@ def prepare_header(filename, filelist):
                 ra_targ = hdu[0].header['ra_targ']
                 dec_targ = hdu[0].header['dec_targ']
                 equinox = hdu[0].header['equinox']
+                tardescr = hdu[0].header.get('TARDESCR', '')
+                tardesc2 = hdu[0].header.get('TARDESC2', '')
 
     with fits.open(filename, mode='update') as hdu:
         #-- HSLP keywords
@@ -523,6 +524,8 @@ def prepare_header(filename, filelist):
 	hdu[0].header['RA_TARG'] = ra_targ
 	hdu[0].header['DEC_TARG'] = dec_targ
 	hdu[0].header['EQUINOX'] = equinox
+        hdu[0].header['TARDESCR'] = tardescr
+	hdu[0].header['TARDESC2'] = tardesc2
 
         uniq, value = is_uniq(telescop)
         hdu[0].header['telescop'] = value
