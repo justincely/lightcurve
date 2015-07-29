@@ -93,11 +93,15 @@ def extract(filename, **kwargs):
     #time = np.array([round(val, 3) for val in hdu[1].data['time']]).astype(np.float64)
 
     end = 0
+    exptime = 0
     for segment, hdu in input_hdus.iteritems():
-        data_max = hdu[1].data['TIME'].max()
-        if data_max > end:
-            end = data_max
+        end = max(end, hdu[1].data['TIME'].max())
+        exptime = max(exptime, hdu[1].header['EXPTIME'])
 
+    if end > exptime:
+        print("WARNING: data times go to {}, beyond exptime: {}".format(end, exptime))
+
+    end = min(end, exptime)
 
     all_steps = np.arange(0, end+step, step)
 

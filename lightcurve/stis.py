@@ -70,7 +70,7 @@ def extract(filename, **kwargs):
         end = 0
     else:
         end = min(time.max(),
-                  hdu[1].header['EXPTIME'] )
+                  hdu[1].header['EXPTIME'])
 
 
     all_steps = np.arange(0, end+step, step)
