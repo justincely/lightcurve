@@ -221,10 +221,11 @@ def collect_inputs(filename):
         if hdu[0].header['detector'] == 'NUV':
             all_filenames = [filename]
 
+            out_hdu = fits.open(filename)
             if hdu[0].header['opt_elem'] == 'G230L':
-                all_hdu = {'A': hdu, 'B': hdu}
+                all_hdu = {'A': out_hdu, 'B': out_hdu}
             else:
-                all_hdu = {'A': hdu, 'B': hdu, 'C': hdu}
+                all_hdu = {'A': out_hdu, 'B': out_hdu, 'C': out_hdu}
 
         elif hdu[0].header['detector'] == 'FUV':
             file_a, file_b = get_both_filenames(filename)
