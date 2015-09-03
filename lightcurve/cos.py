@@ -11,6 +11,7 @@ from astropy.io import fits
 import os
 import numpy as np
 from scipy.interpolate import interp1d
+import six
 
 from .utils import expand_refname
 
@@ -94,7 +95,7 @@ def extract(filename, **kwargs):
 
     end = 0
     exptime = 0
-    for segment, hdu in input_hdus.iteritems():
+    for segment, hdu in six.iteritems(input_hdus):
         end = max(end, hdu[1].data['TIME'].max())
         exptime = max(exptime, hdu[1].header['EXPTIME'])
 
@@ -115,7 +116,7 @@ def extract(filename, **kwargs):
     background = 0
     background_flux = 0
 
-    for segment, hdu in input_hdus.iteritems():
+    for segment, hdu in six.iteritems(input_hdus):
 
         ### Source Calculation
         print('Segment {} fluxcal'.format(segment))
