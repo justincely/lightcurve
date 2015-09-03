@@ -1,21 +1,20 @@
 language: python
 
 python:
-  - "2.7_with_system_site_packages"
+  - "2.7"
   - "3.3"
   - "3.4"
 
-before_install:
-    - sudo apt-get update -q
-    - sudo apt-get -y install -q gfortran libblas-dev liblapack-dev libatlas-dev swig
-    - sudo apt-get install -qq python-numpy python-scipy
-    - pip freeze
-
-# command to install dependencies
 install:
-    - yes w | pip install -q numpy
-    - "pip install -r requirements.txt"
-    - python setup.py build_ext --inplace
+  # Install conda
+  - sudo pip install conda
+  # install deps
+  - sudo conda init
+  - sudo conda update conda --yes
+  - deps='pip numpy scipy astropy matplotlib cython nose'
+  - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
+  - export PATH=$HOME/py/bin:$PATH
+  # install your own package into the environment
+  - python setup.py build_ext --inplace
 
-# command to run tests
 script: nosetests
