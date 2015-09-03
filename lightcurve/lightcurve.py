@@ -521,11 +521,11 @@ def prepare_header(filename, filelist):
         hdu[0].header['HLSPACRN'] = 'LLOCS'
         hdu[0].header['CITATION'] = ''
 
-	hdu[0].header['RA_TARG'] = ra_targ
-	hdu[0].header['DEC_TARG'] = dec_targ
-	hdu[0].header['EQUINOX'] = equinox
+        hdu[0].header['RA_TARG'] = ra_targ
+        hdu[0].header['DEC_TARG'] = dec_targ
+        hdu[0].header['EQUINOX'] = equinox
         hdu[0].header['TARDESCR'] = tardescr
-	hdu[0].header['TARDESC2'] = tardesc2
+        hdu[0].header['TARDESC2'] = tardesc2
 
         uniq, value = is_uniq(telescop)
         hdu[0].header['telescop'] = value
