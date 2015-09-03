@@ -9,6 +9,7 @@ from __future__ import division
 
 import os
 import numpy as np
+from numba import jit
 import scipy
 from scipy.interpolate import interp1d
 from datetime import datetime
@@ -16,7 +17,8 @@ import astropy
 from astropy.io import fits as fits
 
 from .utils import expand_refname, enlarge
-from .stis_cal import map_image
+#from .stis_cal import map_image
+from .stis_calib import map_image
 from .cos import extract_index, calc_npixels
 from .version import version as  __version__
 
