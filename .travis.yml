@@ -5,10 +5,13 @@ python:
   - "3.3"
   - "3.4"
 
+virtualenv:
+  system_site_packages: true
+
 before_install:
     - sudo apt-get update -q
-    - sudo apt-get -y install -q gfortran libblas-dev liblapack-dev libatlas-dev swig    
-    - sudo apt-get install -qq python-scipy
+    - sudo apt-get -y install -q gfortran libblas-dev liblapack-dev libatlas-dev swig
+    - sudo apt-get install -qq python-numpy python-scipy
     - pip freeze
 
 # command to install dependencies
