@@ -318,9 +318,9 @@ class LightCurve(Table):
                                                                      align='^'), after='STEPSIZE')
             hdu_out[0].header.add_blank('', after='STEPSIZE')
 
-            for in_hdu in self.meta['hdus'].itervalues():
+            for seg in self.meta['headers']:
                 try:
-                    hdu_out[0].header.extend(in_hdu[0].header, end=True)
+                    hdu_out[0].header.extend(self.meta['headers'][seg][0], end=True)
                 except AttributeError:
                     if verbosity:
                         print("Error propogating primary header to final outputs")
@@ -399,14 +399,12 @@ class LightCurve(Table):
                                                                      align='^'))
             hdu_out[1].header.add_blank('')
 
-            for in_hdu in self.meta['hdus'].itervalues():
+            for seg in self.meta['headers']:
                 try:
-                    hdu_out[1].header.extend(in_hdu[1].header, end=True)
+                    hdu_out[1].header.extend(self.meta['headers'][seg][1], end=True)
                 except AttributeError:
                     if verbosity:
                         print("Error propogating primary header to final outputs")
-                    pass
-
 
 
 

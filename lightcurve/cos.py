@@ -57,6 +57,14 @@ def extract(filename, **kwargs):
     """
 
     input_files, input_hdus = collect_inputs(filename)
+    input_headers = {}
+    for segment in input_hdus:
+        input_headers[segment] = {}
+        for i, ext in enumerate(input_hdus[segment]):
+            try:
+                input_headers[segment][i] = ext.header._cards
+            except AttributeError:
+                pass
 
     verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
@@ -69,7 +77,7 @@ def extract(filename, **kwargs):
 
     meta = {'source': filename,
             'instrument' : 'COS',
-            'hdus': input_hdus,
+            'headers': input_headers,
             'source_files': input_files,
             'stepsize': step,
             'wlim': wlim,

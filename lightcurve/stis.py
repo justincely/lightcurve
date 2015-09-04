@@ -39,10 +39,17 @@ def extract(filename, **kwargs):
     filter_airglow = kwargs.get('filter_airglow', True)
 
     hdu = fits.open(filename)
+    input_headers = {'a':{}}
+
+    for i, ext in enumerate(hdu):
+        try:
+            input_headers['a'][i] = ext.header._cards
+        except AttributeError:
+            pass
 
     meta = {'source': filename,
             'instrument' : 'STIS',
-            'hdus': {'A': hdu},
+            'headers': input_headers,
             'stepsize': step,
             'wlim': wlim,
             'xlim': xlim,
