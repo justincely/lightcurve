@@ -186,17 +186,21 @@ def stis_corrtag(tagfile, clean=True):
             #--initialize everything to 0 wavelength
             wave_data = np.zeros(n_events)
 
-            #for order in x1d[1].data:
-            #    spec_center = order['a2center'] - order['shifta2']
-            #    spec_height = order['extrsize']
+            offset = header1['shifta2']
+            for order in x1d[1].data:
+                spec_center = order['a2center'] + offset
+                spec_height = order['extrsize']
+
+                index = np.where((ycorr_data < spec_center+spec_height) &
+                                 (ycorr_data > spec_center-spec_height))[0]
+
+                int_pix = integerize_pixels(xcorr_data[index])
+                wave_data[index] = order['wavelength'][int_pix]
+                print(wave_data[index].mean())
 
     else:
         #-- Grab wavelengths from the x1d file
-        int_pix = np.array(map(int, map(round, xcorr_data))).astype(np.int32)
-        int_pix = np.where(int_pix < 0, 0, int_pix)
-        int_pix = np.where(int_pix > 2047, 2047, int_pix)
-        int_pix //= 2
-
+        int_pix = integerize_pixels(xcorr_data)
         with fits.open(x1d_filename) as x1d:
             wave_data = x1d[1].data['wavelength'][0][int_pix]
             print(wave_data.mean())
@@ -237,6 +241,16 @@ def stis_corrtag(tagfile, clean=True):
     if clean and '_tag.fits' in tagfile:
         print("Removing input tagfile")
         os.remove(tagfile)
+
+#-------------------------------------------------------------------------------
+
+def integerize_pixels(xcoords):
+    int_pix = np.array(map(int, map(round, xcoords))).astype(np.int32)
+    int_pix = np.where(int_pix < 0, 0, int_pix)
+    int_pix = np.where(int_pix > 2047, 2047, int_pix)
+    int_pix //= 2
+
+    return int_pix
 
 #-------------------------------------------------------------------------------
 
@@ -400,7 +414,7 @@ def crazy_histogram2d(x, y, bins=(2048, 2048)):
     xyi = np.floor(xyi, xyi).T
 
     # Now, we'll exploit a sparse coo_matrix to build the 2D histogram...
-    grid = scipy.sparse.coo_matrix((weights, xyi), shape=(nx, ny)).toarray()
+    grid = scipy.sparse.coo_matrix((weights, xyi), shape=(nx, ny)).toarray().T
 
     return grid, np.linspace(xmin, xmax, nx), np.linspace(ymin, ymax, ny)
 

@@ -13,7 +13,7 @@ def map_image(np.ndarray image, np.ndarray xcoords, np.ndarray ycoords):
     for i in range(n_coord):
         x = xcoords[i]
         y = ycoords[i]
-        if (not 0 <= x <= 2048) or (not 0 <= y <= 2048):
+        if (not 0 < x < 2047) or (not 0 < y < 2047):
             out_vals[i] = 0
         else:
             out_vals[i] = image[x, y]
