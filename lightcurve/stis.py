@@ -335,7 +335,7 @@ def dqinit(tagfile):
 
         if not os.path.exists(reffile):
             print("{} not found, correction not performed".format(reffile))
-            return np.ones(len(hdu[1].data))
+            return np.zeros(len(hdu[1].data))
 
         with fits.open(reffile) as bpix:
             #-- Mama bpix regions are in lo-res pixels
