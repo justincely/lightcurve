@@ -127,8 +127,9 @@ def extract(filename, **kwargs):
         bins = bins[:-1]
         times = times[:-1]
 
-    data = [times, mjd, bins, gross, background, flux]
-    columns = ('times', 'mjd' ,'bins', 'gross', 'background', 'flux')
+    dataset = np.ones(times.shape)
+    data = [times, mjd, bins, gross, background, flux, dataset]
+    columns = ('times', 'mjd' ,'bins', 'gross', 'background', 'flux', 'dataset')
 
     if verbosity:
         print('Finished extraction for {}'.format(filename))

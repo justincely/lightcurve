@@ -65,13 +65,14 @@ class LightCurve(Table):
             if verbosity:
                 print("Initializing emtpy LightCurve")
 
-            data = [[], [], [], [], [], []]
+            data = [[], [], [], [], [], [], []]
             columns = ('times',
                        'mjd',
                        'bins',
                        'gross',
                        'background',
-                       'flux')
+                       'flux',
+                       'dataset')
             meta = {'filename': None}
 
         else:
@@ -378,6 +379,11 @@ class LightCurve(Table):
                                 'counts',
                                 array=self.error)
 
+        dataset_col = fits.Column('dataset',
+                                  'D',
+                                  'counts',
+                                  array=self['dataset'])
+
         tab = fits.new_table([bins_col,
                               times_col,
                               mjd_col,
@@ -387,7 +393,8 @@ class LightCurve(Table):
                               flux_col,
                               flux_error_col,
                               bkgnd_col,
-                              error_col])
+                              error_col,
+                              dataset_col])
         hdu_out.append(tab)
 
         if keep_headers:
@@ -479,6 +486,7 @@ def composite(filelist, output, trim=True, **kwargs):
             out_lc = LightCurve(filename, **kwargs)
         else:
             new_lc = LightCurve(filename, **kwargs)
+            new_lc['dataset'] = i+1
             out_lc = out_lc.concatenate(new_lc)
 
     out_lc.write(output, clobber=True, keep_headers=False)
