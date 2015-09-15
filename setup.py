@@ -28,7 +28,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Software Development :: Libraries :: Python Modules'],
     packages = ['lightcurve'],
-    requires = ['numpy','scipy','astropy'],
+    requires = ['numpy','scipy','astropy', 'cython'],
     scripts =  ['scripts/lightcurve'],
     cmdclass = {'build_ext': build_ext},
     include_dirs =[np.get_include()],
