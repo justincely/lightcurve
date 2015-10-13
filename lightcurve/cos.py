@@ -68,7 +68,7 @@ def extract(filename, **kwargs):
 
     verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
-    wlim = kwargs.get('wlim', (2, 10000))
+    wlim = kwargs.get('wlim', (915, 1800))
     xlim = kwargs.get('xlim', (0, 16384))
     ylim = kwargs.get('ylim', None)
     filter_airglow = kwargs.get('filter_airglow', True)
