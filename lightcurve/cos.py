@@ -68,7 +68,15 @@ def extract(filename, **kwargs):
 
     verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
-    wlim = kwargs.get('wlim', (915, 1800))
+    wlim = kwargs.get('wlim', None)
+    #-- If not specific wavlenghts, truncate to good wavelengths
+    #-- for each detector
+    if not wlim:
+        if fits.getval(filename, 'DETECTOR') == 'FUV':
+            wlim = (915, 1800)
+        else:
+            wlim = (915, 3200)
+
     xlim = kwargs.get('xlim', (0, 16384))
     ylim = kwargs.get('ylim', None)
     filter_airglow = kwargs.get('filter_airglow', True)

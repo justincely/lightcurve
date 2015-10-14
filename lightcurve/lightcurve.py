@@ -441,7 +441,7 @@ def composite(filelist, output, trim=True, **kwargs):
     print("\n".join(filelist))
 
     wmin = 912
-    wmax = 3000
+    wmax = 9000
 
     for filename in filelist:
         with fits.open(filename) as hdu:
@@ -452,6 +452,9 @@ def composite(filelist, output, trim=True, **kwargs):
             sdqflags = hdu[1].header['SDQFLAGS']
 
             if (hdu[0].header['INSTRUME'] == "COS") and (hdu[0].header['DETECTOR'] == 'FUV'):
+                #-- if using COS FUV, these are the good limits
+                wmin = 912
+                wmax = 1800
                 other_file = [item for item in get_both_filenames(filename) if not item == filename][0]
                 if os.path.exists(other_file):
                     with fits.open(other_file) as hdu_2:
