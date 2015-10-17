@@ -2,8 +2,11 @@
 requirements.txt
 setup.py
 lightcurve/__init__.py
+lightcurve/analysis.py
 lightcurve/cos.py
 lightcurve/io.py
 lightcurve/lightcurve.py
+lightcurve/stis.py
+lightcurve/utils.py
 lightcurve/version.py
 scripts/lightcurve

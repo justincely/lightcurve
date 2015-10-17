@@ -12,12 +12,11 @@ import numpy as np
 import scipy
 from scipy.interpolate import interp1d
 from datetime import datetime
+from numba import jit
 import astropy
 from astropy.io import fits as fits
 
 from .utils import expand_refname, enlarge
-#from .stis_cal import map_image
-from .stis_calib import map_image
 from .cos import extract_index, calc_npixels
 from .version import version as  __version__
 
@@ -252,6 +251,28 @@ def integerize_pixels(xcoords):
     int_pix //= 2
 
     return int_pix
+
+#-------------------------------------------------------------------------------
+
+@jit
+def map_image(image, xcoords, ycoords, default=0):
+    n_coord = len(xcoords)
+    out_vals = np.zeros(n_coord)
+
+    for i in range(n_coord):
+        x = xcoords[i]
+        y = ycoords[i]
+
+        if x < 0 or x > 2048:
+            val = default
+        if y < 0 or y > 2048:
+            val = default
+        else:
+            val = image[y, x]
+
+        out_vals[i] = val 
+
+    return out_vals
 
 #-------------------------------------------------------------------------------
 
