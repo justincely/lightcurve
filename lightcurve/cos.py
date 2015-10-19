@@ -81,6 +81,12 @@ def extract(filename, **kwargs):
     ylim = kwargs.get('ylim', None)
     filter_airglow = kwargs.get('filter_airglow', True)
 
+    if fits.getval(filename, 'OBSTYPE') == 'IMAGING':
+        print("Imaging observation found, resetting limits.")
+        xlim = (0, 1024)
+        ylim = (0, 512)
+        wlim = (-1, 1)
+
     SECOND_PER_MJD = 1.15741e-5
 
     meta = {'source': filename,
