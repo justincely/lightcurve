@@ -196,14 +196,12 @@ def stis_corrtag(tagfile, clean=True):
 
                 int_pix = integerize_pixels(xcorr_data[index])
                 wave_data[index] = order['wavelength'][int_pix]
-                print(wave_data[index].mean())
 
     else:
         #-- Grab wavelengths from the x1d file
         int_pix = integerize_pixels(xcorr_data)
         with fits.open(x1d_filename) as x1d:
             wave_data = x1d[1].data['wavelength'][0][int_pix]
-            print(wave_data.mean())
 
     #-- Writeout corrtag file
     hdu_out = fits.HDUList(fits.PrimaryHDU())
@@ -263,9 +261,9 @@ def map_image(image, xcoords, ycoords, default=0):
         x = xcoords[i]
         y = ycoords[i]
 
-        if x < 0 or x > 2048:
+        if x < 0 or x >= 2048:
             val = default
-        if y < 0 or y > 2048:
+        elif y < 0 or y >= 2048:
             val = default
         else:
             val = image[y, x]
