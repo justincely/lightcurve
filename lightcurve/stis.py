@@ -176,7 +176,10 @@ def stis_corrtag(tagfile, clean=True):
 
     eps_data = epsilon(tagfile)
     dq_data = dqinit(tagfile)
-    if not os.path.exists(x1d_filename):
+    if header0['OBSTYPE'] == 'IMAGING':
+        wave_data = np.zeros(n_events)
+
+    elif not os.path.exists(x1d_filename):
         print("Could not find associated extracted spectrum {}".format(x1d_filename))
         wave_data = np.ones(n_events) * hdu[0].header['CENTRWV']
 
