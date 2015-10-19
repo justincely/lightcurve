@@ -10,7 +10,7 @@ install:
   - sudo pip install conda
   # install deps
   - sudo conda init
-  - deps='pip numpy scipy astropy matplotlib cython nose six'
+  - deps='pip numpy scipy astropy matplotlib cython nose six numba'
   - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
   - export PATH=$HOME/py/bin:$PATH
   # install your own package into the environment

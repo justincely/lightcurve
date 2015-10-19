@@ -38,6 +38,12 @@ def extract(filename, **kwargs):
     filter_airglow = kwargs.get('filter_airglow', True)
 
     hdu = fits.open(filename)
+    if fits.getval(filename, 'OBSTYPE') == 'IMAGING':
+        print("Imaging observation found, resetting limits.")
+        xlim = (0, 2048)
+        ylim = (0, 2048)
+        wlim = (-1, 1)
+
     input_headers = {'a':{}}
 
     for i, ext in enumerate(hdu):
