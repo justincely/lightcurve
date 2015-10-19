@@ -16,6 +16,7 @@ def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
     hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
     hdu_out[0].header['detector'] = 'FUV'
     hdu_out[0].header['segment'] = 'FUVA'
+    hdu_out[0].header['OBSTYPE'] = 'SPECTROSCOPIC'
 
     image = np.zeros((1024, 16384))
     image[100] = 1
