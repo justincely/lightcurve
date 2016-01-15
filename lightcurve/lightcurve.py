@@ -516,6 +516,7 @@ def prepare_header(filename, filelist):
                 ra_targ = hdu[0].header['ra_targ']
                 dec_targ = hdu[0].header['dec_targ']
                 equinox = hdu[0].header['equinox']
+                targname = hdu[0].header['targname']
                 tardescr = hdu[0].header.get('TARDESCR', '')
                 tardesc2 = hdu[0].header.get('TARDESC2', '')
 
@@ -533,12 +534,14 @@ def prepare_header(filename, filelist):
         hdu[0].header['RA_TARG'] = ra_targ
         hdu[0].header['DEC_TARG'] = dec_targ
         hdu[0].header['EQUINOX'] = equinox
+        hdu[0].header['TARGNAME'] = targname
         hdu[0].header['TARDESCR'] = tardescr
         hdu[0].header['TARDESC2'] = tardesc2
+        hdu[0].header['EXTNAME'] = 'PRIMARY'
+        hdu[1].header['EXTNAME'] = 'LIGHTCURVE'
 
         uniq, value = is_uniq(telescop)
         hdu[0].header['telescop'] = value
-
 
         uniq, value = is_uniq(instrume)
         hdu[0].header['instrume'] = value
