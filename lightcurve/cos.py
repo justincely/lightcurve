@@ -117,7 +117,10 @@ def extract(filename, **kwargs):
 
     end = 0
     exptime = 0
+    start = 0
+
     for segment, hdu in six.iteritems(input_hdus):
+        start = max(start, hdu[1].data['TIME'].min())
         end = max(end, hdu[1].data['TIME'].max())
         exptime = max(exptime, hdu[1].header['EXPTIME'])
 
@@ -126,7 +129,7 @@ def extract(filename, **kwargs):
 
     end = min(end, exptime)
 
-    all_steps = np.arange(0, end+step, step)
+    all_steps = np.arange(start, end+step, step)
 
     if all_steps[-1] > end:
         truncate = True

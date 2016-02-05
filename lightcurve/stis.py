@@ -81,12 +81,12 @@ def extract(filename, **kwargs):
 
     if not len(time):
         end = 0
+        start = 0
     else:
-        end = min(time.max(),
-                  hdu[1].header['EXPTIME'])
+        end = min(time.max(), hdu[1].header['EXPTIME'])
+        start = time.min()
 
-
-    all_steps = np.arange(0, end+step, step)
+    all_steps = np.arange(start, end+step, step)
 
     if all_steps[-1] > end:
         truncate = True
@@ -277,7 +277,7 @@ def map_image(image, xcoords, ycoords, default=0):
         else:
             val = image[y, x]
 
-        out_vals[i] = val 
+        out_vals[i] = val
 
     return out_vals
 
