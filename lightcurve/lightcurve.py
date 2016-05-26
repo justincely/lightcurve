@@ -482,15 +482,21 @@ def composite(filelist, output, trim=True, **kwargs):
         print('Using wavelength range of: {}-{}'.format(wmin, wmax))
         kwargs['wlim'] = (wmin, wmax)
 
-    for i, filename in enumerate(filelist):
+    all_lc = []
+    for filename in filelist:
         print(filename)
-
-        if i == 0:
-            out_lc = LightCurve(filename, **kwargs)
+        tmp_lc = LightCurve(filename, **kwargs)
+        if np.any(tmp_lc['gross'] == 0):
+            continue
         else:
-            new_lc = LightCurve(filename, **kwargs)
-            new_lc['dataset'] = i+1
-            out_lc = out_lc.concatenate(new_lc)
+            all_lc.append(tmp_lc)
+
+    for i, lc in enumerate(all_lc):
+        if i == 0:
+            out_lc = lc
+        else:
+            lc['dataset'] = i+1
+            out_lc = out_lc.concatenate(lc)
 
     out_lc.write(output, clobber=True, keep_headers=False)
 
