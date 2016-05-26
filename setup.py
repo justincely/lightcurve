@@ -9,7 +9,7 @@ stis_cal_module = Extension('lightcurve/stis_calib',
 setup(
     name = 'lightcurve',
     url = 'http://justincely.github.io/lightcurve/',
-    version = '0.5.0',
+    version = '0.5.1',
     description = 'Create lightcurves from HST/COS data',
     author = 'Justin Ely',
     author_email = 'ely@stsci.edu',
