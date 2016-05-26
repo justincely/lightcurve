@@ -1,13 +1,10 @@
 from distutils.core import setup, Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
 import os
 import glob
 import numpy as np
 
 stis_cal_module = Extension('lightcurve/stis_calib',
                             sources=['lightcurve/stis_calib.pyx'])
-
 
 setup(
     name = 'lightcurve',
@@ -27,7 +24,5 @@ setup(
     packages = ['lightcurve'],
     requires = ['numpy','scipy','astropy', 'cython'],
     scripts =  ['scripts/lightcurve'],
-    cmdclass = {'build_ext': build_ext},
     include_dirs =[np.get_include()],
-    ext_modules = cythonize(stis_cal_module)
     )
