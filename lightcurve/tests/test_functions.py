@@ -3,8 +3,9 @@ Test Misc functions
 
 """
 
-from ..cos import expand_refname, extract_index
 import os
+
+from ..cos import expand_refname, extract_index
 
 #-------------------------------------------------------------------------------
 
