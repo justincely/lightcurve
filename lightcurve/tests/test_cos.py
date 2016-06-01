@@ -2,13 +2,12 @@
 Tests for extraction of COS data.
 
 """
-
-from lightcurve import LightCurve
-from ..cos import extract_index, get_both_filenames
-
 import numpy as np
 from astropy.io import fits as pyfits
 import os
+
+from ..lightcurve import LightCurve
+from ..cos import extract_index, get_both_filenames
 
 #-------------------------------------------------------------------------------
 
