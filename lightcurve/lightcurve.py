@@ -9,11 +9,11 @@ from __future__ import division
 
 __all__ = ['LightCurve', 'composite']
 
-import astropy
+import os
 import scipy
 import numpy as np
-import os
 from datetime import datetime
+import astropy
 from astropy.io import fits
 from astropy.table import Table, vstack
 from astropy.time import Time
