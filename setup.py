@@ -1,10 +1,6 @@
-from distutils.core import setup, Extension
+from setuptools import setup, find_packages
 import os
 import glob
-import numpy as np
-
-stis_cal_module = Extension('lightcurve/stis_calib',
-                            sources=['lightcurve/stis_calib.pyx'])
 
 setup(
     name = 'lightcurve',
@@ -21,8 +17,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Astronomy',
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Software Development :: Libraries :: Python Modules'],
-    packages = ['lightcurve'],
-    requires = ['numpy','scipy','astropy', 'cython'],
+    packages = find_packages(),
+    requires = ['numba==0.24.0', 'llvmlite==0.9.0'],
     scripts =  ['scripts/lightcurve'],
-    include_dirs =[np.get_include()],
     )

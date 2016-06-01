@@ -61,27 +61,10 @@ install:
     - conda config --add channels http://ssb.stsci.edu/astroconda
 
     # CORE DEPENDENCIES
-    - $CONDA_INSTALL -n test numpy=$NUMPY_VERSION astropy jinja2 cython Sphinx matplotlib
+    - $CONDA_INSTALL -n test numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0 astropy jinja2 cython Sphinx matplotlib
 
-    # ASTROPY
-    #- $PIP_INSTALL git+http://github.com/astropy/astropy.git#egg=astropy
-    #- $CONDA_INSTALL -n test numpy=$NUMPY_VERSION astropy
-
-
-    # OPTIONAL DEPENDENCIES
-    # Here you can add any dependencies your package may have. You can use
-    # conda for packages available through conda, or pip for any other
-    # packages. You should leave the `numpy=$NUMPY_VERSION` in the `conda`
-    # install since this ensures Numpy does not get automatically upgraded.
-    #- $CONDA_INSTALL -n test numpy=$NUMPY_VERSION scipy matplotlib
-
-    # DOCUMENTATION DEPENDENCIES
-    # build_sphinx needs sphinx and matplotlib (for plot_directive).
-    #- if [[ $SETUP_CMD == build_sphinx* ]]; then $CONDA_INSTALL -n test numpy=$NUMPY_VERSION Sphinx matplotlib; fi
 
 
 script:
    - python setup.py install
-   - pip freeze
-   - conda env list
-   - nosetests --no-path-adjustment
+   - nosetests
