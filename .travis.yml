@@ -113,6 +113,8 @@ install:
     # section if they are needed before setting up conda) to install any
     # other dependencies.
 
+    - conda install scipy matplotlib numba=0.24.0 llvmlite=0.9.0 nose pip
+
 script:
    - python setup.py $SETUP_CMD
    - nosetests
