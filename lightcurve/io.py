@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import matplotlib.pyplot as plt
-from astropy.io import fits as pyfits
+from astropy.io import fits
 import numpy as np
 import os
 
@@ -67,7 +67,7 @@ def check_filetype(filename):
                               'EPSILON',
                               'DQ'])
 
-    with pyfits.open(filename) as hdu:
+    with fits.open(filename) as hdu:
         input_names = set([item.upper() for
                            item in hdu[1].data.names])
 
@@ -101,7 +101,7 @@ def open_lightcurve(filename):
 
     """
 
-    with pyfits.open(filename) as hdu:
+    with fits.open(filename) as hdu:
         columns = hdu[1].data.names
         data = [hdu[1].data[name] for name in columns]
         meta = {}
@@ -114,7 +114,7 @@ def quicklook(filename):
     """ Quick plotting function for extracted lightcurves
     """
 
-    with pyfits.open(filename) as hdu:
+    with fits.open(filename) as hdu:
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)

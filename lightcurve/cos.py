@@ -68,10 +68,24 @@ def extract(filename, **kwargs):
 
     verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
-    wlim = kwargs.get('wlim', (2, 10000))
+    wlim = kwargs.get('wlim', None)
+    #-- If not specific wavlenghts, truncate to good wavelengths
+    #-- for each detector
+    if not wlim:
+        if fits.getval(filename, 'DETECTOR') == 'FUV':
+            wlim = (915, 1800)
+        else:
+            wlim = (915, 3200)
+
     xlim = kwargs.get('xlim', (0, 16384))
     ylim = kwargs.get('ylim', None)
     filter_airglow = kwargs.get('filter_airglow', True)
+
+    if fits.getval(filename, 'OBSTYPE') == 'IMAGING':
+        print("Imaging observation found, resetting limits.")
+        xlim = (0, 1024)
+        ylim = (0, 512)
+        wlim = (-1, 1)
 
     SECOND_PER_MJD = 1.15741e-5
 
@@ -103,7 +117,10 @@ def extract(filename, **kwargs):
 
     end = 0
     exptime = 0
+    start = 0
+
     for segment, hdu in six.iteritems(input_hdus):
+        start = max(start, hdu[1].data['TIME'].min())
         end = max(end, hdu[1].data['TIME'].max())
         exptime = max(exptime, hdu[1].header['EXPTIME'])
 
@@ -112,7 +129,7 @@ def extract(filename, **kwargs):
 
     end = min(end, exptime)
 
-    all_steps = np.arange(0, end+step, step)
+    all_steps = np.arange(start, end+step, step)
 
     if all_steps[-1] > end:
         truncate = True

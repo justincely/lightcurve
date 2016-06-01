@@ -12,11 +12,11 @@ import numpy as np
 import scipy
 from scipy.interpolate import interp1d
 from datetime import datetime
+from numba import jit
 import astropy
 from astropy.io import fits as fits
 
 from .utils import expand_refname, enlarge
-from .stis_calib import map_image
 from .cos import extract_index, calc_npixels
 from .version import version as  __version__
 
@@ -38,6 +38,12 @@ def extract(filename, **kwargs):
     filter_airglow = kwargs.get('filter_airglow', True)
 
     hdu = fits.open(filename)
+    if fits.getval(filename, 'OBSTYPE') == 'IMAGING':
+        print("Imaging observation found, resetting limits.")
+        xlim = (0, 2048)
+        ylim = (0, 2048)
+        wlim = (-1, 1)
+
     input_headers = {'a':{}}
 
     for i, ext in enumerate(hdu):
@@ -75,12 +81,12 @@ def extract(filename, **kwargs):
 
     if not len(time):
         end = 0
+        start = 0
     else:
-        end = min(time.max(),
-                  hdu[1].header['EXPTIME'])
+        end = min(time.max(), hdu[1].header['EXPTIME'])
+        start = time.min()
 
-
-    all_steps = np.arange(0, end+step, step)
+    all_steps = np.arange(start, end+step, step)
 
     if all_steps[-1] > end:
         truncate = True
@@ -176,7 +182,10 @@ def stis_corrtag(tagfile, clean=True):
 
     eps_data = epsilon(tagfile)
     dq_data = dqinit(tagfile)
-    if not os.path.exists(x1d_filename):
+    if header0['OBSTYPE'] == 'IMAGING':
+        wave_data = np.zeros(n_events)
+
+    elif not os.path.exists(x1d_filename):
         print("Could not find associated extracted spectrum {}".format(x1d_filename))
         wave_data = np.ones(n_events) * hdu[0].header['CENTRWV']
 
@@ -196,14 +205,12 @@ def stis_corrtag(tagfile, clean=True):
 
                 int_pix = integerize_pixels(xcorr_data[index])
                 wave_data[index] = order['wavelength'][int_pix]
-                print(wave_data[index].mean())
 
     else:
         #-- Grab wavelengths from the x1d file
         int_pix = integerize_pixels(xcorr_data)
         with fits.open(x1d_filename) as x1d:
             wave_data = x1d[1].data['wavelength'][0][int_pix]
-            print(wave_data.mean())
 
     #-- Writeout corrtag file
     hdu_out = fits.HDUList(fits.PrimaryHDU())
@@ -251,6 +258,28 @@ def integerize_pixels(xcoords):
     int_pix //= 2
 
     return int_pix
+
+#-------------------------------------------------------------------------------
+
+@jit
+def map_image(image, xcoords, ycoords, default=0):
+    n_coord = len(xcoords)
+    out_vals = np.zeros(n_coord)
+
+    for i in range(n_coord):
+        x = xcoords[i]
+        y = ycoords[i]
+
+        if x < 0 or x >= 2048:
+            val = default
+        elif y < 0 or y >= 2048:
+            val = default
+        else:
+            val = image[y, x]
+
+        out_vals[i] = val
+
+    return out_vals
 
 #-------------------------------------------------------------------------------
 

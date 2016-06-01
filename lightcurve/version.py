@@ -1,3 +1,3 @@
 """ I'm only here for the version number """
 
-version = '0.2.1'
+version = '0.5.1'

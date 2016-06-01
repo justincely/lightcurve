@@ -434,7 +434,7 @@ def composite(filelist, output, trim=True, **kwargs):
     print("\n".join(filelist))
 
     wmin = 912
-    wmax = 3000
+    wmax = 9000
 
     for filename in filelist:
         with fits.open(filename) as hdu:
@@ -445,6 +445,9 @@ def composite(filelist, output, trim=True, **kwargs):
             sdqflags = hdu[1].header['SDQFLAGS']
 
             if (hdu[0].header['INSTRUME'] == "COS") and (hdu[0].header['DETECTOR'] == 'FUV'):
+                #-- if using COS FUV, these are the good limits
+                wmin = 912
+                wmax = 1800
                 other_file = [item for item in get_both_filenames(filename) if not item == filename][0]
                 if os.path.exists(other_file):
                     with fits.open(other_file) as hdu_2:
@@ -472,15 +475,21 @@ def composite(filelist, output, trim=True, **kwargs):
         print('Using wavelength range of: {}-{}'.format(wmin, wmax))
         kwargs['wlim'] = (wmin, wmax)
 
-    for i, filename in enumerate(filelist):
+    all_lc = []
+    for filename in filelist:
         print(filename)
-
-        if i == 0:
-            out_lc = LightCurve(filename, **kwargs)
+        tmp_lc = LightCurve(filename, **kwargs)
+        if np.any(tmp_lc['gross'] == 0):
+            continue
         else:
-            new_lc = LightCurve(filename, **kwargs)
-            new_lc['dataset'] = i+1
-            out_lc = out_lc.concatenate(new_lc)
+            all_lc.append(tmp_lc)
+
+    for i, lc in enumerate(all_lc):
+        if i == 0:
+            out_lc = lc
+        else:
+            lc['dataset'] = i+1
+            out_lc = out_lc.concatenate(lc)
 
     out_lc.write(output, clobber=True, keep_headers=False)
 
@@ -506,6 +515,7 @@ def prepare_header(filename, filelist):
                 ra_targ = hdu[0].header['ra_targ']
                 dec_targ = hdu[0].header['dec_targ']
                 equinox = hdu[0].header['equinox']
+                targname = hdu[0].header['targname']
                 tardescr = hdu[0].header.get('TARDESCR', '')
                 tardesc2 = hdu[0].header.get('TARDESC2', '')
 
@@ -523,12 +533,14 @@ def prepare_header(filename, filelist):
         hdu[0].header['RA_TARG'] = ra_targ
         hdu[0].header['DEC_TARG'] = dec_targ
         hdu[0].header['EQUINOX'] = equinox
+        hdu[0].header['TARGNAME'] = targname
         hdu[0].header['TARDESCR'] = tardescr
         hdu[0].header['TARDESC2'] = tardesc2
+        hdu[0].header['EXTNAME'] = 'PRIMARY'
+        hdu[1].header['EXTNAME'] = 'LIGHTCURVE'
 
         uniq, value = is_uniq(telescop)
         hdu[0].header['telescop'] = value
-
 
         uniq, value = is_uniq(instrume)
         hdu[0].header['instrume'] = value
