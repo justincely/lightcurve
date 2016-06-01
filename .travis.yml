@@ -32,7 +32,6 @@ env:
         - NUMPY_VERSION=1.10
 
 before_install:
-
     # USE UTF8 ENCODING. SHOULD BE DEFAULT, BUT THIS IS INSURANCE AGAINST
     # FUTURE CHANGES
     - export PYTHONIOENCODING=UTF8
@@ -50,18 +49,11 @@ before_install:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
 
-
-
 install:
     # ADD STSCI ASTROCONDA CHANNEL
-    - conda create -n test python=$TRAVIS_PYTHON_VERSION
+    - conda create -q -n test python=$TRAVIS_PYTHON_VERSION astropy numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0
     - source activate test
-
-    # CORE DEPENDENCIES
-    - conda install -n test astropy numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0
-
-
+    - python setup.py install
 
 script:
-   - python setup.py install
    - nosetests
