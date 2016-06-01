@@ -18,6 +18,5 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Software Development :: Libraries :: Python Modules'],
     packages = find_packages(),
-    requires = ['numba==0.24.0', 'llvmlite==0.9.0'],
     scripts =  ['scripts/lightcurve'],
     )
