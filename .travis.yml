@@ -58,7 +58,7 @@ install:
     - source activate test
 
     # CORE DEPENDENCIES
-    - conda install -n test numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0
+    - conda install -n test astropy numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0
 
 
 
