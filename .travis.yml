@@ -82,4 +82,6 @@ install:
 
 script:
    - python setup.py install
+   - pip freeze
+   - conda env list
    - nosetests
