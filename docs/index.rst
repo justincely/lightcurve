@@ -14,27 +14,9 @@ Contents:
    intro.rst
    install.rst
    usage.rst
+   api.rst
 
-A bit of the code
-=================
 
-.. automodule:: lightcurve.lightcurve
-   :members:
-
-.. automodule:: lightcurve.cos
-   :members:
-
-:class: 'CosCurve'
-^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: CosCurve
-    :members:
-    :inherited-members:
-    :undoc-members:
-    :show-inheritance:
-
-.. automodule:: lightcurve.io
-   :members:
 
 Indices and tables
 ==================
@@ -42,4 +24,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

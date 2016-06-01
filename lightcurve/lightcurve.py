@@ -27,27 +27,20 @@ from .stis import extract as extract_stis
 #-------------------------------------------------------------------------------
 
 class LightCurve(Table):
-    """
-    Returns
-    -------
-    lightcurve object
+    """ Instantiate an empty LightCurve object.
+
+    LightCurves must contain:
+        gross
+        bins (timestep)
+        times
+        mjd
+        background
+        flux
+
+    All values are currently set to empty arrays.
 
     """
-
     def __init__(self, filename=None, **kwargs):
-        """ Instantiate an empty LightCurve object.
-
-        LightCurves must contain:
-            gross
-            bins (timestep)
-            times
-            mjd
-            background
-            flux
-
-        All values are currently set to empty arrays.
-
-        """
 
         verbosity = kwargs.get('verbosity', 0)
 

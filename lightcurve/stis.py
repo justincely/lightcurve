@@ -16,7 +16,6 @@ import astropy
 from astropy.io import fits as fits
 
 from .utils import expand_refname, enlarge
-#from .stis_cal import map_image
 from .stis_calib import map_image
 from .cos import extract_index, calc_npixels
 from .version import version as  __version__

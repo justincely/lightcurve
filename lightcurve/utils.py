@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 #-------------------------------------------------------------------------------
 
@@ -38,9 +39,8 @@ def enlarge(a, x=2, y=None):
     Enlarges by factor x horizontally and factor y vertically.
     If y is left as None, uses factor x for both dimensions."""
 
-    import numpy as np
-    
     assert a.ndim == 2
+
     if y == None:
         y = x
 
