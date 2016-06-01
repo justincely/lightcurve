@@ -61,7 +61,7 @@ install:
     - conda config --add channels http://ssb.stsci.edu/astroconda
 
     # CORE DEPENDENCIES
-    - $CONDA_INSTALL -n test numpy=$NUMPY_VERSION jinja2
+    - $CONDA_INSTALL -n test numpy=$NUMPY_VERSION jinja2 cython
 
     # ASTROPY
     - $PIP_INSTALL git+http://github.com/astropy/astropy.git#egg=astropy

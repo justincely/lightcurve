@@ -8,3 +8,8 @@ For more information, please see http://justincely.github.io/lightcurve/
 Travis build status
 ===================
 [![Build Status](https://travis-ci.org/justincely/lightcurve.png?branch=master)](https://travis-ci.org/justincely/lightcurve)
+
+DOCS build status
+=================
+[![Documentation Status](https://readthedocs.org/projects/hstlightcurve/badge/?version=latest)](http://hstlightcurve.readthedocs.io/en/latest/?badge=latest)
+
