@@ -29,7 +29,7 @@ env:
         - ASTROPY_VERSION=stable
         - SETUP_CMD='test'
         - PIP_DEPENDENCIES=''
-        - CONDA_DEPENDENCIES='scipy matplotlib numba=0.24.0 llvmlite=0.9.0'
+        - CONDA_DEPENDENCIES='scipy matplotlib numba=0.24.0 llvmlite=0.9.0 nose pip'
     matrix:
         # Make sure that egg_info works without dependencies
         - SETUP_CMD='egg_info'
