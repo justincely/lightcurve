@@ -54,9 +54,7 @@ before_install:
 
 install:
     # ADD STSCI ASTROCONDA CHANNEL
-    - conda config --add channels http://ssb.stsci.edu/astroconda
-
-    - conda create -n test stsci python=$TRAVIS_PYTHON_VERSION
+    - conda create -n test python=$TRAVIS_PYTHON_VERSION
     - source activate test
 
     # CORE DEPENDENCIES
