@@ -26,7 +26,6 @@ env:
         # SET DEFAULTS TO AVOID REPEATING IN MOST CASES
         - SETUPTOOLS_VERSION=stable
         - ASTROPY_VERSION=stable
-        - CONDA_INSTALL='conda install -c astropy-ci-extras --yes'
         - PIP_INSTALL='pip install'
         - INSTALL_OPTIONAL=true
         - SETUP_CMD='test'
@@ -54,14 +53,14 @@ before_install:
 
 
 install:
-    - conda create -c astropy-ci-extras --yes -n test python=$TRAVIS_PYTHON_VERSION
-    - source activate test
-
     # ADD STSCI ASTROCONDA CHANNEL
     - conda config --add channels http://ssb.stsci.edu/astroconda
 
+    - conda create -n test stsci python=$TRAVIS_PYTHON_VERSION
+    - source activate test
+
     # CORE DEPENDENCIES
-    - $CONDA_INSTALL -n test numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0 astropy jinja2 cython Sphinx matplotlib
+    - conda install -n test numpy=$NUMPY_VERSION numba=0.24.0 llvmlite=0.9.0
 
 
 
