@@ -36,16 +36,6 @@ env:
 
 matrix:
     include:
-
-        # Do a coverage test in Python 2.
-        - python: 2.7
-          env: SETUP_CMD='test --coverage'
-
-        # Check for sphinx doc build warnings - we do this first because it
-        # may run for a long time
-        - python: 2.7
-          env: SETUP_CMD='build_sphinx -w'
-
         # Try Astropy development version
         - python: 2.7
           env: ASTROPY_VERSION=development
@@ -61,8 +51,6 @@ matrix:
         # astropy-ci-extras channel (or in the one provided in the
         # CONDA_CHANNELS environmental variable).
         - python: 3.3
-          env: SETUP_CMD='egg_info'
-        - python: 3.3
           env: SETUP_CMD='test' NUMPY_VERSION=1.9
 
         # Try older numpy versions
@@ -70,10 +58,6 @@ matrix:
           env: NUMPY_VERSION=1.10
         - python: 2.7
           env: NUMPY_VERSION=1.9
-        - python: 2.7
-          env: NUMPY_VERSION=1.8
-        - python: 2.7
-          env: NUMPY_VERSION=1.7
 
         # Try numpy pre-release
         - python: 3.5

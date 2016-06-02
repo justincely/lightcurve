@@ -18,5 +18,8 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Software Development :: Libraries :: Python Modules'],
     packages = find_packages(),
+    install_requires = ['astropy',
+                        'numpy>=1.9',
+                        'numba==0.24.0'],
     scripts =  ['scripts/lightcurve'],
     )
