@@ -17,7 +17,6 @@ Contents:
    api.rst
 
 
-
 Indices and tables
 ==================
 
