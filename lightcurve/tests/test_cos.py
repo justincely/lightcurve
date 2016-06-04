@@ -3,16 +3,16 @@ Tests for extraction of COS data.
 
 """
 import numpy as np
-from astropy.io import fits as pyfits
+from astropy.io import fits
 import os
 
-from ..lightcurve import LightCurve
+from .. import io
 from ..cos import extract_index, get_both_filenames
 
 #-------------------------------------------------------------------------------
 
-def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
-    hdu_out = pyfits.HDUList(pyfits.PrimaryHDU())
+def generate_test_files(outname='test_corrtag_a.fits', epsilon=1):
+    hdu_out = fits.HDUList(fits.PrimaryHDU())
     hdu_out[0].header['detector'] = 'FUV'
     hdu_out[0].header['segment'] = 'FUVA'
     hdu_out[0].header['OBSTYPE'] = 'SPECTROSCOPIC'
@@ -24,20 +24,20 @@ def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
     n_events = len(y_coords)
     exptime = 100.0
 
-    time_col = pyfits.Column('time', 'D', 'time', array=np.linspace(0, exptime, n_events) )
-    rawx_col = pyfits.Column('rawx', 'I', 'MJD', array=x_coords )
-    rawy_col = pyfits.Column('rawy', 'I', 'MJD', array=y_coords )
-    xcorr_col = pyfits.Column('xcorr', 'I', 'MJD', array=x_coords )
-    ycorr_col = pyfits.Column('ycorr', 'I', 'MJD', array=y_coords )
-    xdopp_col = pyfits.Column('xdopp', 'I', 'counts', array=x_coords )
-    xfull_col = pyfits.Column('xfull', 'I', 'counts', array=x_coords )
-    yfull_col = pyfits.Column('yfull', 'I', 'counts', array=y_coords )
-    wavelength_col = pyfits.Column('wavelength', 'I', 'counts/s', array=np.ones( n_events ) * 1200 )
-    epsilon_col = pyfits.Column('epsilon', 'D', 'ergs/s', array=np.ones( n_events ) * epsilon )
-    dq_col = pyfits.Column('dq', 'I', 'cnts', array=np.zeros( n_events ) )
-    pha_col = pyfits.Column('pha', 'I', 'counts', array=np.ones( n_events ) * 14 )
+    time_col = fits.Column('time', 'D', 'time', array=np.linspace(0, exptime, n_events))
+    rawx_col = fits.Column('rawx', 'I', 'MJD', array=x_coords)
+    rawy_col = fits.Column('rawy', 'I', 'MJD', array=y_coords)
+    xcorr_col = fits.Column('xcorr', 'I', 'MJD', array=x_coords)
+    ycorr_col = fits.Column('ycorr', 'I', 'MJD', array=y_coords)
+    xdopp_col = fits.Column('xdopp', 'I', 'counts', array=x_coords)
+    xfull_col = fits.Column('xfull', 'I', 'counts', array=x_coords)
+    yfull_col = fits.Column('yfull', 'I', 'counts', array=y_coords)
+    wavelength_col = fits.Column('wavelength', 'I', 'counts/s', array=np.ones(n_events) * 1200)
+    epsilon_col = fits.Column('epsilon', 'D', 'ergs/s', array=np.ones(n_events) * epsilon)
+    dq_col = fits.Column('dq', 'I', 'cnts', array=np.zeros(n_events))
+    pha_col = fits.Column('pha', 'I', 'counts', array=np.ones(n_events) * 14)
 
-    tab = pyfits.new_table( [time_col,
+    tab = fits.new_table( [time_col,
                              rawx_col,
                              rawy_col,
                              xcorr_col,
@@ -49,7 +49,7 @@ def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
                              epsilon_col,
                              dq_col,
                              pha_col] )
-    hdu_out.append( tab )
+    hdu_out.append(tab)
 
     hdu_out[1].header['EXTNAME'] = 'EVENTS'
     hdu_out[1].header['exptime'] = exptime
@@ -64,39 +64,41 @@ def generate_test_files( outname='test_corrtag_a.fits', epsilon=1):
 
     hdu_out[1].header['sdqflags'] = 16
 
-    hdu_out.writeto( outname, clobber=True )
+    hdu_out.writeto(outname, clobber=True)
 
 #-------------------------------------------------------------------------------
 
-def test_FUV():
-    """ Test the FUV file extraction """
+class test_extraction:
+    def setUp(self):
+        self.test_file = 'test_corrtag_a.fits'
+        generate_test_files(outname=self.test_file)
 
-    test_file = 'test_corrtag_a.fits'
-    generate_test_files(outname=test_file)
+    def tearDown(self):
+        os.remove(self.test_file)
 
-    for stepsize in [.1, .5, 1, 2, 5, 10]:
-        lc = LightCurve(filename=test_file, step=stepsize)
-        assert lc['gross'].sum() == 16384, "Extraction didn't find all the counts, step={}".format(step)
+    def test_int_step(self):
+        for stepsize in [.1, .5, 1, 2, 5, 10]:
+            lc = io.read(self.test_file, step=stepsize)
+            assert lc['gross'].sum() == 16384, "Extraction didn't find all the counts, step={}".format(stepsize)
 
-    ### uneven steps, make sure last bit is truncated.
-    ### This should also check that the are above some value too
-    for stepsize in [.3, 3]:
-        lc = LightCurve(filename=test_file, step=stepsize)
-        assert (lc['gross'].sum() < 16384), "Extraction didn't truncate properly, step={}".format(step)
-
-    os.remove(test_file)
+    def test_step_truncation(self):
+        for stepsize in [.3, 3]:
+            lc = io.read(self.test_file, step=stepsize)
+            assert (lc['gross'].sum() < 16384), "Extraction didn't truncate properly, step={}".format(stepsize)
 
 #-------------------------------------------------------------------------------
 
-def test_epsilon():
-    test_file = 'epsilon_corrtag_a.fits'
-    generate_test_files(outname=test_file, epsilon=1.25)
+class test_epsilon:
+    def setUp(self):
+        self.test_file = 'test_corrtag_a.fits'
+        generate_test_files(outname=self.test_file, epsilon=1.25)
 
-    lc = LightCurve(filename=test_file)
+    def tearDown(self):
+        os.remove(self.test_file)
 
-    assert lc['gross'].sum() == 16384 * 1.25, 'Espilon not accounted for'
-
-    os.remove(test_file)
+    def test_simple_epsilon(self):
+        lc = io.read(self.test_file)
+        assert lc['gross'].sum() == 16384 * 1.25, 'Espilon not accounted for {}'.format(lc['gross'].sum())
 
 #-------------------------------------------------------------------------------
 
@@ -106,10 +108,10 @@ def test_extract_index():
     test_file = 'dq_corrtag_a.fits'
     generate_test_files(outname=test_file)
 
-    with pyfits.open(test_file, mode='update') as hdu:
+    with fits.open(test_file, mode='update') as hdu:
         hdu[1].data['dq'][:] = 8
 
-        good_index = extract_index( hdu, 0, 16384, 0, 1024, -1, 10000, 8)
+        good_index = extract_index(hdu, 0, 16384, 0, 1024, -1, 10000, 8)
         assert len( good_index ) == 0, 'Should be no good data: {}'.format( len(good_index) )
 
         good_index = extract_index( hdu, 0, 16384, 0, 1024, -1, 10000, 8376)

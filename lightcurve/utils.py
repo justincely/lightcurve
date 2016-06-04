@@ -51,3 +51,12 @@ def enlarge(a, x=2, y=None):
     return a.repeat(y, axis=0).repeat(x, axis=1)
 
 #-------------------------------------------------------------------------------
+
+def is_uniq(values):
+
+    if len(values) > 1:
+        return False, 'MULTI'
+    else:
+        return True, list(values)[0]
+
+#-------------------------------------------------------------------------------

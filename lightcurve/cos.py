@@ -226,16 +226,19 @@ def extract(filename, **kwargs):
         bins = bins[:-1]
         times = times[:-1]
 
-
-    dataset = np.ones(times.shape)
-    data = [times, mjd, bins, gross, background, flux, dataset]
-    columns = ('times', 'mjd', 'bins', 'gross', 'background', 'flux', 'dataset')
+    data = {'dataset': np.ones(times.shape),
+            'times': times,
+            'mjd': mjd,
+            'bins': bins,
+            'gross': gross,
+            'background': background,
+            'flux': flux}
 
     if verbosity:
         print('Finished extraction for {}'.format(filename))
         print()
 
-    return data, columns, meta
+    return data, meta
 
 #-------------------------------------------------------------------------------
 
