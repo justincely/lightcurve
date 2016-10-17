@@ -1,5 +1,7 @@
 #!/usr/bin/env/python
 
+from __future__ import print_function
+
 import argparse
 import re
 import os
@@ -38,7 +40,7 @@ def parse_args():
 
     parser.add_argument('--cat', dest='concatenate', action='store_true', default=False,
                         help='Concatenate all input curves?')
-    
+
     args = parser.parse_args()
     return args
 
@@ -50,17 +52,16 @@ if __name__ == "__main__":
     all_datasets = args.input
 
     if args.concatenate:
-        print "Concatenating datasets"
-	composite(args.input, args.outname, trim=False)
+        print("Concatenating datasets")
+        composite(args.input, args.outname, trim=False)
 
     else:
         for dataset in all_datasets:
-            out_lc = LightCurve(filename=dataset, 
-                                step=args.step, 
-                                wlim=(args.wmin, args.wmax), 
+            out_lc = LightCurve(filename=dataset,
+                                step=args.step,
+                                wlim=(args.wmin, args.wmax),
                                 alt=args.alt,
                                 filter=args.filter,
                                 verbosity=1)
-  
-            out_lc.write(args.outname or curvename)
 
+            out_lc.write(args.outname or curvename)
