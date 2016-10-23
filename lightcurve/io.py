@@ -259,7 +259,7 @@ def composite(filelist, output, trim=True, **kwargs):
     all_lc = []
     for filename in filelist:
         print(filename)
-        tmp_lc = LightCurve(filename, **kwargs)
+        tmp_lc = read(filename, **kwargs)
         if np.any(tmp_lc['gross'] == 0):
             continue
         else:

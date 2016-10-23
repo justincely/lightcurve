@@ -6,8 +6,7 @@ import argparse
 import re
 import os
 
-from lightcurve import LightCurve
-from lightcurve import composite
+from lightcurve import io
 
 #------------------------------------------------------------
 
@@ -53,11 +52,17 @@ if __name__ == "__main__":
 
     if args.concatenate:
         print("Concatenating datasets")
-        composite(args.input, args.outname, trim=False)
+        io.composite(args.input,
+                     args.outname,
+                     trim=False,
+                     step=args.step,
+                     wlim=(args.wmin, args.wmax),
+                     alt=args.alt,
+                     filter=args.filter,)
 
     else:
         for dataset in all_datasets:
-            out_lc = LightCurve(filename=dataset,
+            out_lc = io.read(filename=dataset,
                                 step=args.step,
                                 wlim=(args.wmin, args.wmax),
                                 alt=args.alt,
