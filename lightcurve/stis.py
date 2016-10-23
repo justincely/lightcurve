@@ -256,7 +256,8 @@ def stis_corrtag(tagfile, clean=True):
 #-------------------------------------------------------------------------------
 
 def integerize_pixels(xcoords):
-    int_pix = np.array(map(int, map(round, xcoords))).astype(np.int32)
+
+    int_pix = np.round(xcoords).astype(np.int32)
     int_pix = np.where(int_pix < 0, 0, int_pix)
     int_pix = np.where(int_pix > 2047, 2047, int_pix)
     int_pix //= 2

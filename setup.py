@@ -20,6 +20,7 @@ setup(
     packages = find_packages(),
     install_requires = ['astropy',
                         'numpy>=1.9',
-                        'numba==0.24.0'],
+                        'matplotlib<=1.5.1'
+                        'numba>=0.24.0'],
     scripts =  ['scripts/lightcurve'],
     )
