@@ -272,6 +272,12 @@ def composite(filelist, output, trim=True, **kwargs):
             lc['dataset'] = i+1
             out_lc = vstack([out_lc, lc], metadata_conflicts='warn')
 
+    if output.endswith('.fits') or output.endswith('.fits.gz'):
+        for key in out_lc.meta.keys():
+            if len(key) > 8:
+                print("Deleting key {} from output header:".format(key))
+                del out_lc.meta[key]
+
     out_lc.write(output)
 
     prepare_header(output, filelist)
