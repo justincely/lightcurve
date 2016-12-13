@@ -1,4 +1,0 @@
-astropy
-numpy
-matplotlib
-cython

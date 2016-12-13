@@ -14,7 +14,6 @@ import astropy
 from astropy.io import fits
 from astropy.table import Table, vstack
 from astropy.time import Time
-import matplotlib.pyplot as plt
 
 from .version import version as __version__
 from .cos import extract as extract_cos

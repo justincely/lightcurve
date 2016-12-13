@@ -19,8 +19,8 @@ setup(
                    'Topic :: Software Development :: Libraries :: Python Modules'],
     packages = find_packages(),
     install_requires = ['astropy',
+                        'scipy',
                         'numpy>=1.9',
-                        'matplotlib<=1.5.1'
                         'numba>=0.24.0'],
     scripts =  ['scripts/lightcurve'],
     )

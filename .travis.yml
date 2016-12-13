@@ -28,32 +28,27 @@ env:
         # The following versions are the 'default' for tests, unless
         # overridden underneath. They are defined here in order to save having
         # to repeat them for all configurations.
-        - NUMPY_VERSION=stable
-        - ASTROPY_VERSION=stable
-        - SETUP_CMD='test'
-        - PIP_DEPENDENCIES=''
-        - CONDA_DEPENDENCIES='astropy scipy matplotlib numba>=0.24.0 llvmlite>=0.9.0 nose pip'
+
     matrix:
         # Try all python versions with the latest numpy
-        - SETUP_CMD='test'
-
-matrix:
-    include:
-        # Try Astropy development version
-        - python: 2.7
-          env: ASTROPY_VERSION=development
-        - python: 3.5
-          env: ASTROPY_VERSION=development
-        - python: 2.7
-          env: ASTROPY_VERSION=lts
-        - python: 3.5
-          env: ASTROPY_VERSION=lts
-
-        # Try numpy pre-release
-        - python: 3.5
-          env: NUMPY_VERSION=prerelease
+        #- SETUP_CMD='test'
 
 before_install:
+    #-- pull down conda, setup, activate
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then wget https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -O miniconda.sh; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh; fi
+
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+
+    #-- config
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - conda info -a
+
+    #-- create test environment
+    - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+    - source activate test
 
     # If there are matplotlib tests, comment these out to
     # Make sure that interactive matplotlib backends work
@@ -61,32 +56,10 @@ before_install:
     - sh -e /etc/init.d/xvfb start
 
 install:
-
-    # We now use the ci-helpers package to set up our testing environment.
-    # This is done by using Miniconda and then using conda and pip to install
-    # dependencies. Which dependencies are installed using conda and pip is
-    # determined by the CONDA_DEPDENDENCIES and PIP_DEPENDENCIES variables,
-    # which should be space-delimited lists of package names. See the README
-    # in https://github.com/astropy/ci-helpers for information about the full
-    # list of environment variables that can be used to customize your
-    # environment. In some cases, ci-helpers may not offer enough flexibility
-    # in how to install a package, in which case you can have additional
-    # commands in the install: section below.
-
-    - git clone git://github.com/astropy/ci-helpers.git
-    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-
-    # As described above, using ci-helpers, you should be able to set up an
-    # environment with dependencies installed using conda and pip, but in some
-    # cases this may not provide enough flexibility in how to install a
-    # specific dependency (and it will not be able to install non-Python
-    # dependencies). Therefore, you can also include commands below (as
-    # well as at the start of the install section or in the before_install
-    # section if they are needed before setting up conda) to install any
-    # other dependencies.
+  - conda install -y astropy numpy scipy numba>=0.24.0 llvmlite>=0.9.0 nose pip six
 
 script:
-   - python setup.py $SETUP_CMD
+   - python setup.py install
    - nosetests
 
 after_success:
