@@ -24,11 +24,22 @@ __all__ = ['extract',
 #-------------------------------------------------------------------------------
 
 def extract(filename, **kwargs):
-    """ Loop over HDUs and extract the lightcurve
+    """ Extract lightcurve from COS dataset
 
     This is the main driver of the lightcuve extracion, and definitely
     needs some better documentation.
 
+    Parameters
+    ----------
+    filename : str
+        name of FITS file to extract from
+    **kwargs : dict
+        arbitrary keyword arguements for tailored extraction
+
+    Returns
+    -------
+    data, meta : Astropy table, dict
+        Table with extracted data and dictionary of metadata pairs
     """
 
     """
