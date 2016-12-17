@@ -1,6 +1,10 @@
 import os
 import numpy as np
 
+__all__ = ['expand_refname',
+           'enlarge',
+           'is_uniq']
+
 #-------------------------------------------------------------------------------
 
 def expand_refname(refname):
@@ -53,6 +57,17 @@ def enlarge(a, x=2, y=None):
 #-------------------------------------------------------------------------------
 
 def is_uniq(values):
+    """ Check if input items are unique
+
+    Parameters
+    ----------
+    values : set
+        set of all values
+
+    Returns
+    -------
+    True/False, MULTI/unique value
+    """
 
     if len(values) > 1:
         return False, 'MULTI'

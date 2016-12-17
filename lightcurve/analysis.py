@@ -1,5 +1,7 @@
 from scipy.signal import lombscargle
 
+__all__ = ['lomb']
+
 #-------------------------------------------------------------------------------
 
 def lomb(time, counts, frequencies):
