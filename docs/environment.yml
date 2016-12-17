@@ -9,5 +9,3 @@ dependencies:
     - six
     - sphinx
     - sphinx_rtd_theme
-    - pip
-      - sphinx-automodapi
