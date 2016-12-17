@@ -69,9 +69,11 @@ def is_uniq(values):
     True/False, MULTI/unique value
     """
 
-    if len(values) > 1:
-        return False, 'MULTI'
-    else:
+    if len(values) == 0:
+        return True, ''
+    elif len(values) == 1:
         return True, list(values)[0]
+    else:
+        return False, 'MULTI'
 
 #-------------------------------------------------------------------------------

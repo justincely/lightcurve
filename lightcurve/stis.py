@@ -1,5 +1,4 @@
-"""
-Holder of Space Telescope Imaging Spectrograph (STIS) classes and utilities
+""" Utility functions for extracting STIS spectral data into lightcurves
 
 """
 

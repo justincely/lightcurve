@@ -1,5 +1,4 @@
-"""
-Holder of Cosmic Origins Spectrograph (COS) classes and utilities
+""" Utility functions for extracting COS spectral data into lightcurves
 
 """
 
