@@ -21,6 +21,11 @@ from .cos import get_both_filenames
 from .stis import extract as extract_stis
 from .utils import is_uniq
 
+__all__ = ['check_filetype',
+           'read',
+           'composite',
+           'prepare_header']
+           
 #-------------------------------------------------------------------------------
 
 def check_filetype(filename):

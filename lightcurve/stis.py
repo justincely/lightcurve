@@ -20,6 +20,11 @@ from .utils import expand_refname, enlarge
 from .cos import extract_index, calc_npixels
 from .version import version as  __version__
 
+__all__ = ['extract',
+           'stis_corrtag',
+           'map_image',
+           'epsilon',
+           'dqinit']
 #-------------------------------------------------------------------------------
 
 def extract(filename, **kwargs):

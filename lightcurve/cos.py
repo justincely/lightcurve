@@ -15,7 +15,11 @@ import six
 
 from .utils import expand_refname
 
-#__all__ = ['extract_index', 'get_both_filenames']
+__all__ = ['extract',
+           'collect_inputs',
+           'get_both_filenames',
+           'get_extraction_region'
+           ]
 
 #-------------------------------------------------------------------------------
 
