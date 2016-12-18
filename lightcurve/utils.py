@@ -1,5 +1,10 @@
+"""General purpose utility functions"""
+
 import os
-import numpy as np
+
+__all__ = ['expand_refname',
+           'enlarge',
+           'is_uniq']
 
 #-------------------------------------------------------------------------------
 
@@ -49,5 +54,27 @@ def enlarge(a, x=2, y=None):
         assert factor > 0
 
     return a.repeat(y, axis=0).repeat(x, axis=1)
+
+#-------------------------------------------------------------------------------
+
+def is_uniq(values):
+    """ Check if input items are unique
+
+    Parameters
+    ----------
+    values : set
+        set of all values
+
+    Returns
+    -------
+    True/False, MULTI/unique value
+    """
+
+    if len(values) == 0:
+        return True, ''
+    elif len(values) == 1:
+        return True, list(values)[0]
+    else:
+        return False, 'MULTI'
 
 #-------------------------------------------------------------------------------

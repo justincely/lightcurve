@@ -1,5 +1,4 @@
-"""
-Holder of Space Telescope Imaging Spectrograph (STIS) classes and utilities
+""" Utility functions for extracting STIS spectral data into lightcurves
 
 """
 
@@ -20,14 +19,39 @@ from .utils import expand_refname, enlarge
 from .cos import extract_index, calc_npixels
 from .version import version as  __version__
 
+__all__ = ['extract',
+           'stis_corrtag',
+           'map_image',
+           'epsilon',
+           'dqinit']
+
 #-------------------------------------------------------------------------------
 
 def extract(filename, **kwargs):
-    """ Loop over HDUs and extract the lightcurve
+    """ Extract lightcurve from STIS dataset
 
     This is the main driver of the lightcuve extracion, and definitely
     needs some better documentation.
 
+    Parameters
+    ----------
+    filename : str
+        name of FITS file to extract from
+    **kwargs : dict
+        arbitrary keyword arguements for tailored extraction
+
+    Kwarg parameters
+    ----------------
+    verbosity : int, default=0
+        Verbosity level for print output
+    step : int, default=1
+        timestep in seconds for output Lightcurve
+    wlim : tuple
+
+    Returns
+    -------
+    data, meta : Astropy table, dict
+        Table with extracted data and dictionary of metadata pairs
     """
 
     verbosity = kwargs.get('verbosity', 0)
@@ -132,15 +156,19 @@ def extract(filename, **kwargs):
         bins = bins[:-1]
         times = times[:-1]
 
-    dataset = np.ones(times.shape)
-    data = [times, mjd, bins, gross, background, flux, dataset]
-    columns = ('times', 'mjd' ,'bins', 'gross', 'background', 'flux', 'dataset')
+    data = {'dataset': np.ones(times.shape),
+            'times': times,
+            'mjd': mjd,
+            'bins': bins,
+            'gross': gross,
+            'background': background,
+            'flux': flux}
 
     if verbosity:
         print('Finished extraction for {}'.format(filename))
         print()
 
-    return data, columns, meta
+    return data, meta
 
 #-------------------------------------------------------------------------------
 
@@ -252,7 +280,8 @@ def stis_corrtag(tagfile, clean=True):
 #-------------------------------------------------------------------------------
 
 def integerize_pixels(xcoords):
-    int_pix = np.array(map(int, map(round, xcoords))).astype(np.int32)
+
+    int_pix = np.round(xcoords).astype(np.int32)
     int_pix = np.where(int_pix < 0, 0, int_pix)
     int_pix = np.where(int_pix > 2047, 2047, int_pix)
     int_pix //= 2

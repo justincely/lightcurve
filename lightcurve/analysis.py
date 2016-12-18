@@ -1,5 +1,7 @@
 from scipy.signal import lombscargle
 
+__all__ = ['lomb']
+
 #-------------------------------------------------------------------------------
 
 def lomb(time, counts, frequencies):
@@ -7,6 +9,21 @@ def lomb(time, counts, frequencies):
 
     Necessary wrapper around the set lomscargle algorithm
     https://github.com/scipy/scipy/issues/2643
+
+    Parameters
+    ----------
+    time : np.ndarray
+        array of data times
+    counts : np.ndarray
+        array of counts
+    frequencies : np.ndarray
+        What frequencies
+
+    Returns
+    -------
+    freqs : np.ndarray
+        calculated freqencies
+
     """
 
     time = time.byteswap().newbyteorder().astype('float64')

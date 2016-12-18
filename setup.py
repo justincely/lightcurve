@@ -1,12 +1,10 @@
 from setuptools import setup, find_packages
-import os
-import glob
 
 setup(
     name = 'lightcurve',
     url = 'http://justincely.github.io/lightcurve/',
-    version = '0.5.2',
-    description = 'Create lightcurves from HST/COS data',
+    version = '0.6.0',
+    description = 'Create lightcurves from HST/COS and HST/STIS data',
     author = 'Justin Ely',
     author_email = 'ely@stsci.edu',
     keywords = ['astronomy'],
@@ -20,6 +18,11 @@ setup(
     packages = find_packages(),
     install_requires = ['astropy',
                         'numpy>=1.9',
-                        'numba==0.24.0'],
+                        'scipy',
+                        'numba>=0.24.0',
+                        'llvmlite>=0.9.0',
+                        'nose',
+                        'six',
+                        'sphinx-automodapi'],
     scripts =  ['scripts/lightcurve'],
     )

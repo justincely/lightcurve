@@ -1,0 +1,11 @@
+name: lightcurve
+dependencies:
+    - astropy
+    - numpy>=1.9
+    - scipy
+    - numba>=0.24.0
+    - llvmlite>=0.9.0
+    - nose
+    - six
+    - sphinx
+    - sphinx_rtd_theme

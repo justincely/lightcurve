@@ -1,5 +1,4 @@
-"""
-Holder of Cosmic Origins Spectrograph (COS) classes and utilities
+""" Utility functions for extracting COS spectral data into lightcurves
 
 """
 
@@ -15,16 +14,31 @@ import six
 
 from .utils import expand_refname
 
-#__all__ = ['extract_index', 'get_both_filenames']
+__all__ = ['extract',
+           'collect_inputs',
+           'get_both_filenames',
+           'get_extraction_region'
+           ]
 
 #-------------------------------------------------------------------------------
 
 def extract(filename, **kwargs):
-    """ Loop over HDUs and extract the lightcurve
+    """ Extract lightcurve from COS dataset
 
     This is the main driver of the lightcuve extracion, and definitely
     needs some better documentation.
 
+    Parameters
+    ----------
+    filename : str
+        name of FITS file to extract from
+    **kwargs : dict
+        arbitrary keyword arguements for tailored extraction
+
+    Returns
+    -------
+    data, meta : Astropy table, dict
+        Table with extracted data and dictionary of metadata pairs
     """
 
     """
@@ -226,16 +240,19 @@ def extract(filename, **kwargs):
         bins = bins[:-1]
         times = times[:-1]
 
-
-    dataset = np.ones(times.shape)
-    data = [times, mjd, bins, gross, background, flux, dataset]
-    columns = ('times', 'mjd', 'bins', 'gross', 'background', 'flux', 'dataset')
+    data = {'dataset': np.ones(times.shape),
+            'times': times,
+            'mjd': mjd,
+            'bins': bins,
+            'gross': gross,
+            'background': background,
+            'flux': flux}
 
     if verbosity:
         print('Finished extraction for {}'.format(filename))
         print()
 
-    return data, columns, meta
+    return data, meta
 
 #-------------------------------------------------------------------------------
 
