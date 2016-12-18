@@ -7,6 +7,8 @@ import numpy as np
 
 from ..utils import expand_refname, is_uniq, enlarge
 
+from ..cos import expand_refname, extract_index
+
 #-------------------------------------------------------------------------------
 
 def test_expand_refname():
