@@ -25,7 +25,7 @@ __all__ = ['check_filetype',
            'read',
            'composite',
            'prepare_header']
-           
+
 #-------------------------------------------------------------------------------
 
 def check_filetype(filename):

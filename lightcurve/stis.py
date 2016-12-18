@@ -24,6 +24,7 @@ __all__ = ['extract',
            'map_image',
            'epsilon',
            'dqinit']
+
 #-------------------------------------------------------------------------------
 
 def extract(filename, **kwargs):
@@ -38,6 +39,14 @@ def extract(filename, **kwargs):
         name of FITS file to extract from
     **kwargs : dict
         arbitrary keyword arguements for tailored extraction
+
+    Kwarg parameters
+    ----------------
+    verbosity : int, default=0
+        Verbosity level for print output
+    step : int, default=1
+        timestep in seconds for output Lightcurve
+    wlim : tuple
 
     Returns
     -------

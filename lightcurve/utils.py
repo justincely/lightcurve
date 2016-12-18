@@ -1,5 +1,6 @@
+"""General purpose utility functions"""
+
 import os
-import numpy as np
 
 __all__ = ['expand_refname',
            'enlarge',
