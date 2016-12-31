@@ -1,8 +1,9 @@
-language: python
+# Python builds aren't supported on OSX
+language: c
 
 os:
   - linux
-  # - osx
+  - osx
 
 python:
     - 2.7
@@ -32,6 +33,12 @@ env:
     matrix:
         # Try all python versions with the latest numpy
         #- SETUP_CMD='test'
+        - PYTHON_VERSION=2.7 SETUP_CMD='install'
+        - PYTHON_VERSION=2.7 SETUP_CMD='test'
+        - PYTHON_VERSION=2.7 SETUP_CMD='egg_info'
+        - PYTHON_VERSION=3.5 SETUP_CMD='install'
+        - PYTHON_VERSION=3.5 SETUP_CMD='test'
+        - PYTHON_VERSION=3.5 SETUP_CMD='egg_info'
 
 before_install:
     #-- pull down conda, setup, activate
@@ -47,7 +54,7 @@ before_install:
     - conda info -a
 
     #-- create test environment
-    - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+    - conda create --yes -n test python=$PYTHON_VERSION
     - source activate test
 
     # If there are matplotlib tests, comment these out to
@@ -59,8 +66,7 @@ install:
   - conda install -y astropy numpy scipy numba>=0.24.0 llvmlite>=0.9.0 nose pip six
 
 script:
-   - python setup.py install
-   - nosetests
+   - python setup.py $SETUP_CMD
 
 after_success:
     # If coveralls.io is set up for this package, uncomment the line
