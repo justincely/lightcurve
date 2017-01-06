@@ -103,10 +103,11 @@ def extract(filename, **kwargs):
 
     SECOND_PER_MJD = 1.15741e-5
 
+    source_datasets = ','.join([os.path.basename(item) for item in input_files])
     meta = {'source': filename,
             'instrument' : 'COS',
             'headers': input_headers,
-            'source_files': input_files,
+            'source_files': source_datasets,
             'stepsize': step,
             'wlim': wlim,
             'xlim': xlim,
