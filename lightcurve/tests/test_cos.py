@@ -37,18 +37,18 @@ def generate_test_files(outname='test_corrtag_a.fits', epsilon=1):
     dq_col = fits.Column('dq', 'I', 'cnts', array=np.zeros(n_events))
     pha_col = fits.Column('pha', 'I', 'counts', array=np.ones(n_events) * 14)
 
-    tab = fits.new_table( [time_col,
-                             rawx_col,
-                             rawy_col,
-                             xcorr_col,
-                             ycorr_col,
-                             xdopp_col,
-                             xfull_col,
-                             yfull_col,
-                             wavelength_col,
-                             epsilon_col,
-                             dq_col,
-                             pha_col] )
+    tab = fits.BinTableHDU.from_columns([time_col,
+                                         rawx_col,
+                                         rawy_col,
+                                         xcorr_col,
+                                         ycorr_col,
+                                         xdopp_col,
+                                         xfull_col,
+                                         yfull_col,
+                                         wavelength_col,
+                                         epsilon_col,
+                                         dq_col,
+                                         pha_col])
     hdu_out.append(tab)
 
     hdu_out[1].header['EXTNAME'] = 'EVENTS'
