@@ -83,7 +83,7 @@ def extract(filename, **kwargs):
     verbosity = kwargs.get('verbosity', 0)
     step = kwargs.get('step', 1)
     wlim = kwargs.get('wlim', None)
-    #-- If not specific wavlenghts, truncate to good wavelengths
+    #-- If not specific wavlengths, truncate to good wavelengths
     #-- for each detector
     if not wlim:
         if fits.getval(filename, 'DETECTOR') == 'FUV':
