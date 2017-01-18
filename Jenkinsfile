@@ -1,5 +1,7 @@
 #!groovy
-node {
+docker.image("docker").inside {
+  docker.withRegistry('')
+
   stage 'checkout'
   git url: 'https://github.com/justincely/lightcurve'
 
