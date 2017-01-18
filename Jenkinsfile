@@ -1,6 +1,5 @@
 #!groovy
 node {
-  docker.image("jenkins-1:latest").inside{
 
     stage 'checkout'
     git url: 'https://github.com/justincely/lightcurve'
@@ -31,6 +30,5 @@ node {
     stage 'build'
     sh 'nosetests'
 
-  }
 
 }
