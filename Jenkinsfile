@@ -1,5 +1,5 @@
 #!groovy
-docker.image("docker").inside {
+docker.image("jenkins-1:latest").inside {
   docker.withRegistry('')
 
   stage 'checkout'
