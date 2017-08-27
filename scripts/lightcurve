@@ -28,10 +28,10 @@ def parse_args():
     parser.add_argument('--step', dest='step', type=float, default=1,
                         help='timestep for lightcurve in seconds')
 
-    parser.add_argument('--wmin', dest='wmin', type=float, default=1,
+    parser.add_argument('--wmin', dest='wmin', type=float, default=None,
                         help='Minimum wavelength for extraction')
 
-    parser.add_argument('--wmax', dest='wmax', type=float, default=10000,
+    parser.add_argument('--wmax', dest='wmax', type=float, default=None,
                         help='Maximum wavelength for extraction')
 
     parser.add_argument('--outname', dest='outname', type=str, default='composite_curve.fits',
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         print("Concatenating datasets")
         io.composite(args.input,
                      args.outname,
-                     trim=False,
+                     trim=True,
                      step=args.step,
                      wlim=(args.wmin, args.wmax),
                      alt=args.alt,
@@ -62,11 +62,10 @@ if __name__ == "__main__":
 
     else:
         for dataset in all_datasets:
-            out_lc = io.read(filename=dataset,
-                                step=args.step,
-                                wlim=(args.wmin, args.wmax),
-                                alt=args.alt,
-                                filter=args.filter,
-                                verbosity=1)
+            out_lc = io.read(source=dataset,
+                             step=args.step,
+                             alt=args.alt,
+                             filter=args.filter,
+                             verbosity=1)
 
             out_lc.write(args.outname or curvename)

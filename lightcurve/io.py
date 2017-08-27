@@ -112,17 +112,17 @@ def read(source=None, **kwargs):
         if verbosity: print("Initializing empty table.")
 
         data = {'dataset': np.array([]),
-                'times': [],
-                'mjd': [],
-                'bins': [],
-                'gross': [],
-                'background': [],
-                'flux': [],
-                'counts': [],
-                'error': [],
-                'flux_error': [],
-                'net': [],
-                'signal_to_noise': []}
+                'times': np.array([]),
+                'mjd': np.array([]),
+                'bins': np.array([]),
+                'gross': np.array([]),
+                'background': np.array([]),
+                'flux': np.array([]),
+                'counts': np.array([]),
+                'error': np.array([]),
+                'flux_error': np.array([]),
+                'net': np.array([]),
+                'signal_to_noise': np.array([])}
 
         meta = {'filename': None}
 
@@ -217,11 +217,9 @@ def composite(filelist, output, trim=True, **kwargs):
 
     print("Creating composite lightcurve from:")
     print("\n".join(filelist))
+    override = {}
 
-    wmin = 912
-    wmax = 9000
-
-    for filename in filelist:
+    for i, filename in enumerate(filelist):
         with fits.open(filename) as hdu:
             dq = hdu[1].data['DQ']
             wave = hdu[1].data['wavelength']
@@ -231,8 +229,9 @@ def composite(filelist, output, trim=True, **kwargs):
 
             if (hdu[0].header['INSTRUME'] == "COS") and (hdu[0].header['DETECTOR'] == 'FUV'):
                 #-- if using COS FUV, these are the good limits
-                wmin = 912
-                wmax = 1800
+                HARD_WMIN = 912
+                HARD_WMAX = 1800
+
                 other_file = [item for item in get_both_filenames(filename) if not item == filename][0]
                 if os.path.exists(other_file):
                     with fits.open(other_file) as hdu_2:
@@ -241,9 +240,14 @@ def composite(filelist, output, trim=True, **kwargs):
                         xcorr = np.hstack([xcorr, hdu_2[1].data['xcorr']])
                         ycorr = np.hstack([ycorr, hdu_2[1].data['ycorr']])
                         sdqflags |= hdu_2[1].header['SDQFLAGS']
+            else:
+                #-- Super wide for NUV
+                HARD_WMIN = 912
+                HARD_WMAX = 9000
 
             index = np.where((np.logical_not(dq & sdqflags)) &
-                             (wave > 500) &
+                             (wave > HARD_WMIN) &
+                             (wave < HARD_WMAX) &
                              (xcorr >= 0) &
                              (ycorr >= 0))
 
@@ -251,18 +255,24 @@ def composite(filelist, output, trim=True, **kwargs):
                 print('No Valid events')
                 continue
 
-            wmax = min(wmax, wave[index].max())
-            wmin = max(wmin, wave[index].min())
-            print(wmin, '-->', wmax)
+            if i == 0:
+                wmax = wave[index].max()
+                wmin = wave[index].min()
+            else:
+                wmax = min(wmax, wave[index].max())
+                wmin = max(wmin, wave[index].min())
+                print(wmin, '-->', wmax)
 
 
     if trim:
         print('Using wavelength range of: {}-{}'.format(wmin, wmax))
         kwargs['wlim'] = (wmin, wmax)
 
+    override['wmin'] = wmin
+    override['wmax'] = wmax
+
     all_lc = []
     for filename in filelist:
-        print(filename)
         tmp_lc = read(filename, **kwargs)
         if np.any(tmp_lc['gross'] == 0):
             continue
@@ -277,18 +287,18 @@ def composite(filelist, output, trim=True, **kwargs):
             out_lc = vstack([out_lc, lc], metadata_conflicts='warn')
 
     if output.endswith('.fits') or output.endswith('.fits.gz'):
-        for key in out_lc.meta.keys():
+        for key in list(out_lc.meta.keys()):
             if len(key) > 8:
                 print("Deleting key {} from output header:".format(key))
                 del out_lc.meta[key]
 
     out_lc.write(output)
 
-    prepare_header(output, filelist)
+    prepare_header(output, filelist, override)
 
 #-------------------------------------------------------------------------------
 
-def prepare_header(filename, filelist):
+def prepare_header(filename, filelist, override={}):
     """Prepare headers with MAST requirements"""
     telescop = set()
     instrume = set()
@@ -297,6 +307,7 @@ def prepare_header(filename, filelist):
 
     for i, exposure in enumerate(filelist):
         with fits.open(exposure) as hdu:
+            print(exposure)
             telescop.add(hdu[0].header['TELESCOP'])
             instrume.add(hdu[0].header['INSTRUME'])
             detector.add(hdu[0].header['DETECTOR'])
@@ -351,6 +362,9 @@ def prepare_header(filename, filelist):
         if not uniq:
             for i, val in enumerate(list(filter)):
                 hdu[0].header['filter{:0>2}'.format(1)] = val
+
+        hdu[1].header['WMIN'] = override.get('wmin')
+        hdu[1].header['WMAX'] = override.get('wmax')
 
         hdu[0].header['DATE-OBS'] = Time(hdu[1].data['MJD'].min(), format='mjd').iso
         hdu[0].header['EXPSTART'] = hdu[1].data['mjd'].min()
