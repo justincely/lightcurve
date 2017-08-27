@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name = 'lightcurve',
     url = 'http://justincely.github.io/lightcurve/',
-    version = '0.6.0',
+    version = '0.6.1',
     description = 'Create lightcurves from HST/COS and HST/STIS data',
     author = 'Justin Ely',
     author_email = 'ely@stsci.edu',
