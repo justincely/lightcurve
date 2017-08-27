@@ -22,7 +22,6 @@ setup(
                         'numba>=0.24.0',
                         'llvmlite>=0.9.0',
                         'nose',
-                        'six',
-                        'sphinx-automodapi'],
+                        'six'],
     scripts =  ['scripts/lightcurve'],
     )
