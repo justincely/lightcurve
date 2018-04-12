@@ -11,3 +11,12 @@ This repository contains a tool for extracting lightcurves from astronomical dat
 Conda Stats
 ===========
 [![Anaconda-Server Badge](https://anaconda.org/justincely/lightcurve/badges/version.svg)](https://anaconda.org/justincely/lightcurve) [![Anaconda-Server Badge](https://anaconda.org/justincely/lightcurve/badges/license.svg)](https://anaconda.org/justincely/lightcurve) [![Anaconda-Server Badge](https://anaconda.org/justincely/lightcurve/badges/downloads.svg)](https://anaconda.org/justincely/lightcurve) [![Anaconda-Server Badge](https://anaconda.org/justincely/lightcurve/badges/installer/conda.svg)](https://conda.anaconda.org/justincely)
+
+
+Building the docs locally:
+==========================
+
+1. Install the package and all dependencies
+2. `cd docs`
+3. `make html`
+4. open `docs/_build/html/index.html`
